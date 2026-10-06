@@ -1,0 +1,6 @@
+pillow
+python-barcode
+pywin32
+reportlab
+openpyxl
+pymupdf
