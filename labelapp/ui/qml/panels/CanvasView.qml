@@ -138,15 +138,19 @@ Item {
                 g.fillStyle = Theme.guideFold; g.font = "600 10px sans-serif"; g.fillText("FOLD", f1[0] + 12, f1[1] - 6)
             }
             // selection
+            var nSel = 0
+            for (var q = 0; q < o.elements.length; q++) if (o.elements[q].selected) nSel++
             for (var j = 0; j < o.elements.length; j++) {
                 var se = o.elements[j]
                 if (!se.selected) continue
                 poly(se.poly)
                 g.lineWidth = 2; g.strokeStyle = se.locked ? Theme.textMuted : acc; g.setLineDash([])
                 g.fillStyle = Qt.alpha(se.locked ? Theme.textMuted : acc, 0.06); g.fill(); g.stroke()
-                var lp = P(se.poly[0]); g.fillStyle = se.locked ? Theme.textMuted : acc
-                g.font = "600 10px sans-serif"
-                g.fillText((j + 1) + " " + se.type + (se.locked ? "  (locked)" : ""), lp[0] + 1, lp[1] - 6)
+                if (nSel <= 3) {
+                    var lp = P(se.poly[0]); g.fillStyle = se.locked ? Theme.textMuted : acc
+                    g.font = "600 10px sans-serif"
+                    g.fillText((j + 1) + " " + se.type + (se.locked ? "  (locked)" : ""), lp[0] + 1, lp[1] - 6)
+                }
             }
             // handles
             var hs = o.handles || []

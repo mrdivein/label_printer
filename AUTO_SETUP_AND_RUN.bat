@@ -115,7 +115,7 @@ echo Dang cai/cap nhat thu vien...
 ".venv\Scripts\python.exe" -m pip install --upgrade pip
 if errorlevel 1 goto :PIP_ERROR
 
-".venv\Scripts\python.exe" -m pip install pillow python-barcode pywin32 reportlab openpyxl pymupdf
+".venv\Scripts\python.exe" -m pip install pillow python-barcode pywin32 reportlab openpyxl pymupdf PySide6
 if errorlevel 1 goto :PIP_ERROR
 
 echo.

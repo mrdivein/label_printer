@@ -67,6 +67,7 @@ Panel {
                     required property var choices
                     required property var value
                     required property bool mixed
+                    readonly property var val: (value === undefined || value === null) ? null : value     // Python None arrives as undefined
                     width: props.width; height: 36
                     PropertyRow {
                         anchors.left: parent.left; anchors.right: parent.right; anchors.leftMargin: Theme.s4; anchors.rightMargin: Theme.s4
@@ -80,25 +81,25 @@ Panel {
                         }
                     }
                     Component { id: numberC
-                        NumberField { value: row.value === null || row.value === "" ? 0 : Number(row.value); mixed: row.mixed; unit: row.unit
+                        NumberField { value: row.val === null || row.val === "" ? 0 : Number(row.val); mixed: row.mixed; unit: row.unit
                             step: row.unit === "pt" ? 0.5 : row.unit === "°" ? 1 : 0.1
                             onEdited: (v) => Doc.setProp(row.key, v) } }
                     Component { id: boolC
-                        CheckField { text: row.label; checked: row.value === true; mixed: row.mixed
+                        CheckField { text: row.label; checked: row.val === true; mixed: row.mixed
                             onToggled: Doc.setProp(row.key, checked) } }
                     Component { id: choiceC
                         ComboField { model: row.choices; mixed: row.mixed
-                            currentIndex: Math.max(0, row.choices.indexOf(row.value === null ? "" : row.value))
-                            displayText: (!row.mixed && row.value === "") ? "None" : (row.value === null ? "" : String(row.value))
+                            currentIndex: Math.max(0, row.choices.indexOf(row.val === null ? "" : row.val))
+                            displayText: (!row.mixed && row.val === "") ? "None" : (row.val === null ? "" : String(row.val))
                             onActivated: (i) => Doc.setProp(row.key, row.choices[i]) } }
                     Component { id: textC
-                        AppTextField { mixed: row.mixed; text: row.value === null ? "" : String(row.value)
+                        AppTextField { mixed: row.mixed; text: row.val === null ? "" : String(row.val)
                             placeholderText: row.key === "show_if" ? "e.g. {{Origin}}" : (row.mixed ? "Mixed" : "")
-                            onEditingFinished: if (text !== (row.value === null ? "" : String(row.value))) Doc.setProp(row.key, text) } }
+                            onEditingFinished: if (text !== (row.val === null ? "" : String(row.val))) Doc.setProp(row.key, text) } }
                     Component { id: pathC
                         RowLayout { spacing: Theme.s1
-                            AppTextField { Layout.fillWidth: true; mixed: row.mixed; text: row.value === null ? "" : String(row.value)
-                                onEditingFinished: if (text !== String(row.value)) Doc.setProp(row.key, text) }
+                            AppTextField { Layout.fillWidth: true; mixed: row.mixed; text: row.val === null ? "" : String(row.val)
+                                onEditingFinished: if (text !== (row.val === null ? "" : String(row.val))) Doc.setProp(row.key, text) }
                             AppButton { text: "…"; compact: true; implicitWidth: 30; onClicked: p.pickImage() } } }
                 }
             }

@@ -65,6 +65,8 @@ Toolbar {
             AppMenuSeparator { visible: Data.recentExcel.length > 0 }
             AppMenuItem { text: "Reload data"; hint: "F5"; enabled: Data.hasData; onTriggered: Data.reload() }
             AppMenuItem { text: "Add data field to label…"; enabled: Data.hasData; onTriggered: bar.addField() }
+            AppMenuSeparator { visible: App.legacyAvailable }
+            AppMenuItem { visible: App.legacyAvailable; height: visible ? implicitHeight : 0; text: "Open legacy app (batch scan, history)…"; onTriggered: App.launchLegacy() }
         }
     }
     signal addField()

@@ -3,10 +3,13 @@
 Builds the services and controllers, wires them together and exposes them to QML as
 App (this object), Doc, Lib, Data and Printing. It contains no label or printing logic itself.
 """
+import os
+import subprocess
 import sys
 
 from PySide6.QtCore import Property, QObject, QUrl, Signal, Slot
 
+from ..paths import app_root
 from ..services.print_service import PrintService
 from ..services.template_service import TemplateService
 from ..services.workspace_service import Workspace
@@ -108,6 +111,19 @@ class AppBridge(QObject):
         self.document.restore_session(self.library.names)
         self.data.restore_last()
         self.printing.refreshPrinters()
+
+    def _get_legacy(self):
+        return os.path.exists(os.path.join(app_root(), 'app.py')) and not getattr(sys, 'frozen', False)
+
+    legacyAvailable = Property(bool, _get_legacy, constant=True)
+
+    @Slot()
+    def launchLegacy(self):
+        """Open the original Tkinter app (Batch Scan, print history, guide editor... not yet in the Qt UI)."""
+        try:
+            subprocess.Popen([sys.executable, os.path.join(app_root(), 'app.py')], cwd=app_root())
+        except Exception as e:
+            self.errorRaised.emit('Legacy app', str(e))
 
     @Slot()
     def shutdown(self):
