@@ -124,7 +124,7 @@ echo SETUP HOAN TAT - DANG MO ECG LABEL TOOL
 echo ==========================================
 echo.
 
-".venv\Scripts\python.exe" app.py
+".venv\Scripts\python.exe" -m labelapp
 exit /b 0
 
 :NO_WINGET

@@ -15,5 +15,5 @@ if not exist ".venv\Scripts\python.exe" (
 call .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 pip install pillow python-barcode pywin32 reportlab openpyxl pymupdf PySide6
-python app.py
+python -m labelapp
 pause

@@ -1,6 +1,6 @@
 # Qt Quick (PySide6 / QML) migration — status
 
-Run the new UI: `RUN_QT.bat` (Windows) or `python -m labelapp`. The original Tkinter app still runs unchanged: `RUN.bat` / `python app.py`.
+Run the new UI: `RUN.bat` (Windows) or `python -m labelapp`. The original Tkinter app still runs unchanged: `RUN_TK.bat` / `python app.py`.
 Tests: `pip install -r requirements-dev.txt && python -m pytest tests`
 
 ## Architecture
@@ -46,4 +46,4 @@ Batch Scan / quick-scan printing, print-history viewer + reprint, guide (preview
 ## Next steps
 1. Verify on Windows with the real printer; build and test the PyInstaller bundle.
 2. Port Batch Scan and the history viewer to QML (logic in `core/barcode_lookup.py` and `PrintService` already exists).
-3. Retire the Tk designer (`VisualDesignerDialog`), then the rest of `app.py`; make `RUN.bat` start the Qt UI.
+3. Retire the Tk designer (`VisualDesignerDialog`), then the rest of `app.py`.
