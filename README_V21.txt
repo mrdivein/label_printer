@@ -35,3 +35,26 @@ GIỮ LẠI NHỮNG GÌ ĐÃ SETUP
   nút PRINT CURRENT nổi bật, Designer gọn hơn (mở 1440x900).
 
 Cài đặt/chạy: RUN.bat (hoặc SETUP_AND_RUN.bat lần đầu). Cần: pillow, python-barcode, pywin32, reportlab, openpyxl, pymupdf.
+
+
+=====================================================
+V21 — BỔ SUNG: TỐI ƯU + TÍNH NĂNG KIỂU PHẦN MỀM IN TEM
+=====================================================
+TỐI ƯU
+- In nhanh hơn: bỏ lần render thừa trong mỗi lần ghi PDF; lịch sử in dùng lại ảnh vừa gửi máy in
+  (trước đây mỗi tem bị render 3 lần). Cache font và barcode.
+- Chọn dòng trong bảng không còn render lại liên tục khi giữ phím mũi tên.
+- Phím tắt Designer (Delete, mũi tên, Ctrl+C/V/A) không còn kích hoạt khi bạn đang gõ trong ô nhập liệu.
+- In nhiều tem chạy theo từng bước, có thanh tiến trình, nút Cancel, và hỏi bỏ qua/thử lại khi lỗi.
+- Print Selected / Print All trước đây không có nút trên giao diện -> nay có ở thanh trên bảng dữ liệu.
+
+TÍNH NĂNG MỚI
+- Print Queue: xem danh sách dòng sắp in, sửa số lượng từng dòng (Qty), tổng số tem,
+  "Export all as PDF" gom toàn bộ tem vào 1 file PDF vector để duyệt trước.
+- Template Library (nút Library): xem thumbnail, New (preset 50x68, 40x30, 100x150... hoặc kích thước tùy ý),
+  Duplicate, Rename, Delete (có backup), Export.
+- Phần tử mới: QR code, Barcode có in số bên dưới, Image/Logo (đường dẫn có thể chứa {{Cột}} để mỗi dòng một ảnh).
+- Designer có tab "Style / Data": font, đậm, căn lề, tự thu nhỏ chữ, wrap, IN HOA/thường/Title,
+  Prefix/Suffix (bỏ qua khi trống), độ dày nét, loại barcode, mức sửa lỗi QR, và "Only print if {{Cột}}"
+  (ẩn phần tử khi cột trống) — không cần sửa JSON nữa.
+- Designer: Ctrl+C / Ctrl+V / Ctrl+A, Shift+mũi tên = dịch 10 bước, nút ⊕H / ⊕V căn giữa tem.

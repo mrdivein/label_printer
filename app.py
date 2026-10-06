@@ -12,6 +12,8 @@ import urllib.parse
 import urllib.request
 import tempfile
 import time
+import functools
+import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, simpledialog
 
@@ -105,6 +107,7 @@ def scale_layout_cfg(cfg):
     out["fold_regions"] = frs
     return out
 
+@functools.lru_cache(maxsize=64)
 def find_font(name="Arial", bold=False):
     windir = os.environ.get("WINDIR", r"C:\Windows")
     fonts = os.path.join(windir, "Fonts")
@@ -131,6 +134,7 @@ def find_font(name="Arial", bold=False):
             return p
     return None
 
+@functools.lru_cache(maxsize=256)
 def load_font(name, size_pt, bold=False, dpi=DEFAULT_DPI):
     px = max(5, int(round(float(size_pt) * float(dpi) / 72)))
     path = find_font(name, bold)
@@ -164,6 +168,7 @@ def fit_font(draw, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dp
     f = load_font(font_name, min_pt, bold, dpi)
     return f, wrap_text(draw, text, f, box_w) if wrap else text
 
+@functools.lru_cache(maxsize=128)
 def make_barcode(value, dpi, kind="code128", height_mm=10, module_width=0.25, quiet_zone=1.0):
     value = str(value).strip()
     if not value:
@@ -181,6 +186,47 @@ def make_barcode(value, dpi, kind="code128", height_mm=10, module_width=0.25, qu
     })
     buf.seek(0)
     return Image.open(buf).convert("L")
+
+@functools.lru_cache(maxsize=64)
+def qr_matrix(value, level="M"):
+    """Boolean module matrix of a QR code (uses reportlab's encoder; no extra dependency)."""
+    from reportlab.graphics.barcode import qrencoder
+    lv = {"L": qrencoder.QRErrorCorrectLevel.L, "M": qrencoder.QRErrorCorrectLevel.M,
+          "Q": qrencoder.QRErrorCorrectLevel.Q, "H": qrencoder.QRErrorCorrectLevel.H}.get(str(level).upper(), qrencoder.QRErrorCorrectLevel.M)
+    q = qrencoder.QRCode(None, lv)
+    q.addData(str(value))
+    q.make()
+    n = q.getModuleCount()
+    return tuple(tuple(bool(q.isDark(r, c)) for c in range(n)) for r in range(n))
+
+def _qr_square_px(w, h, n):
+    """Largest square (px) that holds n modules on whole pixels, centred offset helper."""
+    side = min(w, h)
+    mod = max(1, side // n)
+    return mod, mod * n
+
+@functools.lru_cache(maxsize=32)
+def _load_image_file(path, mtime):
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
+        bg = Image.new("RGBA", im.size, (255, 255, 255, 255))
+        bg.alpha_composite(im.convert("RGBA"))
+        im = bg
+    return im.convert("L")
+
+def load_element_image(path):
+    path = os.path.expanduser(str(path or "").strip())
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        return _load_image_file(path, os.path.getmtime(path))
+    except Exception:
+        return None
+
+def barcode_text_height_mm(e):
+    if not e.get("show_text"):
+        return 0.0
+    return float(e.get("text_size", 6.0)) * 25.4 / 72.0 * 1.2
 
 def apply_fold_regions(img, cfg):
     cfg = normalize_cfg(cfg)
@@ -273,17 +319,58 @@ def _draw_element(img, draw, e, cfg, dpi):
         draw.ellipse((x, y, x+w, y+h), outline=0, width=max(1, mm_to_px(e.get("thickness", 0.2), dpi)))
 
     elif t == "barcode":
+        text_h = mm_to_px(barcode_text_height_mm(e), dpi)
+        bars_h = max(1, h - text_h)
+        value = str(e.get("value", "")).strip()
         bc = make_barcode(
-            e.get("value", ""), dpi,
+            value, dpi,
             e.get("symbology", "code128"),
             e.get("barcode_height_mm", max(5, e.get("h", 12)-2)),
             e.get("module_width", 0.25),
             e.get("quiet_zone", 1.0)
         )
-        ratio = min(w / bc.width, h / bc.height)
+        ratio = min(w / bc.width, bars_h / bc.height)
         nw, nh = max(1, int(bc.width * ratio)), max(1, int(bc.height * ratio))
         bc = bc.resize((nw, nh), Image.Resampling.NEAREST)
-        img.paste(bc, (x + (w - nw) // 2, y + (h - nh) // 2))
+        by = y + (bars_h - nh) // 2
+        img.paste(bc, (x + (w - nw) // 2, by))
+        if text_h and value:
+            f = load_font(e.get("font", "Arial"), float(e.get("text_size", 6.0)), False, dpi)
+            bb = draw.textbbox((0, 0), value, font=f)
+            draw.text((x + max(0, (w - (bb[2] - bb[0])) // 2) - bb[0], y + bars_h - bb[1]), value, font=f, fill=0)
+
+    elif t == "qr":
+        value = str(e.get("value", "")).strip()
+        if value:
+            m = qr_matrix(value, e.get("ecc", "M"))
+            n = len(m)
+            quiet = 0  # the box itself is the quiet zone
+            mod, side = _qr_square_px(w, h, n)
+            ox = x + (w - side) // 2
+            oy = y + (h - side) // 2
+            for r, rowv in enumerate(m):
+                c = 0
+                while c < n:
+                    if rowv[c]:
+                        c0 = c
+                        while c < n and rowv[c]:
+                            c += 1
+                        draw.rectangle((ox + c0 * mod, oy + r * mod, ox + c * mod - 1, oy + (r + 1) * mod - 1), fill=0)
+                    else:
+                        c += 1
+
+    elif t == "image":
+        im = load_element_image(e.get("path", ""))
+        if im is not None and w > 0 and h > 0:
+            ratio = min(w / im.width, h / im.height) if e.get("fit", "contain") != "stretch" else None
+            if ratio is None:
+                nw, nh = w, h
+            else:
+                nw, nh = max(1, int(im.width * ratio)), max(1, int(im.height * ratio))
+            pic = im.resize((nw, nh), Image.Resampling.LANCZOS)
+            if e.get("dither", False):
+                pic = pic.convert("1").convert("L")
+            img.paste(pic, (x + (w - nw) // 2, y + (h - nh) // 2))
 
 
 def _draw_element_rotated(img, e, cfg, dpi, angle):
@@ -565,14 +652,33 @@ def replace_placeholders(value, row, bindings):
         return format_binding_value(key, resolve_row_value(row, col))
     return PLACEHOLDER_RE.sub(repl, value)
 
+def apply_text_options(e, text):
+    """Per-element text formatting: transform (upper/lower/title), prefix, suffix. Skipped when the text is empty."""
+    text = str(text)
+    if not text.strip():
+        return text
+    mode = str(e.get("transform", "") or "").lower()
+    if mode == "upper":
+        text = text.upper()
+    elif mode == "lower":
+        text = text.lower()
+    elif mode == "title":
+        text = text.title()
+    return f"{e.get('prefix', '') or ''}{text}{e.get('suffix', '') or ''}"
+
 def bind_row_to_template(template_cfg, row):
     cfg = copy.deepcopy(normalize_cfg(template_cfg))
     bindings = dict(cfg.get("data_bindings", {}))
     for e in cfg["elements"]:
         if "text" in e:
-            e["text"] = replace_placeholders(e["text"], row, bindings)
+            e["text"] = apply_text_options(e, replace_placeholders(e["text"], row, bindings))
         if "value" in e:
             e["value"] = replace_placeholders(e["value"], row, bindings)
+        if "path" in e:
+            e["path"] = replace_placeholders(e["path"], row, bindings)
+    # "show_if": "{{Field}}" -> element is dropped for rows where that field is empty.
+    cfg["elements"] = [e for e in cfg["elements"]
+                       if not e.get("show_if") or replace_placeholders(str(e["show_if"]), row, bindings).strip()]
     copies_col = bindings.get("Copies", "Copies")
     if row.get(copies_col) not in (None, ""):
         try:
@@ -1289,7 +1395,7 @@ def _element_total_angle(cfg, e, fold_region=None):
     angle -= _element_angle(e)
     return angle
 
-def save_exact_print_pdf(cfg, path):
+def save_exact_print_pdf(cfg, path, return_raster=False):
     """
     VECTOR master PDF used by both PDF Proof and Print via PDF.
 
@@ -1411,8 +1517,18 @@ def save_exact_print_pdf(cfg, path):
 
         elif t == "barcode":
             value = str(e.get("value", "")).strip()
+            text_mm = barcode_text_height_mm(e)
             if value:
                 sym = str(e.get("symbology", "code128")).lower()
+                if text_mm:
+                    # Human-readable digits under the bars; bars use the remaining height.
+                    tsize = float(e.get("text_size", 6.0))
+                    tfont = _pdf_font_name(e.get("font", "Arial"), False)
+                    c.setFont(tfont, tsize)
+                    c.drawString(left + max(0.0, (w * RL_MM - pdfmetrics.stringWidth(value, tfont, tsize)) / 2.0),
+                                 bottom + tsize * 0.2, value)
+                    bottom += text_mm * RL_MM
+                    h -= text_mm
                 if sym == "code128":
                     target_w = w * RL_MM
                     target_h = min(
@@ -1462,6 +1578,38 @@ def save_exact_print_pdf(cfg, path):
                         mask="auto"
                     )
 
+        elif t == "qr":
+            value = str(e.get("value", "")).strip()
+            if value:
+                m = qr_matrix(value, e.get("ecc", "M"))
+                n = len(m)
+                pdpi = max(1, int(cfg.get("dpi", DEFAULT_DPI)))
+                side_dots = int(min(w, h) * pdpi / 25.4)
+                mod_mm = max(1, side_dots // n) * 25.4 / pdpi      # whole printer dots per module
+                mod = mod_mm * RL_MM
+                side = mod * n
+                ox = left + (w * RL_MM - side) / 2.0
+                oy = bottom + (h * RL_MM - side) / 2.0
+                for r, rowv in enumerate(m):
+                    cidx = 0
+                    while cidx < n:
+                        if rowv[cidx]:
+                            c0 = cidx
+                            while cidx < n and rowv[cidx]:
+                                cidx += 1
+                            c.rect(ox + c0 * mod, oy + (n - 1 - r) * mod, (cidx - c0) * mod, mod, fill=1, stroke=0)
+                        else:
+                            cidx += 1
+
+        elif t == "image":
+            im = load_element_image(e.get("path", ""))
+            if im is not None:
+                from reportlab.lib.utils import ImageReader
+                if e.get("dither", False):
+                    im = im.convert("1").convert("L")
+                c.drawImage(ImageReader(im), left, bottom, width=w * RL_MM, height=h * RL_MM,
+                            preserveAspectRatio=(e.get("fit", "contain") != "stretch"), anchor="c", mask="auto")
+
         c.restoreState()
 
     if clip_active:
@@ -1470,8 +1618,8 @@ def save_exact_print_pdf(cfg, path):
     c.showPage()
     c.save()
 
-    # Return direct RAW raster only for optional comparison/reporting.
-    return render_label(cfg_original)
+    # The direct raster is only needed for proofs/comparison; skip the extra render otherwise.
+    return render_label(cfg_original) if return_raster else None
 
 def rasterize_exact_print_pdf(path, dpi, threshold=180):
     """
@@ -1723,6 +1871,7 @@ class VisualDesignerDialog(tk.Toplevel):
 
         self.selected_indices = set()
         self.primary_idx = None
+        self.clipboard = []
         self.overlay_boxes = {}
         self.overlay_polys = {}
         self.rotate_center = (0, 0)
@@ -1760,7 +1909,7 @@ class VisualDesignerDialog(tk.Toplevel):
 
         main = ttk.Panedwindow(self, orient="horizontal")
         main.pack(fill="both", expand=True, padx=10, pady=10)
-        left = ttk.Frame(main, width=390)
+        left = ttk.Frame(main, width=460)
         right = ttk.Frame(main)
         main.add(left, weight=1)
         main.add(right, weight=4)
@@ -1783,6 +1932,10 @@ class VisualDesignerDialog(tk.Toplevel):
         sm.add_command(label="Rectangle", command=lambda:self.add_shape('box'))
         sm.add_command(label="Filled Rectangle", command=lambda:self.add_shape('fill_box'))
         sm.add_command(label="Ellipse", command=lambda:self.add_shape('ellipse'))
+        sm.add_separator()
+        sm.add_command(label="QR code", command=lambda:self.add_special('qr'))
+        sm.add_command(label="Barcode (Code128)", command=lambda:self.add_special('barcode'))
+        sm.add_command(label="Image / logo...", command=lambda:self.add_special('image'))
         shapes['menu']=sm; shapes.pack(side="left", padx=2)
         ttk.Button(addbar, text="Duplicate", command=self.duplicate_selected).pack(side="left", padx=2)
         ttk.Button(addbar, text="Delete", command=self.delete_selected).pack(side="left", padx=2)
@@ -1800,8 +1953,13 @@ class VisualDesignerDialog(tk.Toplevel):
         ttk.Button(alignbar, text="Top", command=lambda:self.align_selected('top')).pack(side="left", padx=1)
         ttk.Button(alignbar, text="H Center", command=lambda:self.align_selected('hcenter')).pack(side="left", padx=1)
         ttk.Button(alignbar, text="V Center", command=lambda:self.align_selected('vcenter')).pack(side="left", padx=1)
+        ttk.Button(alignbar, text="⊕ H", width=4, command=lambda:self.center_on_label('h')).pack(side="left", padx=(8,1))
+        ttk.Button(alignbar, text="⊕ V", width=4, command=lambda:self.center_on_label('v')).pack(side="left", padx=1)
 
-        form = ttk.LabelFrame(left, text="Selected element", padding=8)
+        self.prop_tabs = ttk.Notebook(left); self.prop_tabs.pack(fill="x")
+        tab_layout = ttk.Frame(self.prop_tabs); tab_style = ttk.Frame(self.prop_tabs)
+        self.prop_tabs.add(tab_layout, text="Layout"); self.prop_tabs.add(tab_style, text="Style / Data")
+        form = ttk.LabelFrame(tab_layout, text="Selected element", padding=8)
         form.pack(fill="x")
         self.vars = {k:tk.StringVar() for k in ('x','y','w','h','font_size','text','value','angle')}
         row=0
@@ -1833,7 +1991,8 @@ class VisualDesignerDialog(tk.Toplevel):
         ttk.Button(form,text="Apply values",command=self.apply_selected).grid(row=row,column=0,columnspan=4,sticky="ew",pady=(6,2))
         form.columnconfigure(2,weight=1)
 
-        fine=ttk.LabelFrame(left,text="Fine move",padding=8); fine.pack(fill="x",pady=(8,0))
+        fine=ttk.LabelFrame(tab_layout,text="Fine move",padding=8); fine.pack(fill="x",pady=(8,0))
+        self.build_style_tab(tab_style)
         ttk.Label(fine,text="Step (mm)").grid(row=0,column=0,sticky="w")
         ttk.Combobox(fine,textvariable=self.snap_mm,state="readonly",values=[0.05,0.1,0.25,0.5,1.0],width=8).grid(row=0,column=1,sticky="w")
         ttk.Label(fine,text="Font step").grid(row=0,column=2,sticky="e",padx=(10,2))
@@ -1887,11 +2046,13 @@ class VisualDesignerDialog(tk.Toplevel):
         self.bind('<Control-y>',lambda e:self.redo())
         self.bind('<Control-s>',lambda e:self.save_json_now())
         self.bind('<Control-d>',lambda e:self.duplicate_selected())
-        self.bind('<Delete>',lambda e:self.delete_selected())
-        self.bind('<Up>',lambda e:self.nudge(0,-1))
-        self.bind('<Down>',lambda e:self.nudge(0,1))
-        self.bind('<Left>',lambda e:self.nudge(-1,0))
-        self.bind('<Right>',lambda e:self.nudge(1,0))
+        self.bind('<Control-c>',self._kb(self.copy_selected))
+        self.bind('<Control-v>',self._kb(self.paste_clipboard))
+        self.bind('<Control-a>',self._kb(self.select_all))
+        self.bind('<Delete>',self._kb(self.delete_selected))
+        for key,(dx,dy) in {'Up':(0,-1),'Down':(0,1),'Left':(-1,0),'Right':(1,0)}.items():
+            self.bind(f'<{key}>',self._kb(lambda dx=dx,dy=dy:self.nudge(dx,dy)))
+            self.bind(f'<Shift-{key}>',self._kb(lambda dx=dx,dy=dy:self.nudge(dx*10,dy*10)))
         self.protocol('WM_DELETE_WINDOW',self.close_dialog)
         self.transient(parent)
 
@@ -1957,7 +2118,7 @@ class VisualDesignerDialog(tk.Toplevel):
     # ---------- element list ----------
     def describe(self,i,e):
         lock='[L]' if e.get('locked',False) else '   '
-        txt=str(e.get('text',e.get('value',''))).replace('\n',' ')[:31]
+        txt=str(e.get('text',e.get('value',os.path.basename(str(e.get('path',''))))) ).replace('\n',' ')[:31]
         ang=_element_angle(e); at=f" ↻{ang:g}°" if abs(ang)>0.0001 else ""
         return f"{i+1:02d} {lock} {e.get('type','?'):<8} {txt}{at}"
     def refresh_list(self):
@@ -1980,6 +2141,10 @@ class VisualDesignerDialog(tk.Toplevel):
         self.selected_indices=cur; self.primary_idx=primary
         self.update_form(); self.draw_overlays()
     def update_form(self):
+        self._update_form_core()
+        try: self.update_style_form()
+        except Exception: pass
+    def _update_form_core(self):
         if not self.selected_indices:
             self.type_label.config(text='');
             for v in self.vars.values(): v.set('')
@@ -2454,6 +2619,140 @@ class VisualDesignerDialog(tk.Toplevel):
             if self.undo_stack: self.undo_stack.pop()
             messagebox.showerror('Designer',str(ex),parent=self); return
         self._commit_live('Values applied'); self.refresh_list(); self.update_form(); self.render_canvas()
+    # ---------- keyboard / clipboard ----------
+    def _kb(self,fn):
+        """Keyboard shortcut that does nothing while the user is typing in a field."""
+        def handler(event=None):
+            w=self.focus_get()
+            if w is not None and w.winfo_class() in ('TEntry','Entry','TCombobox','Text','Spinbox','TSpinbox'): return
+            fn(); return 'break'
+        return handler
+    def select_all(self):
+        n=len(self.cfg.get('elements',[]))
+        if n: self.set_selection(set(range(n)),0)
+    def copy_selected(self):
+        self.clipboard=[copy.deepcopy(self.cfg['elements'][i]) for i in sorted(self.selected_indices)]
+        self.coord_var.set(f'Copied {len(self.clipboard)} element(s) — Ctrl+V to paste')
+    def paste_clipboard(self):
+        if not self.clipboard: return
+        self._push_undo(); new=[]
+        for e0 in self.clipboard:
+            e=copy.deepcopy(e0); e['locked']=False
+            for k in ('x','x2'):
+                if k in e: e[k]=round(float(e[k])+2,3)
+            for k in ('y','y2'):
+                if k in e: e[k]=round(float(e[k])+2,3)
+            self.cfg['elements'].append(e); new.append(len(self.cfg['elements'])-1)
+        self.clipboard=[copy.deepcopy(self.cfg['elements'][i]) for i in new]   # next paste cascades
+        self.set_selection(set(new),new[-1]); self._commit_live('Pasted'); self.refresh_list(); self.render_canvas()
+    def center_on_label(self,axis):
+        ids=[i for i in self.selected_indices if not self.cfg['elements'][i].get('locked')]
+        if not ids: return
+        self._push_undo()
+        pw=float(self.cfg.get('width_mm',50)); ph=float(self.cfg.get('height_mm',68))
+        boxes=[self._source_box(self.cfg['elements'][i]) for i in ids]
+        minx=min(b[0] for b in boxes); maxx=max(b[0]+b[2] for b in boxes); miny=min(b[1] for b in boxes); maxy=max(b[1]+b[3] for b in boxes)
+        dx=(pw-(maxx-minx))/2-minx if axis=='h' else 0.0; dy=(ph-(maxy-miny))/2-miny if axis=='v' else 0.0
+        for i in ids:
+            e=self.cfg['elements'][i]
+            for k in ('x','x2'):
+                if k in e: e[k]=round(float(e[k])+dx,3)
+            for k in ('y','y2'):
+                if k in e: e[k]=round(float(e[k])+dy,3)
+        self._commit_live('Centered'); self.update_form(); self.render_canvas()
+
+    # ---------- style / data tab ----------
+    FONT_CHOICES=('Arial','Arial Narrow','Segoe UI','Segoe UI Light','Tahoma','Verdana')
+    def build_style_tab(self,tab):
+        self.svars={'font':tk.StringVar(),'bold':tk.BooleanVar(),'align':tk.StringVar(),'auto_fit':tk.BooleanVar(),'wrap':tk.BooleanVar(),
+                    'transform':tk.StringVar(),'prefix':tk.StringVar(),'suffix':tk.StringVar(),'show_if':tk.StringVar(),
+                    'thickness':tk.StringVar(),'symbology':tk.StringVar(),'show_text':tk.BooleanVar(),'ecc':tk.StringVar(),
+                    'path':tk.StringVar(),'fit':tk.StringVar(),'min_font_size':tk.StringVar()}
+        self.style_rows={}   # key -> (widgets, element types it applies to)
+        box=ttk.LabelFrame(tab,text="Style & data options",padding=8); box.pack(fill='x')
+        box.columnconfigure(1,weight=1)
+        r=[0]
+        def row(key,label,widget_factory,types):
+            lab=ttk.Label(box,text=label); w=widget_factory(box)
+            lab.grid(row=r[0],column=0,sticky='w',pady=3); w.grid(row=r[0],column=1,sticky='ew',pady=3,padx=(6,0)); r[0]+=1
+            self.style_rows[key]=((lab,w),types)
+        TEXT={'text'}
+        def combo(key,values,ro=True):
+            def f(p):
+                c=ttk.Combobox(p,textvariable=self.svars[key],values=values,state='readonly' if ro else 'normal',width=18)
+                c.bind('<<ComboboxSelected>>',lambda ev,k=key:self.style_set(k)); c.bind('<Return>',lambda ev,k=key:self.style_set(k)); return f_ret(c)
+            return f
+        def f_ret(w): return w
+        def entry(key):
+            def f(p):
+                e=ttk.Entry(p,textvariable=self.svars[key],width=20); e.bind('<Return>',lambda ev,k=key:self.style_set(k)); return e
+            return f
+        def check(key,text):
+            def f(p): return ttk.Checkbutton(p,text=text,variable=self.svars[key],command=lambda k=key:self.style_set(k))
+            return f
+        row('font','Font',combo('font',self.FONT_CHOICES),TEXT|{'barcode'})
+        row('bold','',check('bold','Bold'),TEXT)
+        row('align','Align',combo('align',('left','center','right')),TEXT)
+        row('auto_fit','',check('auto_fit','Shrink text to fit box'),TEXT)
+        row('min_font_size','Min font (pt)',entry('min_font_size'),TEXT)
+        row('wrap','',check('wrap','Wrap onto several lines'),TEXT)
+        row('transform','Case',combo('transform',('','upper','lower','title')),TEXT)
+        row('prefix','Prefix',entry('prefix'),TEXT)
+        row('suffix','Suffix',entry('suffix'),TEXT)
+        row('thickness','Line width (mm)',entry('thickness'),{'line','box','ellipse'})
+        row('symbology','Barcode type',combo('symbology',('code128','ean13','ean8','upca','code39','itf')),{'barcode'})
+        row('show_text','',check('show_text','Print digits under bars'),{'barcode'})
+        row('ecc','Error correction',combo('ecc',('L','M','Q','H')),{'qr'})
+        row('path','Image file',entry('path'),{'image'})
+        row('fit','Image fit',combo('fit',('contain','stretch')),{'image'})
+        row('show_if','Only print if',entry('show_if'),{'text','barcode','qr','image','line','box','fill_box','ellipse'})
+        self.style_hint=ttk.Label(tab,text='Case/Prefix/Suffix are skipped when the field is empty.\n"Only print if": e.g. {{Origin}} hides the element when Origin is blank.',style='Muted.TLabel',wraplength=330,justify='left')
+        self.style_hint.pack(fill='x',pady=(6,0))
+        ttk.Button(tab,text='Apply typed values (Enter)',command=lambda:[self.style_set(k) for k in ('prefix','suffix','show_if','thickness','min_font_size','path')]).pack(fill='x',pady=(8,0))
+    def update_style_form(self):
+        if not hasattr(self,'svars'): return
+        e=self.cfg['elements'][self.primary_idx] if self.primary_idx is not None and self.primary_idx<len(self.cfg['elements']) else None
+        t=str(e.get('type','')).lower() if e else ''
+        for key,((lab,w),types) in self.style_rows.items():
+            if e is not None and t in types: lab.grid(); w.grid()
+            else: lab.grid_remove(); w.grid_remove()
+        if e is None: return
+        d={'font':e.get('font','Arial'),'bold':bool(e.get('bold',False)),'align':e.get('align','left'),'auto_fit':bool(e.get('auto_fit',False)),
+           'wrap':bool(e.get('wrap',False)),'transform':e.get('transform',''),'prefix':e.get('prefix',''),'suffix':e.get('suffix',''),
+           'show_if':e.get('show_if',''),'thickness':str(e.get('thickness',0.2)),'symbology':e.get('symbology','code128'),
+           'show_text':bool(e.get('show_text',False)),'ecc':e.get('ecc','M'),'path':e.get('path',''),'fit':e.get('fit','contain'),
+           'min_font_size':str(e.get('min_font_size',4))}
+        for k,v in d.items(): self.svars[k].set(v)
+    def style_set(self,key):
+        ids=[i for i in self.selected_indices if not self.cfg['elements'][i].get('locked')]
+        if not ids: return
+        val=self.svars[key].get()
+        if isinstance(val,str): val=val.strip() if key not in ('prefix','suffix') else val
+        changed=False; snap=self._snapshot()
+        for i in ids:
+            e=self.cfg['elements'][i]; t=str(e.get('type','')).lower()
+            if t not in self.style_rows[key][1]: continue
+            try:
+                if key in ('thickness','min_font_size'): new=float(str(val).replace(',','.'))
+                else: new=val
+            except ValueError: continue
+            if new in ('',None) and key not in ('font',):
+                if key in e: del e[key]; changed=True
+            elif e.get(key)!=new:
+                e[key]=new; changed=True
+        if changed:
+            self._push_undo(snap); self._commit_live('Style changed'); self.refresh_list(); self.sync_list_selection(); self.render_canvas()
+    def add_special(self,kind):
+        self._push_undo(); x,y=self._default_add_xy()
+        if kind=='qr': e={'type':'qr','value':'{{Barcode}}','x':x,'y':y,'w':14.0,'h':14.0,'ecc':'M'}
+        elif kind=='barcode': e={'type':'barcode','value':'{{Barcode}}','x':x,'y':y,'w':30.0,'h':9.0,'symbology':'code128','barcode_height_mm':6.5,'module_width':0.25,'quiet_zone':1.0,'show_text':True,'text_size':6.0}
+        else:
+            p=filedialog.askopenfilename(parent=self,title='Choose image / logo',filetypes=[('Images','*.png *.jpg *.jpeg *.bmp *.gif'),('All files','*.*')])
+            if not p:
+                if self.undo_stack: self.undo_stack.pop()
+                return
+            e={'type':'image','path':p,'x':x,'y':y,'w':16.0,'h':8.0,'fit':'contain'}
+        self.cfg['elements'].append(e); i=len(self.cfg['elements'])-1; self.set_selection({i},i); self._commit_live('Element added'); self.refresh_list(); self.render_canvas()
     @staticmethod
     def _set_angle(e,value):
         a=((float(value)+180.0)%360.0)-180.0
@@ -2741,7 +3040,7 @@ def apply_modern_theme(root):
     st.configure("Muted.TLabel", foreground=UI["muted"])
     st.configure("Heading.TLabel", font=(fam, 10, "bold"))
     st.configure("Status.TLabel", background=UI["card"], foreground=UI["muted"], padding=(10, 5), relief="flat")
-    st.configure("TButton", background=UI["btn"], foreground=UI["ink"], padding=(10, 5), relief="flat", borderwidth=0, focusthickness=0)
+    st.configure("TButton", background=UI["btn"], foreground=UI["ink"], padding=(8, 4), relief="flat", borderwidth=0, focusthickness=0)
     st.map("TButton", background=[("active", UI["btn_hover"]), ("pressed", UI["btn_hover"]), ("disabled", UI["bg"])],
            foreground=[("disabled", UI["muted"])])
     st.configure("Accent.TButton", background=UI["accent"], foreground="#ffffff", padding=(14, 6), font=(fam, 10, "bold"))
@@ -3666,7 +3965,7 @@ class App:
         ttk.Button(top, text="Open...", command=self.import_template_to_library).pack(side="left", padx=2)
         ttk.Button(top, text="Save", command=self.save_template_current).pack(side="left", padx=2)
         ttk.Button(top, text="Save As", command=self.save_template_as_library).pack(side="left", padx=2)
-        ttk.Button(top, text="Library", command=self.open_template_library_folder).pack(side="left", padx=2)
+        ttk.Button(top, text="Library", command=self.open_template_manager).pack(side="left", padx=2)
 
         ttk.Separator(top, orient="vertical").pack(side="left", fill="y", padx=8)
         data_btn = ttk.Menubutton(top, text="Data ▾", style="Accent.TButton")
@@ -3762,7 +4061,8 @@ class App:
         ttk.Button(gridbar, text="◀ Previous", command=self.prev_row).pack(side="left", padx=2)
         ttk.Button(gridbar, text="Next ▶", command=self.next_row).pack(side="left", padx=2)
         ttk.Button(gridbar, text="Preview Current", command=self.preview_current).pack(side="left", padx=(12, 2))
-        ttk.Button(gridbar, text="Batch Scan (F8)", command=self.open_batch_scan).pack(side="left", padx=(12, 2))
+        ttk.Button(gridbar, text="Print Selected…", command=self.print_selected).pack(side="left", padx=(12, 2))
+        ttk.Button(gridbar, text="Print All…", command=self.print_all).pack(side="left", padx=2)
         self.row_label = ttk.Label(gridbar, text="No data loaded")
         self.row_label.pack(side="left", padx=12)
 
@@ -3931,6 +4231,158 @@ class App:
     # ---------- template ----------
     def template_dir(self):
         return ensure_persistent_library()
+
+    LABEL_PRESETS = {
+        "50 x 68 mm (ECG tag)": (50, 68), "56 x 83 mm (thermal tag)": (56, 83), "40 x 30 mm": (40, 30),
+        "50 x 30 mm": (50, 30), "60 x 40 mm": (60, 40), "100 x 50 mm": (100, 50), "100 x 150 mm (shipping)": (100, 150),
+    }
+
+    def open_template_manager(self):
+        """Library manager: preview, new (size presets), duplicate, rename, delete, export, open."""
+        win = tk.Toplevel(self.root)
+        win.title("Template Library")
+        win.geometry("880x560")
+        win.transient(self.root)
+        td = self.template_dir()
+        left = ttk.Frame(win, padding=(12, 12, 6, 12)); left.pack(side="left", fill="y")
+        right = ttk.Frame(win, padding=(6, 12, 12, 12)); right.pack(side="left", fill="both", expand=True)
+        ttk.Label(left, text="Templates", style="Heading.TLabel").pack(anchor="w")
+        lb = tk.Listbox(left, width=34, height=22, exportselection=False, activestyle="none")
+        lb.pack(fill="y", expand=True, pady=6)
+        info = tk.StringVar()
+        ttk.Label(right, textvariable=info, style="Muted.TLabel").pack(anchor="w")
+        thumb = ttk.Label(right, anchor="center", style="Card.TFrame" if False else "TLabel")
+        thumb.pack(fill="both", expand=True, pady=6)
+        names = []
+
+        def refresh(select=None):
+            names[:] = sorted(n for n in os.listdir(td) if n.lower().endswith(".json"))
+            lb.delete(0, "end")
+            for n in names:
+                lb.insert("end", n)
+            if select in names:
+                lb.selection_set(names.index(select)); lb.see(names.index(select)); show()
+
+        def current():
+            sel = lb.curselection()
+            return names[sel[0]] if sel else None
+
+        def show(_e=None):
+            n = current()
+            if not n:
+                return
+            try:
+                with open(os.path.join(td, n), "r", encoding="utf-8") as f:
+                    cfg = normalize_cfg(json.load(f))
+                row = self.rows[self.current_row_index] if self.rows else None
+                if row:
+                    cfg = bind_row_to_template(cfg, row)
+                im = render_preview_with_guides(cfg, scale=2, show_guides=False, show_fold=False)
+                ratio = min(520 / im.width, 430 / im.height, 1.0)
+                im = im.resize((max(1, int(im.width * ratio)), max(1, int(im.height * ratio))), Image.Resampling.LANCZOS)
+                win._img = ImageTk.PhotoImage(im)
+                thumb.config(image=win._img)
+                info.set(f"{n}   ·   {cfg['width_mm']:g} x {cfg['height_mm']:g} mm   ·   {len(cfg['elements'])} elements"
+                         + ("   ·   preview uses the selected data row" if row else ""))
+            except Exception as ex:
+                thumb.config(image="")
+                info.set(f"Cannot preview: {ex}")
+
+        lb.bind("<<ListboxSelect>>", show)
+
+        def use():
+            n = current()
+            if n:
+                self.load_templates(select_name=n)
+                self.template_combo.set(n)
+                self.load_selected_template()
+                win.destroy()
+
+        def new():
+            d = tk.Toplevel(win); d.title("New template"); d.transient(win); d.grab_set()
+            f = ttk.Frame(d, padding=14); f.pack()
+            nm = tk.StringVar(value="New_Label"); pr = tk.StringVar(value=list(self.LABEL_PRESETS)[0])
+            wv = tk.StringVar(value="50"); hv = tk.StringVar(value="68"); dv = tk.StringVar(value="300")
+            ttk.Label(f, text="Name").grid(row=0, column=0, sticky="w", pady=3); ttk.Entry(f, textvariable=nm, width=30).grid(row=0, column=1, columnspan=2, pady=3)
+            ttk.Label(f, text="Size preset").grid(row=1, column=0, sticky="w", pady=3)
+            c = ttk.Combobox(f, textvariable=pr, values=list(self.LABEL_PRESETS) + ["Custom"], state="readonly", width=28); c.grid(row=1, column=1, columnspan=2, pady=3)
+            ttk.Label(f, text="Width x Height (mm)").grid(row=2, column=0, sticky="w", pady=3)
+            ttk.Entry(f, textvariable=wv, width=8).grid(row=2, column=1, sticky="w"); ttk.Entry(f, textvariable=hv, width=8).grid(row=2, column=2, sticky="w")
+            ttk.Label(f, text="Printer DPI").grid(row=3, column=0, sticky="w", pady=3); ttk.Combobox(f, textvariable=dv, values=["203", "300", "600"], width=8).grid(row=3, column=1, sticky="w")
+            def pick(_e=None):
+                if pr.get() in self.LABEL_PRESETS:
+                    w_, h_ = self.LABEL_PRESETS[pr.get()]; wv.set(str(w_)); hv.set(str(h_))
+            c.bind("<<ComboboxSelected>>", pick); pick()
+            def ok():
+                try:
+                    name = safe_filename(nm.get()) or "New_Label"
+                    if not name.lower().endswith(".json"): name += ".json"
+                    if os.path.exists(os.path.join(td, name)):
+                        messagebox.showerror("New template", "That name already exists.", parent=d); return
+                    w_, h_ = float(wv.get().replace(",", ".")), float(hv.get().replace(",", "."))
+                    cfg = normalize_cfg({"width_mm": w_, "height_mm": h_, "dpi": int(dv.get()), "orientation": "portrait", "copies": 1, "elements": [
+                        {"type": "box", "x": 0, "y": 0, "w": w_, "h": h_, "thickness": 0.18},
+                        {"type": "text", "text": "New text", "x": 2, "y": 2, "w": max(5, w_ - 4), "h": 5, "font": "Arial", "font_size": 9, "bold": True, "align": "left", "wrap": False, "auto_fit": True, "min_font_size": 4}]})
+                    with open(os.path.join(td, name), "w", encoding="utf-8") as fh:
+                        json.dump(cfg, fh, ensure_ascii=False, indent=2); fh.write("\n")
+                    d.destroy(); refresh(name)
+                except Exception as ex:
+                    messagebox.showerror("New template", str(ex), parent=d)
+            ttk.Button(f, text="Create", style="Accent.TButton", command=ok).grid(row=4, column=2, sticky="e", pady=(12, 0))
+            ttk.Button(f, text="Cancel", command=d.destroy).grid(row=4, column=1, sticky="e", pady=(12, 0))
+
+        def duplicate():
+            n = current()
+            if not n: return
+            stem = os.path.splitext(n)[0]
+            nn = simpledialog.askstring("Duplicate", "New template name:", initialvalue=stem + "_copy", parent=win)
+            if not nn: return
+            nn = safe_filename(nn); nn += "" if nn.lower().endswith(".json") else ".json"
+            if os.path.exists(os.path.join(td, nn)):
+                messagebox.showerror("Duplicate", "That name already exists.", parent=win); return
+            import shutil; shutil.copy2(os.path.join(td, n), os.path.join(td, nn)); refresh(nn)
+
+        def rename():
+            n = current()
+            if not n: return
+            nn = simpledialog.askstring("Rename", "New name:", initialvalue=os.path.splitext(n)[0], parent=win)
+            if not nn: return
+            nn = safe_filename(nn); nn += "" if nn.lower().endswith(".json") else ".json"
+            if nn == n: return
+            if os.path.exists(os.path.join(td, nn)):
+                messagebox.showerror("Rename", "That name already exists.", parent=win); return
+            os.rename(os.path.join(td, n), os.path.join(td, nn))
+            if self.template_combo.get() == n:
+                self.current_template_path = os.path.join(td, nn)
+            self.load_templates(select_name=self.template_combo.get() if self.template_combo.get() != n else nn)
+            refresh(nn)
+
+        def delete():
+            n = current()
+            if not n: return
+            if not messagebox.askyesno("Delete template", f"Delete '{n}'?\nA backup copy is kept in template_backups.", parent=win): return
+            p = os.path.join(td, n)
+            backup_template_file(p, keep=20)
+            os.remove(p)
+            self.load_templates(select_name=None if self.template_combo.get() == n else self.template_combo.get())
+            refresh(); thumb.config(image=""); info.set("")
+
+        def export():
+            n = current()
+            if not n: return
+            dest = filedialog.asksaveasfilename(parent=win, initialfile=n, defaultextension=".json", filetypes=[("JSON template", "*.json")])
+            if dest:
+                import shutil; shutil.copy2(os.path.join(td, n), dest)
+
+        bar = ttk.Frame(left); bar.pack(fill="x")
+        for text, cmd in (("New…", new), ("Duplicate", duplicate), ("Rename", rename), ("Delete", delete)):
+            ttk.Button(bar, text=text, command=cmd).pack(side="left", padx=2, pady=2)
+        bar2 = ttk.Frame(left); bar2.pack(fill="x")
+        ttk.Button(bar2, text="Export…", command=export).pack(side="left", padx=2, pady=2)
+        ttk.Button(bar2, text="Open folder", command=self.open_template_library_folder).pack(side="left", padx=2, pady=2)
+        ttk.Button(right, text="Use this template", style="Accent.TButton", command=use).pack(anchor="e")
+        lb.bind("<Double-1>", lambda e: use())
+        refresh(self.template_combo.get())
 
     def open_template_library_folder(self):
         td = self.template_dir()
@@ -4490,7 +4942,7 @@ class App:
                 return
 
             path = self._proof_pdf_path(cfg, "PDF_PROOF")
-            direct_img = save_exact_print_pdf(cfg, path)
+            direct_img = save_exact_print_pdf(cfg, path, return_raster=True)
 
             # Round-trip verify at exact printer DPI.
             pdf_img = rasterize_exact_print_pdf(
@@ -4541,7 +4993,7 @@ class App:
                 return
 
             path = self._proof_pdf_path(cfg, "PRINT_PDF")
-            direct_img = save_exact_print_pdf(cfg, path)
+            direct_img = save_exact_print_pdf(cfg, path, return_raster=True)
             pdf_img = rasterize_exact_print_pdf(
                 path,
                 int(cfg.get("dpi", DEFAULT_DPI)),
@@ -4681,12 +5133,17 @@ class App:
         }
         stem = now.strftime("%H%M%S_%f")[:10] + "_" + safe_filename(record["brand"]) + "_" + safe_filename(record["model"]) + "_" + safe_filename(record["barcode"])
         try:
-            exact_img = render_print_hq(cfg, self.session_dir)
+            last = getattr(self, "_last_print", None)
+            if last and last[0] is cfg:
+                _, exact_img, raw_bytes = last          # reuse what was just sent to the printer
+            else:
+                exact_img = render_print_hq(cfg, self.session_dir)
+                raw_bytes = build_raw_gzpl(cfg, exact_img)
             exact_img.convert("L").save(os.path.join(self.session_dir, stem + ".png"))
             record["preview_png"] = stem + ".png"
             raw_name = stem + ".zpl"
             with open(os.path.join(self.session_dir, raw_name), "wb") as rf:
-                rf.write(build_raw_gzpl(cfg, exact_img))
+                rf.write(raw_bytes)
             record["raw_file"] = raw_name
             pdf_name = stem + ".pdf"
             save_exact_print_pdf(cfg, os.path.join(self.session_dir, pdf_name))
@@ -5123,7 +5580,10 @@ class App:
         if sel:
             self.current_row_index = int(sel[0])
             self.update_row_label()
-            self.preview_current()
+            # Debounce: holding ↓ in a long list must not re-render the label for every row.
+            if getattr(self, "_preview_after", None):
+                self.root.after_cancel(self._preview_after)
+            self._preview_after = self.root.after(70, self.preview_current)
 
     def prev_row(self):
         if not self.rows:
@@ -5479,6 +5939,7 @@ class App:
         img = render_print_hq(cfg, self.session_dir)
         raw = build_raw_gzpl(cfg, img)
         raw_print(printer, raw)
+        self._last_print = (cfg, img, raw)
         return {"mode": "hq_raw", "pdf": None, "img": img}
 
     def print_via_driver_current(self):
@@ -5540,20 +6001,7 @@ class App:
             idxs = self.selected_indices()
             if not idxs:
                 raise RuntimeError("Select one or more rows.")
-            printer = self.validate_printer()
-            first_cfg = bind_row_to_template(self.get_template_cfg(), self.rows[idxs[0]])
-            if not self.run_preflight(first_cfg, silent_ok=True):
-                return
-            if not messagebox.askyesno("Print selected", f"Printer: {printer}\nRows selected: {len(idxs)}\n\nContinue?"):
-                return
-            base_cfg = self.get_template_cfg()
-            for n, i in enumerate(idxs, 1):
-                cfg = bind_row_to_template(base_cfg, self.rows[i])
-                self.print_cfg(cfg, printer)
-                self.history_record(cfg, printer, self.rows[i], "Print Selected")
-                self.status.config(text=f"Printing selected {n}/{len(idxs)}...")
-                self.root.update_idletasks()
-            self.status.config(text=f"Printed {len(idxs)} selected rows.")
+            self.open_print_queue(idxs, "Print selected")
         except Exception as e:
             messagebox.showerror("Print selected error", str(e))
 
@@ -5561,22 +6009,188 @@ class App:
         try:
             if not self.rows:
                 raise RuntimeError("Load Excel or Google Sheet first.")
-            printer = self.validate_printer()
-            first_cfg = bind_row_to_template(self.get_template_cfg(), self.rows[0])
-            if not self.run_preflight(first_cfg, silent_ok=True):
-                return
-            if not messagebox.askyesno("Print all", f"Printer: {printer}\nRows: {len(self.rows)}\n\nContinue?"):
-                return
-            base_cfg = self.get_template_cfg()
-            for n, row in enumerate(self.rows, 1):
-                cfg = bind_row_to_template(base_cfg, row)
-                self.print_cfg(cfg, printer)
-                self.history_record(cfg, printer, row, "Print All")
-                self.status.config(text=f"Printing {n}/{len(self.rows)}...")
-                self.root.update_idletasks()
-            self.status.config(text=f"Printed all {len(self.rows)} rows.")
+            self.open_print_queue(list(range(len(self.rows))), "Print all")
         except Exception as e:
             messagebox.showerror("Print all error", str(e))
+
+    def open_print_queue(self, indices, title="Print queue"):
+        """Review rows + quantities before printing, export them as one PDF, or print with progress/cancel."""
+        win = tk.Toplevel(self.root)
+        win.title(title)
+        win.geometry("980x600")
+        win.transient(self.root)
+        qty = {}
+        for i in indices:
+            try:
+                q = int(float(self.rows[i].get((self.get_template_cfg().get("data_bindings") or {}).get("Copies", "Copies")) or 1))
+            except Exception:
+                q = 1
+            qty[i] = max(1, q)
+        order = list(indices)
+        cols = ["#"] + self.headers[:6] + ["Qty"]
+
+        top = ttk.Frame(win, padding=(12, 10, 12, 4)); top.pack(fill="x")
+        ttk.Label(top, text=title, style="Heading.TLabel").pack(side="left")
+        total_var = tk.StringVar()
+        ttk.Label(top, textvariable=total_var, style="Muted.TLabel").pack(side="right")
+
+        frame = ttk.Frame(win, padding=(12, 0)); frame.pack(fill="both", expand=True)
+        tree = ttk.Treeview(frame, columns=cols, show="headings", selectmode="extended")
+        for c in cols:
+            tree.heading(c, text=c)
+            tree.column(c, width=48 if c in ("#", "Qty") else 120, anchor="center" if c in ("#", "Qty") else "w", stretch=(c not in ("#", "Qty")))
+        ys = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=ys.set)
+        tree.pack(side="left", fill="both", expand=True); ys.pack(side="right", fill="y")
+        tree.tag_configure("odd", background="#f6f8fc")
+
+        def refresh():
+            tree.delete(*tree.get_children())
+            for n, i in enumerate(order):
+                r = self.rows[i]
+                vals = [n + 1] + ["" if r.get(h) is None else r.get(h) for h in self.headers[:6]] + [qty[i]]
+                tree.insert("", "end", iid=str(i), values=vals, tags=("odd" if n % 2 else "",))
+            total_var.set(f"{len(order)} rows  ·  {sum(qty[i] for i in order)} labels")
+
+        def sel_ids():
+            return [int(x) for x in tree.selection()] or list(order)
+
+        def set_qty(value=None, delta=None):
+            for i in sel_ids():
+                qty[i] = max(1, min(999, (value if value is not None else qty[i] + delta)))
+            refresh()
+
+        def ask_qty(_e=None):
+            v = simpledialog.askinteger("Quantity", "Labels per selected row:", initialvalue=1, minvalue=1, maxvalue=999, parent=win)
+            if v:
+                set_qty(value=v)
+
+        def remove():
+            for i in [int(x) for x in tree.selection()]:
+                if i in order:
+                    order.remove(i)
+            refresh()
+
+        tree.bind("<Double-1>", ask_qty)
+        tools = ttk.Frame(win, padding=(12, 8)); tools.pack(fill="x")
+        ttk.Button(tools, text="Qty…", command=ask_qty).pack(side="left", padx=2)
+        ttk.Button(tools, text="+1", width=4, command=lambda: set_qty(delta=1)).pack(side="left", padx=2)
+        ttk.Button(tools, text="−1", width=4, command=lambda: set_qty(delta=-1)).pack(side="left", padx=2)
+        ttk.Button(tools, text="Remove selected", command=remove).pack(side="left", padx=(12, 2))
+
+        def jobs():
+            return [(i, qty[i]) for i in order]
+
+        def export_pdf():
+            if not order:
+                return
+            p = filedialog.asksaveasfilename(parent=win, defaultextension=".pdf", filetypes=[("PDF", "*.pdf")], initialfile="ECG_labels.pdf")
+            if not p:
+                return
+            try:
+                self.export_jobs_pdf(jobs(), p)
+                self.status.config(text=f"PDF exported: {p}")
+                messagebox.showinfo("Export PDF", f"Saved {sum(q for _, q in jobs())} label page(s):\n{p}", parent=win)
+            except Exception as ex:
+                messagebox.showerror("Export PDF", str(ex), parent=win)
+
+        def go():
+            if not order:
+                return
+            try:
+                printer = self.validate_printer()
+                first = bind_row_to_template(self.get_template_cfg(), self.rows[order[0]])
+                if not self.run_preflight(first, silent_ok=True):
+                    return
+            except Exception as ex:
+                messagebox.showerror("Print", str(ex), parent=win)
+                return
+            n = sum(qty[i] for i in order)
+            if not messagebox.askyesno("Print", f"Printer: {printer}\nRows: {len(order)}   Labels: {n}\n\nContinue?", parent=win):
+                return
+            j = jobs(); win.destroy()
+            self.run_print_batch(j, printer, title)
+
+        bt = ttk.Frame(win, padding=(12, 0, 12, 12)); bt.pack(fill="x")
+        ttk.Button(bt, text="Export all as PDF…", command=export_pdf).pack(side="left")
+        ttk.Button(bt, text="Cancel", command=win.destroy).pack(side="right", padx=4)
+        ttk.Button(bt, text="🖨  Print", style="Print.TButton", command=go).pack(side="right", padx=4)
+        refresh()
+
+    def export_jobs_pdf(self, jobs, path):
+        """One multi-page vector PDF with every label (qty pages per row)."""
+        import fitz
+        base = self.get_template_cfg()
+        out = fitz.open()
+        tmpdir = tempfile.mkdtemp(prefix="ecg_export_")
+        try:
+            for n, (i, q) in enumerate(jobs):
+                cfg = bind_row_to_template(base, self.rows[i])
+                p = os.path.join(tmpdir, f"{n}.pdf")
+                save_exact_print_pdf(cfg, p)
+                with fitz.open(p) as one:
+                    for _ in range(max(1, int(q))):
+                        out.insert_pdf(one)
+            out.save(path)
+        finally:
+            out.close()
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+    def run_print_batch(self, jobs, printer, action="Print batch"):
+        """Print (row_index, qty) jobs one per UI tick with a progress window, Cancel and skip/retry on errors."""
+        base_cfg = self.get_template_cfg()
+        win = tk.Toplevel(self.root)
+        win.title("Printing…")
+        win.geometry("420x160")
+        win.transient(self.root)
+        win.protocol("WM_DELETE_WINDOW", lambda: None)
+        msg = tk.StringVar(value="Starting…")
+        ttk.Label(win, textvariable=msg, padding=(16, 16, 16, 6)).pack(fill="x")
+        bar = ttk.Progressbar(win, maximum=max(1, len(jobs)), length=380)
+        bar.pack(padx=16, pady=6)
+        state = {"n": 0, "cancel": False, "failed": 0}
+        ttk.Button(win, text="Cancel", command=lambda: state.update(cancel=True)).pack(pady=8)
+        win.grab_set()
+
+        def finish(text):
+            try:
+                win.destroy()
+            except Exception:
+                pass
+            self.status.config(text=text)
+
+        def step():
+            if state["cancel"]:
+                finish(f"{action}: cancelled after {state['n']}/{len(jobs)} rows.")
+                return
+            if state["n"] >= len(jobs):
+                tail = f" ({state['failed']} skipped)" if state["failed"] else ""
+                finish(f"{action}: printed {len(jobs) - state['failed']} rows{tail}.")
+                return
+            i, q = jobs[state["n"]]
+            msg.set(f"Row {state['n'] + 1} of {len(jobs)}  ·  {q} label(s)")
+            try:
+                row = self.rows[i]
+                cfg = bind_row_to_template(base_cfg, row)
+                cfg["copies"] = max(1, int(q))
+                self.print_cfg(cfg, printer)
+                self.history_record(cfg, printer, row, action)
+            except Exception as ex:
+                ans = messagebox.askyesnocancel("Print error", f"Row {i + 1}: {ex}\n\nYes = skip and continue\nNo = retry\nCancel = stop", parent=win)
+                if ans is None:
+                    finish(f"{action}: stopped at row {state['n'] + 1}: {ex}")
+                    return
+                if ans is False:
+                    win.after(50, step)
+                    return
+                state["failed"] += 1
+            state["n"] += 1
+            bar["value"] = state["n"]
+            win.after(5, step)
+
+        win.after(50, step)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
