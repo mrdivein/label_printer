@@ -24,7 +24,7 @@ AppDialog {
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: Theme.s5; anchors.rightMargin: Theme.s5; spacing: 0
                     Text { text: "#"; Layout.preferredWidth: 40; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted }
-                    Repeater { model: Printing.queueColumns()
+                    Repeater { model: Printing.queueColumns
                         Text { required property string modelData; text: modelData; Layout.fillWidth: true; Layout.preferredWidth: 100; elide: Text.ElideRight
                             font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted } }
                     Text { text: "Qty"; Layout.preferredWidth: 70; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted }

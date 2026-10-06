@@ -270,9 +270,10 @@ class PrintController(QObject):
         self.queueChanged.emit()
         return True
 
-    @Slot(result='QStringList')
-    def queueColumns(self):
+    def _get_queue_columns(self):
         return self.data.ds.headers[:6]
+
+    queueColumns = Property('QStringList', _get_queue_columns, notify=queueChanged)
 
     @Slot(int, int)
     def setQty(self, pos, qty):

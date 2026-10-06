@@ -531,10 +531,10 @@ class DocumentController(QObject):
             name = templates_available[0] if templates_available else ''
         if not name:
             return
-        err = self.openTemplate(name)
-        if err:
+        recovered = self.workspace.recover_working_copy(name)      # read before openTemplate() clears it
+        if self.openTemplate(name):
             return
-        recovered = self.workspace.recover_working_copy(name)
         if recovered:
             self.load_cfg(recovered, name, dirty=True)
+            self._write_working_copy()                              # keep the recovered layout safe until saved
             self.message.emit('Recovered unsaved layout from the previous session. Save the template when ready.')

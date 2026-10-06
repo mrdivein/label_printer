@@ -53,6 +53,7 @@ C.ApplicationWindow {
 
         LeftPanel {
             id: left
+            objectName: "left"
             C.SplitView.preferredWidth: 310
             C.SplitView.minimumWidth: 250
             C.SplitView.maximumWidth: 560
@@ -117,13 +118,14 @@ C.ApplicationWindow {
     // ------------------------------------------------------------------ dialogs
     MessageDialog { id: msg }
     TextPromptDialog { id: textPrompt }
-    ConfirmPrintDialog { id: printConfirm }
-    PrintQueueDialog { id: queueDlg; onExportRequested: pdfDialog.open() }
-    BatchDialog { id: batch }
-    GoogleSheetDialog { id: googleDlg }
-    FieldPickerDialog { id: fieldPicker }
+    ConfirmPrintDialog { id: printConfirm; objectName: "printConfirm" }
+    PrintQueueDialog { id: queueDlg; objectName: "queueDlg"; onExportRequested: pdfDialog.open() }
+    BatchDialog { id: batch; objectName: "batch" }
+    GoogleSheetDialog { id: googleDlg; objectName: "googleDlg" }
+    FieldPickerDialog { id: fieldPicker; objectName: "fieldPicker" }
     TemplateLibraryDialog {
         id: library
+        objectName: "library"
         onImportRequested: importDialog.open()
         onExportRequested: (name) => { exportDialog.templateName = name; exportDialog.currentFile = "file:///" + name; exportDialog.open() }
         onPromptRequested: (ttl, initial, action, name) => textPrompt.openFor(ttl, initial, function(n) {
