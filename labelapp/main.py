@@ -34,6 +34,7 @@ def main(argv=None):
     ctx.setContextProperty("Lib", bridge.library)
     ctx.setContextProperty("Data", bridge.data)
     ctx.setContextProperty("Printing", bridge.printing)
+    ctx.setContextProperty("Profiles", bridge.profiles)
     engine.load(QUrl.fromLocalFile(os.path.join(qml_dir(), "Main.qml")))
     if not engine.rootObjects():
         return 1

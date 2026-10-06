@@ -15,6 +15,8 @@ from .document_controller import DocumentController
 from .library_controller import LibraryController
 from .preview_provider import PreviewProvider
 from .print_controller import PrintController
+from .profile_controller import ProfileController
+from ..services.profile_service import ProfileService
 
 APP_NAME = "ECG Label Tool"
 APP_VERSION = "22.0 (Qt)"
@@ -36,10 +38,11 @@ class AppBridge(QObject):
         self.library = LibraryController(self.templates, self.document, self.data, self.provider, self)
         self.print_service = PrintService(history_enabled=bool(self.workspace.get('save_history', True)))
         self.printing = PrintController(self.workspace, self.document, self.data, self.print_service, self)
+        self.profiles = ProfileController(ProfileService(), self.document, self.printing, self)
         self._status = 'Ready'
         self._dark = bool(self.workspace.get('qt_dark', False))
 
-        for src in (self.document, self.library, self.data, self.printing):
+        for src in (self.document, self.library, self.data, self.printing, self.profiles):
             src.message.connect(self.setStatus)
         for src in (self.data, self.printing):
             src.error.connect(self.errorRaised)

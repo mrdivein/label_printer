@@ -374,6 +374,9 @@ class DocumentController(QObject):
     def setDocMany(self, values):
         self._commit(self.editor.set_doc(**dict(values)))
 
+    def apply_profile(self, profile):
+        self._commit(self.editor.apply_profile(profile))
+
     @Slot()
     def undo(self):
         n = self.editor.undo()

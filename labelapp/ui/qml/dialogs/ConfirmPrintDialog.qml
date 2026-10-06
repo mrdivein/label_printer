@@ -10,7 +10,8 @@ AppDialog {
     property string mode: "current"
     readonly property bool blocked: !!(info.errors && info.errors.length > 0)
     function show(r, m) { info = r; mode = m || "current"; open() }
-    title: blocked ? "Cannot print yet" : (mode === "driver" ? "Print via Windows driver" : "Print current label")
+    readonly property bool isTest: mode.indexOf("test:") === 0
+    title: blocked ? "Cannot print yet" : (isTest ? (info.title || "Test print") : (mode === "driver" ? "Print via Windows driver" : "Print current label"))
 
     body: [
         ColumnLayout {
@@ -45,6 +46,6 @@ AppDialog {
     buttons: [
         AppButton { text: d.blocked ? "Close" : "Cancel"; kind: d.blocked ? "primary" : "ghost"; onClicked: d.close() },
         AppButton { visible: !d.blocked; text: d.info.warnings && d.info.warnings.length ? "Print anyway" : "Print"; kind: "primary"
-            onClicked: { d.close(); if (d.mode === "driver") Printing.printViaDriver(); else Printing.printCurrent() } }
+            onClicked: { d.close(); if (d.isTest) Printing.printTest(d.mode.substring(5)); else if (d.mode === "driver") Printing.printViaDriver(); else Printing.printCurrent() } }
     ]
 }

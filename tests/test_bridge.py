@@ -215,3 +215,53 @@ def test_zoom_and_view_state_never_reach_the_print_config(app, printer_log, qapp
     app.document.setViewScale(0.5)
     app.printing.printCurrent()
     assert printer_log["raw"][1][1] == first                    # byte-identical job regardless of zoom
+
+
+def test_compensation_math_identity_and_known_error():
+    from labelapp.core.compensation import compensation_from_measurements
+    from labelapp.core.test_patterns import compare_sheet_geometry
+    geo = compare_sheet_geometry({"width_mm": 50, "height_mm": 68})
+    last = {"scale_x": 100.0, "scale_y": 100.0, "off_x": 0.0, "off_y": 0.0}
+    ideal = {"mx": geo["ref_x"], "my": geo["ref_y"], "ml": geo["inset"], "mt": geo["inset"]}
+    r = compensation_from_measurements(geo, last, ideal)
+    assert r == {"scale_x_pct": 100.0, "offset_x_mm": 0.0, "scale_y_pct": 100.0, "offset_y_mm": 0.0}
+    # printer prints 1 % too small and 1 mm too far left: measured length 99 % of nominal
+    r = compensation_from_measurements(geo, last, {"mx": geo["ref_x"] * 0.99, "my": geo["ref_y"], "ml": "1,0", "mt": geo["inset"]})
+    assert r["scale_x_pct"] == pytest.approx(101.01, abs=0.01) and r["offset_x_mm"] > 0
+    with pytest.raises(ValueError):
+        compensation_from_measurements(geo, last, {"mx": "", "my": "1", "ml": "1", "mt": "1"})
+
+
+def test_test_prints_and_compare_sheet_state(app, printer_log, qapp):
+    p = app.printing
+    p.printer = "Godex G530"
+    assert p.prepareTest("calibration")["ok"]
+    p.printTest("calibration")
+    assert b"^PQ1,0,1,N" in printer_log["raw"][-1][1]
+    assert p.computeCompensation({"mx": 1, "my": 1, "ml": 1, "mt": 1})["ok"] is False      # no compare sheet yet
+    p.printTest("compare_raw")
+    info = p.compareInfo()
+    assert info["hasSheet"] and not info["compensated"]
+    r = p.computeCompensation({"mx": info["refX"], "my": info["refY"], "ml": info["inset"], "mt": info["inset"]})
+    assert r["ok"] and r["scale_x_pct"] == 100.0
+    app.document.setDocMany({k: r[k] for k in ("scale_x_pct", "scale_y_pct", "offset_x_mm", "offset_y_mm")})
+    assert app.document.cfg["scale_x_pct"] == 100.0
+    p.printer = ""
+    assert p.prepareTest("ruler")["ok"] is False
+
+
+def test_printer_profiles_round_trip_in_original_format(app, qapp):
+    from labelapp.services.settings_service import profiles_path
+    import json
+    d = app.document
+    d.setDocMany({"offset_x_mm": 0.7, "scale_x_pct": 101.2, "threshold": 150})
+    app.printing.printer = "Godex G530"
+    assert app.profiles.save("G530 56x83") == ""
+    saved = json.load(open(profiles_path(), encoding="utf-8"))["G530 56x83"]
+    assert saved["printer"] == "Godex G530" and saved["offset_x_mm"] == 0.7 and saved["scale_x_pct"] == 101.2
+    assert set(saved) >= {"width_mm", "height_mm", "dpi", "orientation", "rotation_deg", "render_mode", "oversample", "virtual_print_area"}
+    d.setDocMany({"offset_x_mm": 0, "scale_x_pct": 100})
+    assert app.profiles.load("G530 56x83") == "" and d.cfg["offset_x_mm"] == 0.7 and d.cfg["scale_x_pct"] == 101.2
+    assert app.profiles.save("") != ""
+    app.profiles.delete("G530 56x83")
+    assert "G530 56x83" not in app.profiles.names

@@ -39,6 +39,8 @@ from labelapp.core.binding import (format_binding_value, resolve_row_value, repl
 from labelapp.core.barcode_lookup import (normalize_barcode_value, detect_barcode_columns, build_barcode_lookup,
                                           segment_concatenated_codes)
 from labelapp.core.preflight import preflight_checks
+from labelapp.core.compensation import compensation_from_measurements
+from labelapp.core.profiles import apply_profile, profile_from_cfg
 from labelapp.core.test_patterns import (make_calibration_test_cfg, make_text_quality_test_cfg,
                                          make_barcode_quality_test_cfg, _ruler_elements, make_ruler_overlay_cfg,
                                          compare_sheet_geometry, make_compare_sheet_cfg)
@@ -3076,22 +3078,7 @@ class App:
                 messagebox.showerror("Profile", "Enter a profile name.", parent=win)
                 return
             c = self.get_template_cfg()
-            profiles[name] = {
-                "printer": self.printer_combo.get().strip(),
-                "width_mm": c.get("width_mm"),
-                "height_mm": c.get("height_mm"),
-                "dpi": c.get("dpi"),
-                "orientation": c.get("orientation"),
-                "offset_x_mm": c.get("offset_x_mm",0),
-                "offset_y_mm": c.get("offset_y_mm",0),
-                "rotation_deg": c.get("rotation_deg",0),
-                "scale_x_pct": c.get("scale_x_pct",100.0),
-                "scale_y_pct": c.get("scale_y_pct",100.0),
-                "threshold": c.get("threshold",145),
-                "render_mode": c.get("render_mode","thermal_crisp"),
-                "oversample": c.get("oversample",4),
-                "virtual_print_area": copy.deepcopy(c.get("virtual_print_area",{})),
-            }
+            profiles[name] = profile_from_cfg(c, self.printer_combo.get().strip())
             save_profiles(profiles)
             refresh()
             self.status.config(text=f"Printer profile saved: {name}")
@@ -3102,9 +3089,7 @@ class App:
                 return
             p = profiles[name]
             c = self.get_template_cfg()
-            for key in ("width_mm","height_mm","dpi","orientation","offset_x_mm","offset_y_mm","rotation_deg","scale_x_pct","scale_y_pct","threshold","render_mode","oversample","virtual_print_area"):
-                if key in p:
-                    c[key] = copy.deepcopy(p[key])
+            apply_profile(c, p)
             self.set_template_cfg(c)
             if p.get("printer"):
                 values = list(self.printer_combo["values"])
@@ -3959,18 +3944,10 @@ class App:
             if not last:
                 messagebox.showinfo("Measure", "Print a Compare Sheet first.", parent=dlg); return
             try:
-                out = {}
-                for axis, ref, meas, marg, s0, o0 in (("x", geo["ref_x"], mv["mx"], mv["ml"], last["scale_x"], last["off_x"]),
-                                                      ("y", geo["ref_y"], mv["my"], mv["mt"], last["scale_y"], last["off_y"])):
-                    m = meas.get().strip().replace(",", ".")
-                    g = marg.get().strip().replace(",", ".")
-                    if not m or not g:
-                        raise ValueError("Fill in all four measurements.")
-                    k = float(m) / (float(ref) * s0 / 100.0)          # printer's real size factor
-                    a = float(g) - k * (inset * s0 / 100.0 + o0)       # printer's real position error
-                    out[axis] = (round(100.0 / k, 2), round(-a / k, 2))
-                cv["scale_x_pct"].set(f"{out['x'][0]:g}"); cv["offset_x_mm"].set(f"{out['x'][1]:g}")
-                cv["scale_y_pct"].set(f"{out['y'][0]:g}"); cv["offset_y_mm"].set(f"{out['y'][1]:g}")
+                res = compensation_from_measurements(
+                    geo, last, {k: v.get() for k, v in mv.items()})
+                cv["scale_x_pct"].set(f"{res['scale_x_pct']:g}"); cv["offset_x_mm"].set(f"{res['offset_x_mm']:g}")
+                cv["scale_y_pct"].set(f"{res['scale_y_pct']:g}"); cv["offset_y_mm"].set(f"{res['offset_y_mm']:g}")
             except Exception as ex:
                 messagebox.showerror("Measure", str(ex), parent=dlg)
 

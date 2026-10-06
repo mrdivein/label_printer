@@ -8,6 +8,9 @@ from PySide6.QtCore import Property, QObject, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 
 from ..core.binding import bind_row_to_template
+from ..core.compensation import compensation_from_measurements
+from ..core.test_patterns import (compare_sheet_geometry, make_barcode_quality_test_cfg, make_calibration_test_cfg,
+                                  make_compare_sheet_cfg, make_ruler_overlay_cfg, make_text_quality_test_cfg)
 from ..services.print_service import PrintService, describe_route
 from ..services.printer_service import enum_printers, is_virtual_printer_name, preferred_printer, printer_info, status_text
 from .models import QueueModel
@@ -242,6 +245,80 @@ class PrintController(QObject):
                             f"Vector 1:1 proof saved:\n{path}\n\n{report}\n\nNothing was printed.")
         except Exception as e:
             self.error.emit('PDF proof error', str(e))
+
+    # ------------------------------------------------------------------ test prints / calibration
+    TESTS = {
+        'current': ('Test current label (1 copy)', 'Test Current Label', None),
+        'calibration': ('Calibration grid', 'Calibration Test Pattern', make_calibration_test_cfg),
+        'text_quality': ('Text quality test', 'Text Quality Test', make_text_quality_test_cfg),
+        'barcode_quality': ('Barcode quality test', 'Barcode Quality Test', make_barcode_quality_test_cfg),
+        'ruler': ('Label with mm ruler overlay', 'Ruler Overlay', make_ruler_overlay_cfg),
+        'compare_raw': ('Compare sheet — raw (no compensation)', 'Compare Sheet raw', lambda c: make_compare_sheet_cfg(c, compensated=False)),
+        'compare_comp': ('Compare sheet — with current compensation', 'Compare Sheet compensated', lambda c: make_compare_sheet_cfg(c, compensated=True)),
+    }
+
+    def _test_cfg(self, kind):
+        _title, _action, maker = self.TESTS[kind]
+        cfg = self.document.bound_cfg()
+        if maker is not None:
+            cfg = maker(cfg)
+        cfg['copies'] = 1
+        return cfg
+
+    @Slot(str, result='QVariantMap')
+    def prepareTest(self, kind):
+        out = {'ok': False, 'errors': [], 'warnings': [], 'title': self.TESTS[kind][0]}
+        try:
+            printer = self._validated_printer()
+            cfg = self._test_cfg(kind)
+            errors, warnings = (self.service.preflight(cfg) if kind == 'current' else ([], []))
+        except Exception as e:
+            out['errors'] = [str(e)]
+            return out
+        out.update(ok=not errors, errors=errors, warnings=warnings[:12], printer=printer, copies=1,
+                   paper=f"{cfg.get('width_mm')} × {cfg.get('height_mm')} mm", dpi=cfg.get('dpi'), route=describe_route(printer))
+        return out
+
+    @Slot(str)
+    def printTest(self, kind):
+        title, action, _maker = self.TESTS[kind]
+        try:
+            printer = self._validated_printer()
+            cfg = self._test_cfg(kind)
+            row = self.data.current_row_dict() if kind == 'current' else {}
+            self.service.print_cfg(cfg, printer, row)
+            self.service.record_history(cfg, printer, row, action, self.document.templateName)
+            if kind.startswith('compare'):
+                self.workspace.set('last_compare', {
+                    "compensated": kind == 'compare_comp',
+                    "scale_x": float(cfg.get("scale_x_pct", 100.0)), "scale_y": float(cfg.get("scale_y_pct", 100.0)),
+                    "off_x": float(cfg.get("offset_x_mm", 0.0)), "off_y": float(cfg.get("offset_y_mm", 0.0)),
+                    "geometry": compare_sheet_geometry(cfg)})
+                self.message.emit("Compare sheet sent. Measure it with a ruler, then use Measure & apply compensation.")
+            else:
+                self.message.emit(f"{title} sent to {printer}")
+        except Exception as e:
+            self.error.emit('Test print error', str(e))
+
+    @Slot(result='QVariantMap')
+    def compareInfo(self):
+        """Context for the compensation dialog: nominal sheet numbers and what was active when it was printed."""
+        last = self.workspace.get('last_compare')
+        geo = (last or {}).get('geometry') or compare_sheet_geometry(self.document.cfg)
+        return {'hasSheet': bool(last), 'compensated': bool(last and last.get('compensated')), 'refX': geo['ref_x'],
+                'refY': geo['ref_y'], 'inset': geo['inset']}
+
+    @Slot('QVariantMap', result='QVariantMap')
+    def computeCompensation(self, measured):
+        """{'ok': True, scale_x_pct, offset_x_mm, scale_y_pct, offset_y_mm} or {'ok': False, 'error': msg}."""
+        last = self.workspace.get('last_compare')
+        if not last:
+            return {'ok': False, 'error': 'Print a compare sheet first.'}
+        try:
+            res = compensation_from_measurements(last.get('geometry') or compare_sheet_geometry(self.document.cfg), last, dict(measured))
+        except Exception as e:
+            return {'ok': False, 'error': str(e)}
+        return dict(res, ok=True)
 
     # ------------------------------------------------------------------ queue
     @Slot(str, result=bool)

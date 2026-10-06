@@ -43,6 +43,9 @@ C.ApplicationWindow {
         onPrintAll: win.openQueue("all")
         onProofRequested: Printing.pdfProof()
         onDriverRequested: win.doPrint("driver")
+        onTestRequested: (kind) => win.doPrint("test:" + kind)
+        onCompensationRequested: compDlg.open()
+        onProfilesRequested: profilesDlg.open()
         onPrinterInfoRequested: msg.show("Printer information", Printing.printerSummary())
     }
 
@@ -81,7 +84,7 @@ C.ApplicationWindow {
 
     // ------------------------------------------------------------------ actions
     function doPrint(mode) {
-        var r = Printing.preparePrint()
+        var r = mode.indexOf("test:") === 0 ? Printing.prepareTest(mode.substring(5)) : Printing.preparePrint()
         printConfirm.show(r, mode)
     }
     function openQueue(scope) { if (Printing.openQueue(scope)) queueDlg.open() }
@@ -119,6 +122,8 @@ C.ApplicationWindow {
     MessageDialog { id: msg }
     TextPromptDialog { id: textPrompt }
     ConfirmPrintDialog { id: printConfirm; objectName: "printConfirm" }
+    ProfilesDialog { id: profilesDlg }
+    CompensationDialog { id: compDlg; onVerifyRequested: win.doPrint("test:compare_comp") }
     PrintQueueDialog { id: queueDlg; objectName: "queueDlg"; onExportRequested: pdfDialog.open() }
     BatchDialog { id: batch; objectName: "batch" }
     GoogleSheetDialog { id: googleDlg; objectName: "googleDlg" }

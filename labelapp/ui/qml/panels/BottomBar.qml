@@ -14,6 +14,9 @@ Panel {
     signal proofRequested()
     signal driverRequested()
     signal printerInfoRequested()
+    signal testRequested(string kind)
+    signal compensationRequested()
+    signal profilesRequested()
 
     RowLayout {
         anchors.fill: parent; anchors.leftMargin: Theme.s4; anchors.rightMargin: Theme.s4
@@ -66,6 +69,19 @@ Panel {
                     AppMenuItem { text: "PDF proof (nothing printed)"; onTriggered: bar.proofRequested() }
                     AppMenuItem { text: "Print vector PDF via Windows driver…"; onTriggered: bar.driverRequested() }
                     AppMenuSeparator {}
+                    AppMenu {
+                        title: "Test prints"
+                        AppMenuItem { text: "Test current label (1 copy)"; onTriggered: bar.testRequested("current") }
+                        AppMenuItem { text: "Calibration grid"; onTriggered: bar.testRequested("calibration") }
+                        AppMenuItem { text: "Label with mm ruler overlay"; onTriggered: bar.testRequested("ruler") }
+                        AppMenuItem { text: "Text quality"; onTriggered: bar.testRequested("text_quality") }
+                        AppMenuItem { text: "Barcode quality"; onTriggered: bar.testRequested("barcode_quality") }
+                        AppMenuSeparator {}
+                        AppMenuItem { text: "Compare sheet — raw"; onTriggered: bar.testRequested("compare_raw") }
+                        AppMenuItem { text: "Compare sheet — with compensation"; onTriggered: bar.testRequested("compare_comp") }
+                        AppMenuItem { text: "Measure && apply compensation…"; onTriggered: bar.compensationRequested() }
+                    }
+                    AppMenuItem { text: "Printer profiles…"; onTriggered: bar.profilesRequested() }
                     AppMenuItem { text: "Printer information…"; onTriggered: bar.printerInfoRequested() }
                 }
             }

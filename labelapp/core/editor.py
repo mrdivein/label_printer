@@ -14,6 +14,7 @@ from .designer_geometry import (display_box_mm, display_to_source_box, element_i
                                 point_near_poly, source_box, virtual_area, visual_frame, element_in_fold_region)
 from .geometry import _element_angle, rotate_point_cw
 from .models import normalize_cfg
+from .profiles import apply_profile
 
 FONT_CHOICES = ('Arial', 'Arial Narrow', 'Segoe UI', 'Segoe UI Light', 'Tahoma', 'Verdana')
 UNDO_LIMIT = 60
@@ -246,6 +247,15 @@ class LabelEditor:
             return None
         self.push_undo(snap)
         return f"{f['label']} changed"
+
+    def apply_profile(self, profile):
+        """Apply a printer profile (paper, compensation, quality, print-area guide) to the document."""
+        snap = self.snapshot()
+        apply_profile(self.cfg, profile)
+        if self.cfg == snap:
+            return None
+        self.push_undo(snap)
+        return 'Printer profile loaded'
 
     def set_doc(self, **vals):
         """Document level settings (paper, DPI, compensation, print quality)."""
