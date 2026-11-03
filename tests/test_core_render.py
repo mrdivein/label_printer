@@ -25,20 +25,20 @@ def test_label_dimensions_follow_paper_size_and_dpi(templates):
 
 
 def test_landscape_swaps_axes(templates):
-    c = normalize_cfg(templates["ECG_H_TAG_50x68.json"])
+    c = normalize_cfg(templates["Hang_Tag_50x68.json"])
     c["orientation"] = "landscape"
     w, h = render_label(c).size
     assert (w, h) == (mm_to_px(68, 300), mm_to_px(50, 300))
 
 
 def test_hq_raster_has_exact_printer_dot_dimensions(templates):
-    c = normalize_cfg(templates["ECG_H_TAG_56x83_Thermal.json"])
+    c = normalize_cfg(templates["Hang_Tag_56x83_Thermal.json"])
     img = render_print_hq(c)
     assert img.size == (mm_to_px(56, 300), mm_to_px(83, 300))
 
 
 def test_zpl_header_matches_raster_and_copies(templates, sample_row):
-    c = bind_row_to_template(normalize_cfg(templates["ECG_H_TAG_50x68.json"]), sample_row)
+    c = bind_row_to_template(normalize_cfg(templates["Hang_Tag_50x68.json"]), sample_row)
     assert c["copies"] == 2                               # row "Copies" column wins
     img = render_label(c)
     raw = build_raw_gzpl(c, img).decode("ascii")
@@ -46,7 +46,7 @@ def test_zpl_header_matches_raster_and_copies(templates, sample_row):
 
 
 def test_pdf_page_is_physical_size(templates, tmp_path):
-    c = normalize_cfg(templates["ECG_H_TAG_50x68.json"])
+    c = normalize_cfg(templates["Hang_Tag_50x68.json"])
     p = str(tmp_path / "x.pdf")
     save_exact_print_pdf(c, p)
     import fitz
@@ -61,12 +61,12 @@ def test_pdf_page_is_physical_size(templates, tmp_path):
 
 
 def test_render_is_deterministic(templates, sample_row):
-    c = bind_row_to_template(normalize_cfg(templates["ECG_H_TAG_56x83_Thermal.json"]), sample_row)
+    c = bind_row_to_template(normalize_cfg(templates["Hang_Tag_56x83_Thermal.json"]), sample_row)
     assert render_label(c).tobytes() == render_label(copy.deepcopy(c)).tobytes()
 
 
 def test_preflight_flags_blank_barcode_and_bad_paper(templates):
-    c = normalize_cfg(templates["ECG_H_TAG_50x68.json"])
+    c = normalize_cfg(templates["Hang_Tag_50x68.json"])
     c["elements"].append({"type": "barcode", "value": "", "x": 1, "y": 1, "w": 10, "h": 5})
     errors, _ = preflight_checks(c)
     assert any("barcode is blank" in e for e in errors)
@@ -75,7 +75,7 @@ def test_preflight_flags_blank_barcode_and_bad_paper(templates):
 
 
 def test_preview_with_guides_is_larger_than_label(templates):
-    c = normalize_cfg(templates["ECG_H_TAG_50x68.json"])
+    c = normalize_cfg(templates["Hang_Tag_50x68.json"])
     assert render_preview_with_guides(c, scale=2).width > render_label(c).width
 
 

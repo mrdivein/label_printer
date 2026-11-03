@@ -96,7 +96,7 @@ class PrintService:
         """One multi-page vector PDF with every label (qty pages per row). `jobs` = [(row_index, qty)]."""
         import fitz
         out = fitz.open()
-        tmpdir = tempfile.mkdtemp(prefix="ecg_export_")
+        tmpdir = tempfile.mkdtemp(prefix="label_export_")
         try:
             for n, (i, q) in enumerate(jobs):
                 cfg = bind_row_to_template(base_cfg, rows[i])

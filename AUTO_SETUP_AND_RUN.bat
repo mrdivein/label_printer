@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title ECG Label Tool - Auto Setup
+title Label Printer - Auto Setup
 
 echo ==========================================
-echo ECG LABEL TOOL - AUTO SETUP
+echo LABEL PRINTER - AUTO SETUP
 echo ==========================================
 echo.
 
@@ -98,7 +98,7 @@ REM --------------------------------------------------
 REM 5. Create isolated environment
 REM --------------------------------------------------
 if not exist ".venv\Scripts\python.exe" (
-    echo Dang tao moi truong cho ECG Label Tool...
+    echo Dang tao moi truong cho Label Printer...
     %PY% -m venv ".venv"
     if errorlevel 1 (
         echo.
@@ -120,7 +120,7 @@ if errorlevel 1 goto :PIP_ERROR
 
 echo.
 echo ==========================================
-echo SETUP HOAN TAT - DANG MO ECG LABEL TOOL
+echo SETUP HOAN TAT - DANG MO LABEL PRINTER
 echo ==========================================
 echo.
 

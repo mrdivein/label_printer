@@ -30,7 +30,7 @@ C.ApplicationWindow {
     // ------------------------------------------------------------------ layout
     header: TopBar {
         id: top
-        onSaveAs: textPrompt.openFor("Save template as", Doc.templateName.replace(/\.json$/i, "") || "ECG_Label", function(n) {
+        onSaveAs: textPrompt.openFor("Save template as", Doc.templateName.replace(/\.json$/i, "") || "Label", function(n) {
             var e = Doc.saveTemplateAs(n); if (e.length) msg.show("Save template", e); else Lib.refresh() }, "Save", "Saved into the template library.")
         onOpenLibrary: library.open()
         onOpenExcel: excelDialog.open()

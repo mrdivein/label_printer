@@ -1,6 +1,6 @@
-"""Persistent per-user data (%APPDATA%\\ECG_Label_Tool): template library, profiles, workspace, saved sources.
+"""Persistent per-user data (%APPDATA%\\LabelPrinter): template library, profiles, workspace, saved sources.
 
-Storage locations and file formats are unchanged from the original application.
+File formats are unchanged from earlier versions; an earlier data folder is copied over on first start.
 """
 import datetime
 import json
@@ -23,10 +23,37 @@ def safe_filename(s):
     return s[:80] or "label"
 
 
+DATA_DIR_NAME = "LabelPrinter"
+
+
+def _looks_like_data_dir(path):
+    """A user-data folder of an earlier version: it holds the workspace file and a template library."""
+    return os.path.isfile(os.path.join(path, "workspace_v20.json")) and os.path.isdir(os.path.join(path, "templates"))
+
+
+def _migrate_previous_data_dir(base, path):
+    """Copy the data folder of an earlier version (found by its contents, not its name) into the new one, once."""
+    try:
+        names = sorted(os.listdir(base))
+    except OSError:
+        return
+    for name in names:
+        old = os.path.join(base, name)
+        if name != DATA_DIR_NAME and os.path.isdir(old) and _looks_like_data_dir(old):
+            try:
+                import shutil
+                shutil.copytree(old, path)
+            except Exception:
+                pass
+            return
+
+
 def app_data_dir():
     """Persistent user data that survives replacing/updating the application folder."""
-    base = os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), ".ecg_label_tool")
-    path = os.path.join(base, "ECG_Label_Tool")
+    base = os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), ".label_printer")
+    path = os.path.join(base, DATA_DIR_NAME)
+    if not os.path.isdir(path):
+        _migrate_previous_data_dir(base, path)
     os.makedirs(path, exist_ok=True)
     return path
 

@@ -10,7 +10,7 @@ def normalize_barcode_value(v):
     s = str(v).strip()
     if re.fullmatch(r"\d+\.0", s):
         s = s[:-2]
-    # Scanner control characters / whitespace never belong to ECG UPC/EAN keys.
+    # Scanner control characters / whitespace never belong to UPC/EAN keys.
     s = re.sub(r"[\x00-\x20\x7f]+", "", s)
     return s
 

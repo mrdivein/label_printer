@@ -104,7 +104,7 @@
     },
     {
       "type": "text",
-      "text": "CÔNG TY CỔ PHẦN EYEWEAR CONSULTING GROUP",
+      "text": "{{Importer}}",
       "x": 31.8,
       "y": 12.5,
       "w": 16.4,
@@ -119,7 +119,7 @@
     },
     {
       "type": "text",
-      "text": "Số 82 Đường D, Phường Long Trường, TP Hồ Chí Minh, Việt Nam",
+      "text": "{{ImporterAddress}}",
       "x": 31.8,
       "y": 17.7,
       "w": 16.4,
@@ -274,7 +274,7 @@
     },
     {
       "type": "text",
-      "text": "Thành phần: Nhựa / Kim loại / Gỗ / Da",
+      "text": "Thành phần: {{Material}}",
       "x": 1.7,
       "y": 63.5,
       "w": 46.3,
@@ -286,7 +286,7 @@
     },
     {
       "type": "text",
-      "text": "Hướng dẫn sử dụng: Dùng để đeo mắt, tránh nhiệt độ cao và va đập mạnh.",
+      "text": "Hướng dẫn sử dụng: {{Usage}}",
       "x": 1.7,
       "y": 65.4,
       "w": 46.3,
@@ -307,7 +307,11 @@
     "Manufacturer": "Manufacturer",
     "ManufacturerCountry": "ManufacturerCountry",
     "ProductType": "ProductType",
-    "Origin": "Origin"
+    "Origin": "Origin",
+    "Importer": "Importer",
+    "ImporterAddress": "ImporterAddress",
+    "Material": "Material",
+    "Usage": "Usage"
   },
   "fold_regions": [
     {

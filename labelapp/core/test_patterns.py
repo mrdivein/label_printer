@@ -39,7 +39,7 @@ def make_text_quality_test_cfg(base_cfg):
     else: ox=0.0; oy=0.0; w=pw; h=ph
     cfg["copies"]=1; cfg["fold_regions"]=[]; cfg["data_bindings"]={}; cfg["elements"]=[]
     left=ox+1.5; top=oy+1.5
-    cfg["elements"].append({"type":"text","text":"ECG TEXT QUALITY","x":left,"y":top,"w":max(8,w-3),"h":4,"font":"Tahoma","font_size":7.0,"bold":True,"align":"left","wrap":False,"auto_fit":True,"min_font_size":5.0})
+    cfg["elements"].append({"type":"text","text":"TEXT QUALITY","x":left,"y":top,"w":max(8,w-3),"h":4,"font":"Tahoma","font_size":7.0,"bold":True,"align":"left","wrap":False,"auto_fit":True,"min_font_size":5.0})
     y=top+5.0
     samples=[("Verdana",3.0,False),("Verdana",3.5,False),("Verdana",4.0,False),("Tahoma",4.0,False),("Tahoma",4.5,True),("Tahoma",5.5,True)]
     for font,size,bold in samples:
@@ -55,7 +55,7 @@ def make_barcode_quality_test_cfg(base_cfg):
     if area.get("show",True): ox=float(area.get("x",0)); oy=float(area.get("y",0)); w=float(area.get("w",pw)); h=float(area.get("h",ph))
     else: ox=0.0; oy=0.0; w=pw; h=ph
     cfg["copies"]=1; cfg["fold_regions"]=[]; cfg["data_bindings"]={}; cfg["elements"]=[]
-    cfg["elements"].append({"type":"text","text":"ECG BARCODE QUALITY","x":ox+1.5,"y":oy+1.5,"w":max(8,w-3),"h":4,"font":"Tahoma","font_size":6.5,"bold":True,"align":"left","wrap":False,"auto_fit":True,"min_font_size":4.5})
+    cfg["elements"].append({"type":"text","text":"BARCODE QUALITY","x":ox+1.5,"y":oy+1.5,"w":max(8,w-3),"h":4,"font":"Tahoma","font_size":6.5,"bold":True,"align":"left","wrap":False,"auto_fit":True,"min_font_size":4.5})
     dpi=max(1,int(cfg.get("dpi",300))); y=oy+6.0; value="889214705891"
     for dots in (2,3,4):
         if y+10.8 > oy+h-0.5: break
@@ -153,8 +153,8 @@ def make_compare_sheet_cfg(base_cfg, compensated=False):
     # text + barcode samples
     sy = min(h - inset - 24, cy + 5)
     if sy > cy + 4:
-        text("Text 8pt: ECG Label 0123456789", inset + 2, sy, w - 2 * inset - 4, size=8.0)
-        text("Text 5pt: ECG Label 0123456789", inset + 2, sy + 3.6, w - 2 * inset - 4, size=5.0)
+        text("Text 8pt: Label 0123456789", inset + 2, sy, w - 2 * inset - 4, size=8.0)
+        text("Text 5pt: Label 0123456789", inset + 2, sy + 3.6, w - 2 * inset - 4, size=5.0)
         els.append({"type": "barcode", "value": "1234567890", "x": inset + 2, "y": sy + 7.2, "w": min(30.0, w - 2 * inset - 4), "h": 8.0,
                     "symbology": "code128", "barcode_height_mm": 7.0, "module_width": 0.25, "quiet_zone": 1.0, "physical": True})
     mode = "WITH compensation" if compensated else "RAW (no compensation)"

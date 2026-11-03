@@ -1,7 +1,7 @@
 ; Inno Setup script: per-user installer for the PyInstaller build in dist\LabelPrinter.
 ;   iscc /DAppVersion=22.1.0 installer\label_printer.iss   ->  dist\Label-Printer-Setup-22.1.0.exe
 ; Installs to %LOCALAPPDATA%\Programs\Label Printer without admin rights. User data in
-; %APPDATA%\ECG_Label_Tool (templates, profiles, workspace) is never touched by install, update or uninstall.
+; %APPDATA%\LabelPrinter (templates, profiles, workspace) is never touched by install, update or uninstall.
 ; The app updates itself by running this installer with /VERYSILENT; it then restarts the app
 ; unless /NORELAUNCH=1 is passed (update installed while the app was being closed).
 

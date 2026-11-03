@@ -26,7 +26,7 @@ def element_rotation_center(e):
 
 
 def infer_calibration_regions(cfg):
-    """Return friendly face regions for the two included ECG tag families."""
+    """Return friendly face regions for the two included fold-tag families."""
     cfg = normalize_cfg(cfg)
     w = float(cfg.get("width_mm", 0))
     h = float(cfg.get("height_mm", 0))

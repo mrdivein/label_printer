@@ -17,7 +17,7 @@ def _pdf_font_name(name="Arial", bold=False):
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
 
-    reg_name = "ECG_" + re.sub(r"[^A-Za-z0-9_]+", "_", str(name or "Arial"))
+    reg_name = "LP_" + re.sub(r"[^A-Za-z0-9_]+", "_", str(name or "Arial"))
     reg_name += "_Bold" if bold else "_Regular"
 
     try:
@@ -289,7 +289,7 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
                     bc.drawOn(c, bx, by)
                 else:
                     # Unsupported barcode types keep a high-resolution raster fallback,
-                    # but Code128 (the ECG templates) remains vector.
+                    # but Code128 (the bundled templates) remains vector.
                     hi_dpi = max(1200, int(cfg.get("dpi", DEFAULT_DPI)) * 4)
                     bc_img = make_barcode(
                         value,
@@ -412,7 +412,7 @@ def render_print_hq(cfg, temp_dir=None):
     cfg = normalize_cfg(cfg)
     temp_dir = temp_dir or tempfile.gettempdir()
     os.makedirs(temp_dir, exist_ok=True)
-    fd, path = tempfile.mkstemp(prefix="ecg_hq_", suffix=".pdf", dir=temp_dir)
+    fd, path = tempfile.mkstemp(prefix="label_hq_", suffix=".pdf", dir=temp_dir)
     os.close(fd)
     try:
         save_exact_print_pdf(cfg, path)

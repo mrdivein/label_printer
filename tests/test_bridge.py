@@ -26,7 +26,7 @@ def wait_for(cond, timeout=8.0):
 def app(qapp, monkeypatch):
     b = AppBridge()
     b.library.refresh()
-    assert b.document.openTemplate("ECG_H_TAG_50x68.json") == ""
+    assert b.document.openTemplate("Hang_Tag_50x68.json") == ""
     return b
 
 
@@ -80,7 +80,7 @@ def test_pointer_api_in_millimetres_is_zoom_independent(app, qapp):
     d = app.document
     out = []
     for px_per_mm in (3.78, 11.3, 40.0):
-        d.openTemplate("ECG_H_TAG_50x68.json")
+        d.openTemplate("Hang_Tag_50x68.json")
         d.setViewScale(px_per_mm)
         o = d.overlay["elements"][1]["poly"]
         cx, cy = (o[0][0] + o[2][0]) / 2, (o[0][1] + o[2][1]) / 2
@@ -121,13 +121,13 @@ def test_data_loading_search_and_row_binding(app, qapp):
     assert app.data.rowCount == 2 and app.data.headers[:2] == ["Brand", "Model"]
     seen = []
     app.data.rowChanged.connect(lambda: seen.append(1))
-    app.data.search("FT1041")
+    app.data.search("NW-1041")
     assert app.data.filteredCount == 1
     app.data.search("")
     app.data.step(1)
     wait_for(lambda: seen)
     assert app.data.currentIndex == 1
-    assert app.document.bound_cfg()["elements"][1]["text"] == "TOM FORD"
+    assert app.document.bound_cfg()["elements"][1]["text"] == "NORTHWIND"
     assert [r["field"] for r in app.data.fieldSamples("bar")] == ["Barcode"]
     # workspace keys identical to the original app
     assert app.workspace.get("data_source") == "excel" and app.workspace.get("last_excel_path") == XLSX

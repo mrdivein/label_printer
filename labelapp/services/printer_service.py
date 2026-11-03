@@ -52,7 +52,7 @@ def raw_print(printer_name, raw_bytes):
     import win32print
     h = win32print.OpenPrinter(printer_name)
     try:
-        win32print.StartDocPrinter(h, 1, ("ECG Label RAW", None, "RAW"))
+        win32print.StartDocPrinter(h, 1, ("Label RAW", None, "RAW"))
         try:
             win32print.StartPagePrinter(h)
             win32print.WritePrinter(h, raw_bytes)

@@ -13,7 +13,7 @@ from ..core.models import normalize_cfg
 from .settings_service import backup_template_file, ensure_persistent_library, safe_filename
 
 LABEL_PRESETS = {
-    "50 x 68 mm (ECG tag)": (50, 68), "56 x 83 mm (thermal tag)": (56, 83), "40 x 30 mm": (40, 30),
+    "50 x 68 mm (fold tag)": (50, 68), "56 x 83 mm (thermal tag)": (56, 83), "40 x 30 mm": (40, 30),
     "50 x 30 mm": (50, 30), "60 x 40 mm": (60, 40), "100 x 50 mm": (100, 50), "100 x 150 mm (shipping)": (100, 150),
 }
 

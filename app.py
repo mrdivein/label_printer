@@ -76,7 +76,7 @@ class VisualDesignerDialog(tk.Toplevel):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.title("ECG Label Designer v20.2 — Dynamic Fields")
+        self.title("Label Designer — Dynamic Fields")
         self.geometry("1440x900")
         self.minsize(1120, 700)
         self.cfg = copy.deepcopy(app.get_template_cfg())
@@ -2134,7 +2134,7 @@ class App:
     def __init__(self, root):
         self.root = root
         apply_modern_theme(root)
-        self.root.title("ECG Label Tool v21 — Rotate • Compare • Saved Sheets")
+        self.root.title("Label Printer (legacy)")
         self.workspace_state = load_workspace_state()
         try:
             self.root.geometry(self.workspace_state.get("window_geometry") or "1600x920")
@@ -2167,7 +2167,7 @@ class App:
         header = ttk.Frame(root, style="Header.TFrame", padding=(16, 10))
         header.pack(fill="x")
         titlebox = ttk.Frame(header, style="Header.TFrame"); titlebox.pack(side="left")
-        ttk.Label(titlebox, text="ECG Label Tool", style="Header.TLabel").pack(anchor="w")
+        ttk.Label(titlebox, text="Label Printer", style="Header.TLabel").pack(anchor="w")
         ttk.Label(titlebox, text="v21 · design, rotate, compare with the real printer", style="HeaderSub.TLabel").pack(anchor="w")
         self.source_chip_var = tk.StringVar(value="No data loaded")
         ttk.Label(header, textvariable=self.source_chip_var, style="HeaderChip.TLabel").pack(side="right")
@@ -2453,7 +2453,7 @@ class App:
         return ensure_persistent_library()
 
     LABEL_PRESETS = {
-        "50 x 68 mm (ECG tag)": (50, 68), "56 x 83 mm (thermal tag)": (56, 83), "40 x 30 mm": (40, 30),
+        "50 x 68 mm (fold tag)": (50, 68), "56 x 83 mm (thermal tag)": (56, 83), "40 x 30 mm": (40, 30),
         "50 x 30 mm": (50, 30), "60 x 40 mm": (60, 40), "100 x 50 mm": (100, 50), "100 x 150 mm (shipping)": (100, 150),
     }
 
@@ -2680,7 +2680,7 @@ class App:
         except Exception as e:
             messagebox.showerror("Save Template", str(e))
             return
-        initial = os.path.splitext(os.path.basename(self.current_template_path or "ECG_Label"))[0]
+        initial = os.path.splitext(os.path.basename(self.current_template_path or "Label"))[0]
         name = simpledialog.askstring("Save Template As", "Template name:", initialvalue=initial, parent=self.root)
         if not name:
             return
@@ -4279,7 +4279,7 @@ class App:
         def export_pdf():
             if not order:
                 return
-            p = filedialog.asksaveasfilename(parent=win, defaultextension=".pdf", filetypes=[("PDF", "*.pdf")], initialfile="ECG_labels.pdf")
+            p = filedialog.asksaveasfilename(parent=win, defaultextension=".pdf", filetypes=[("PDF", "*.pdf")], initialfile="labels.pdf")
             if not p:
                 return
             try:
@@ -4317,7 +4317,7 @@ class App:
         import fitz
         base = self.get_template_cfg()
         out = fitz.open()
-        tmpdir = tempfile.mkdtemp(prefix="ecg_export_")
+        tmpdir = tempfile.mkdtemp(prefix="label_export_")
         try:
             for n, (i, q) in enumerate(jobs):
                 cfg = bind_row_to_template(base, self.rows[i])

@@ -7,7 +7,7 @@ from PyInstaller.utils.hooks import collect_data_files
 datas = [
     ("labelapp/ui/qml", "labelapp/ui/qml"),        # QML sources (components, panels, dialogs, theme)
     ("labelapp/ui/resources", "labelapp/ui/resources"),
-    ("templates", "templates"),                    # seeded into %APPDATA%\ECG_Label_Tool\templates when missing (never overwrites)
+    ("templates", "templates"),                    # seeded into %APPDATA%\LabelPrinter\templates when missing (never overwrites)
 ]
 datas += collect_data_files("reportlab")           # reportlab fonts/resources
 hidden = ["win32print", "win32api", "fitz", "barcode.codex", "barcode.ean", "barcode.isxn", "barcode.upc", "barcode.itf"]

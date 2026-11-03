@@ -8,7 +8,7 @@ from labelapp.core.editor import LabelEditor
 
 @pytest.fixture
 def ed(templates):
-    e = LabelEditor(templates["ECG_H_TAG_50x68.json"])
+    e = LabelEditor(templates["Hang_Tag_50x68.json"])
     e.view_mm_per_px = 0.25
     return e
 
@@ -33,7 +33,7 @@ def test_move_commits_snapped_delta_and_undo_redo(ed):
 def test_move_result_does_not_depend_on_zoom(templates):
     results = []
     for mpp in (0.05, 0.26, 1.2):                       # very different zoom levels
-        e = LabelEditor(templates["ECG_H_TAG_50x68.json"])
+        e = LabelEditor(templates["Hang_Tag_50x68.json"])
         e.view_mm_per_px = mpp
         cx, cy = centre(e, 1)
         e.press(cx, cy)

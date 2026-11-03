@@ -14,7 +14,7 @@ Toolbar {
     signal importTemplate()
 
     Text {
-        text: "ECG Label Tool"
+        text: App.appName
         font.family: Theme.fontFamily; font.pixelSize: Theme.fsMd; font.weight: Font.DemiBold; color: Theme.text
         Layout.rightMargin: Theme.s2
     }

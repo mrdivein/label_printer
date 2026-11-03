@@ -21,7 +21,7 @@ Key design points
 * The old `app.py` imports the same core (`labelapp`), so there is one source of truth; the Tk designer's own geometry code is still its own copy until it is retired.
 
 ## Backward compatibility
-No storage schema changed. Template JSON, `%APPDATA%\ECG_Label_Tool` (templates, `printer_profiles.json`, `workspace_v20.json`, `data_sources.json`, `active_working_template.json`, backups, print history) are read/written identically. The Qt UI only *adds* keys prefixed `qt_` to the workspace file (`qt_window`, `qt_dark`).
+No storage schema changed (the data folder is now `%APPDATA%\LabelPrinter`; an earlier one is copied over on first start). Template JSON, `%APPDATA%\LabelPrinter` (templates, `printer_profiles.json`, `workspace_v20.json`, `data_sources.json`, `active_working_template.json`, backups, print history) are read/written identically. The Qt UI only *adds* keys prefixed `qt_` to the workspace file (`qt_window`, `qt_dark`).
 
 ## Migrated to Qt
 Template library (list/preview/new/duplicate/rename/delete/import/export), save / save-as with backups, undo/redo, working-copy recovery, canvas (zoom, pan, rulers, select, marquee, drag, resize, rotate, fold line, print-area guide, nudge, copy/paste, align, lock, layer order), inspector for every element property, label/paper/compensation/quality settings, Excel + Google Sheet data (saved sources, search, row navigation), data-field picker, print current (preflight, confirmation), print selected/all queue with quantities, batch progress/cancel/skip/retry, PDF export of the queue, PDF proof, print via Windows driver, test prints (calibration, text/barcode quality, ruler overlay, compare sheets), measure & apply compensation, printer profiles, print history files, light/dark theme.
