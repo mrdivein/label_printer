@@ -73,6 +73,16 @@ Toolbar {
     Text { text: Data.hasData ? Data.rowLabel : ""; visible: Data.hasData
         font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
     Separator { vertical: true }
+    // OTA update: progress while downloading, a "Restart to update" button once the new version is ready
+    Text { visible: Updates.state === "downloading" || Updates.state === "error"; text: Updates.text
+        Layout.maximumWidth: 260; elide: Text.ElideRight
+        font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Updates.state === "error" ? Theme.warning : Theme.textMuted
+        C.ToolTip.visible: updHover.hovered; C.ToolTip.text: Updates.text; HoverHandler { id: updHover } }
+    AppButton { visible: Updates.state === "ready"; text: "Restart to update " + Updates.newVersion; kind: "primary"
+        onClicked: Updates.installNow() }
+    IconButton { text: "⟳"; visible: Updates.supported && Updates.state !== "ready"; enabled: Updates.state !== "checking" && Updates.state !== "downloading"
+        tip: "Check for updates · version " + Updates.currentVersion + (Updates.text.length ? "\n" + Updates.text : "")
+        onClicked: Updates.check() }
     IconButton { text: App.darkMode ? "☀" : "☾"; tip: "Toggle light / dark theme"; onClicked: App.darkMode = !App.darkMode }
 
     function save() {
