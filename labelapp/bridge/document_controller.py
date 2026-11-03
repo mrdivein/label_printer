@@ -16,6 +16,8 @@ from ..core.models import normalize_cfg
 from ..services.template_service import TemplateService
 from ..services.workspace_service import Workspace
 from .models import ElementListModel, InspectorModel
+from .preview_provider import PREVIEW_TRANSPARENT, pil_to_qimage
+from .tasks import run_async
 
 RENDER_SCALE = 2                # preview supersampling relative to printer DPI (same as the Tk designer)
 DOC_KEYS = DOC_NUMBER_KEYS + tuple(DOC_CHOICE_KEYS)
@@ -52,6 +54,8 @@ class DocumentController(QObject):
         self._show_guides = True
         self._show_fold = True
         self._dirty = False
+        self._render_busy = False
+        self._render_again = False
         self._render_timer = QTimer(self)
         self._render_timer.setSingleShot(True)
         self._render_timer.setInterval(0)
@@ -237,16 +241,56 @@ class DocumentController(QObject):
             self._render_timer.start()
 
     def _render(self):
+        """Render the workspace in the thread pool so editing, dragging and typing never wait for it.
+
+        At most one render runs at a time; requests arriving meanwhile are coalesced into a single follow-up render
+        of the latest document, so a burst of edits costs two renders, not one per edit."""
+        if self._render_busy:
+            self._render_again = True
+            return
         try:
-            img, m = render_workspace(self.cfg, self.bound_cfg(), scale=RENDER_SCALE,
-                                      show_guides=self._show_guides, show_fold=self._show_fold)
-            self.provider.set_image('workspace', img)
-            self._workspace_rect = {'x': m['x'], 'y': m['y'], 'w': m['w'], 'h': m['h']}
-            self._preview_version += 1
-            self._preview_error = ''
+            snapshot = self.bound_cfg()           # deep copy taken on the UI thread; the worker never sees self.cfg
         except Exception as e:
-            self._preview_error = f'Preview error: {e}'
+            self._render_failed(str(e))
+            return
+        show_guides, show_fold = self._show_guides, self._show_fold
+
+        def job():
+            img, m = render_workspace(snapshot, snapshot, scale=RENDER_SCALE,
+                                      show_guides=show_guides, show_fold=show_fold)
+            return pil_to_qimage(img, PREVIEW_TRANSPARENT), m
+
+        self._render_busy = True
+        self._render_again = False
+        run_async(job, self._render_done, self._render_failed)
+
+    def _render_done(self, result):
+        qimage, m = result
+        self.provider.set_qimage('workspace', qimage)
+        self._workspace_rect = {'x': m['x'], 'y': m['y'], 'w': m['w'], 'h': m['h']}
+        self._preview_version += 1
+        self._preview_error = ''
+        self._render_finished()
+
+    def _render_failed(self, message):
+        self._preview_error = f'Preview error: {message}'
+        self._render_finished()
+
+    def _render_finished(self):
+        self._render_busy = False
         self.previewChanged.emit()
+        if self._render_again:
+            self._schedule_render()
+
+    def wait_for_render(self, timeout_ms=5000):
+        """Block (processing events) until no preview render is pending. For tests and scripted use."""
+        import time
+        from PySide6.QtCore import QCoreApplication
+        end = time.monotonic() + timeout_ms / 1000.0
+        while (self._render_busy or self._render_timer.isActive()) and time.monotonic() < end:
+            QCoreApplication.processEvents()
+            time.sleep(0.002)                     # releases the GIL so the render worker can run
+        return not (self._render_busy or self._render_timer.isActive())
 
     def _write_working_copy(self):
         self.workspace.save_working_copy(self.cfg, self._template_name)

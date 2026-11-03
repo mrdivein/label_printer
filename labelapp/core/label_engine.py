@@ -6,6 +6,7 @@ import functools
 import io
 import math
 import os
+import threading
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 import barcode
@@ -65,7 +66,29 @@ def wrap_text(draw, text, font, max_width):
     lines.append(cur)
     return "\n".join(lines)
 
+_MEASURE_DRAW = ImageDraw.Draw(Image.new("L", (1, 1)))   # text metrics only; same mode as the label raster
+
+
 def fit_font(draw, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dpi):
+    """Largest font (max_pt down to min_pt in 0.5 pt steps) whose text fits the box.
+
+    Text metrics do not depend on the image being drawn on, so for the usual greyscale raster the search is cached:
+    re-rendering after an edit (or for the next data row with the same text) skips the step-down loop."""
+    if getattr(draw, "mode", None) == "L":
+        try:
+            return _fit_font_cached(str(text), box_w, box_h, font_name, float(max_pt), float(min_pt), bool(bold),
+                                    bool(wrap), dpi)
+        except TypeError:           # unhashable argument: measure directly
+            pass
+    return _fit_font(draw, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dpi)
+
+
+@functools.lru_cache(maxsize=2048)
+def _fit_font_cached(text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dpi):
+    return _fit_font(_MEASURE_DRAW, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dpi)
+
+
+def _fit_font(draw, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dpi):
     pt = float(max_pt)
     while pt >= float(min_pt):
         f = load_font(font_name, pt, bold, dpi)
@@ -373,7 +396,18 @@ def _draw_element_rotated(img, e, cfg, dpi, angle):
     img.paste(merged)
 
 
+# The designer preview renders in a worker thread while printing / thumbnails render on the UI thread. Pillow's
+# FreeType faces (shared through the font cache) are not safe to use from two threads at once, so renders are
+# serialised. Re-entrant because render_preview_with_guides() and the PDF export call render_label().
+_RENDER_LOCK = threading.RLock()
+
+
 def render_label(cfg):
+    with _RENDER_LOCK:
+        return _render_label(cfg)
+
+
+def _render_label(cfg):
     cfg = scale_layout_cfg(normalize_cfg(cfg))
     dpi = int(cfg["dpi"])
     wpx = mm_to_px(cfg["width_mm"], dpi)

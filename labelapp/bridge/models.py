@@ -32,7 +32,32 @@ class ElementListModel(QAbstractListModel):
             ang = float(e.get('angle', 0) or 0)
         except (TypeError, ValueError):
             ang = 0.0
+        if not txt.strip():
+            txt = ElementListModel._geometry(e)
         return txt + (f"  ↻{ang:g}°" if abs(ang) > 1e-4 else "")
+
+    @staticmethod
+    def _geometry(e):
+        """Shapes have no text: describe them by size (lines by length and direction) so list rows are distinguishable."""
+        def num(k, d=0.0):
+            try:
+                return round(float(e.get(k, d) or 0), 2)
+            except (TypeError, ValueError):
+                return 0.0
+        try:
+            if str(e.get('type', '')).lower() == 'line':
+                x, y = num('x'), num('y')
+                dx, dy = num('x2', x + num('w')) - x, num('y2', y) - y
+                if abs(dy) < 1e-6:
+                    return f"— {abs(dx):g} mm  at y {y:g}"
+                if abs(dx) < 1e-6:
+                    return f"| {abs(dy):g} mm  at x {x:g}"
+                return f"{round((dx * dx + dy * dy) ** 0.5, 2):g} mm  from {x:g}, {y:g}"
+            if 'w' in e or 'h' in e:
+                return f"{num('w'):g} × {num('h'):g} mm  at {num('x'):g}, {num('y'):g}"
+        except Exception:
+            pass
+        return ''
 
     def sync(self, elements, selected):
         """Cheap incremental update: full reset only if the element count changes."""

@@ -67,6 +67,7 @@ Item {
     }
 
     function setZoomAt(z, sx, sy) {
+        autoFit = false
         z = Math.max(0.1, Math.min(16, z))
         if (rotated) { var c = paperCenterScreen(); sx = c.x; sy = c.y }   // keep the rotation pivot fixed
         var mx = toMmX(sx), my = toMmY(sy)
@@ -77,20 +78,29 @@ Item {
     function zoomBy(f) { setZoomAt(zoom * f, (width + rulerSize) / 2, (height + rulerSize) / 2) }
     function fit() {
         var p = Doc.paperRect
-        var aw = width - rulerSize - 80, ah = height - rulerSize - 80
+        // Free area: 40 px around the label, plus the floating zoom bar's height kept clear at the bottom.
+        var padTop = 40, padBottom = 40 + viewControls.height
+        var aw = width - rulerSize - 80, ah = height - rulerSize - padTop - padBottom
         if (aw < 50 || ah < 50 || p.w <= 0 || p.h <= 0) return
         var pw = quarterTurn ? p.h : p.w, ph = quarterTurn ? p.w : p.h
         var z = Math.min(aw / pw, ah / ph) / (96 / 25.4)
         zoom = Math.max(0.1, Math.min(16, z))
         panX = rulerSize + (width - rulerSize - p.w * pxPerMm) / 2 - p.x * pxPerMm
-        panY = rulerSize + (height - rulerSize - p.h * pxPerMm) / 2 - p.y * pxPerMm
+        panY = rulerSize + padTop + (ah - p.h * pxPerMm) / 2 - p.y * pxPerMm
+        autoFit = true
     }
     function actualSize() { setZoomAt(1.0, (width + rulerSize) / 2, (height + rulerSize) / 2) }
 
     onPxPerMmChanged: Doc.setViewScale(pxPerMm)
-    property bool fitted: false
-    onWidthChanged: if (!fitted && width > 200 && height > 200) { fitted = true; fit() }
+    // The label stays fitted to the view (window resize, panel changes, first layout) until the user zooms or pans;
+    // "Fit" / Ctrl+0 turns this back on. Width and height arrive separately at start-up, so both re-arm the fit.
+    property bool autoFit: true
+    onWidthChanged: if (autoFit) fitTimer.restart()
+    onHeightChanged: if (autoFit) fitTimer.restart()
+    onRulerSizeChanged: if (autoFit) fitTimer.restart()
+    Connections { target: Doc; function onDocChanged() { if (view.autoFit) fitTimer.restart() } }   // paper size edits
     Connections { target: Doc; function onTemplateLoaded() { Qt.callLater(view.fit) } }
+    Timer { id: fitTimer; interval: 0; onTriggered: view.fit() }
 
     Rectangle { anchors.fill: parent; color: Theme.canvas }
 
@@ -349,7 +359,7 @@ Item {
         onPositionChanged: (mouse) => {
             var p = mm(mouse)
             view.cursorMm = p
-            if (panning) { view.panX = panOrigin.x + mouse.x - panStart.x; view.panY = panOrigin.y + mouse.y - panStart.y; return }
+            if (panning) { view.autoFit = false; view.panX = panOrigin.x + mouse.x - panStart.x; view.panY = panOrigin.y + mouse.y - panStart.y; return }
             if (pressed && view.dragMode.length && view.dragMode !== "select" && view.dragMode !== "none")
                 Doc.pointerMove(p.x, p.y, (mouse.modifiers & Qt.ShiftModifier) !== 0)
             else if (!pressed) { hoverThrottle.at = p; if (!hoverThrottle.running) hoverThrottle.start() }
@@ -371,8 +381,10 @@ Item {
             if (wheel.modifiers & Qt.ControlModifier) {
                 view.setZoomAt(view.zoom * Math.pow(1.0015, wheel.angleDelta.y), wheel.x + view.rulerSize, wheel.y + view.rulerSize)
             } else if (wheel.modifiers & Qt.ShiftModifier) {
+                view.autoFit = false
                 view.panX += wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
             } else {
+                view.autoFit = false
                 view.panY += wheel.angleDelta.y
                 view.panX += wheel.angleDelta.x
             }
@@ -402,6 +414,7 @@ Item {
 
     // ---- floating view controls ----
     Rectangle {
+        id: viewControls
         anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.margins: Theme.s4
         width: zoomRow.implicitWidth + Theme.s2 * 2; height: 36; radius: Theme.radiusMd
         color: Theme.surface; border.width: 1; border.color: Theme.border

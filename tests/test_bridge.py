@@ -53,13 +53,13 @@ def test_document_commands_emit_state_and_render(app, qapp):
     d = app.document
     seen = []
     d.committed.connect(lambda: seen.append(1))
-    QTest.qWait(30)
+    assert d.wait_for_render()
     assert d.previewSource.startswith("image://preview/workspace") and d.workspaceRect["w"] > 50
     d.selectIndex(1, False)
     assert d.selectionCount == 1 and d.selectionTitle.startswith("Text")
     d.setProp("font_size", 9.5)
     assert d.dirty and seen and d.canUndo
-    QTest.qWait(30)
+    assert d.wait_for_render()
     assert app.provider._images["workspace"].width() > 100
     d.undo()
     assert d.canRedo
@@ -353,3 +353,36 @@ def test_batch_scan_queue_prints_checked_rows_and_removes_them(app, qapp, printe
     assert [b"^PQ2," in printer_log["raw"][0][1], b"^PQ1," in printer_log["raw"][1][1]] == [True, True]
     wait_for(lambda: s.queueModel.rowCount() == 1)                      # only the NOT FOUND entry is left
     assert s.queueModel.rows[0]["status"] == "NOT FOUND"
+
+
+def test_preview_renders_off_the_ui_thread_and_coalesces_bursts(app, qapp, monkeypatch):
+    import threading
+    from labelapp.bridge import document_controller as dc
+    d = app.document
+    assert d.wait_for_render()
+    calls = []
+    real = dc.render_workspace
+
+    def spy(*a, **k):
+        calls.append(threading.current_thread() is threading.main_thread())
+        return real(*a, **k)
+
+    monkeypatch.setattr(dc, "render_workspace", spy)
+    d.selectIndex(1, False)
+    for size in (7, 7.5, 8, 8.5, 9, 9.5, 10):     # a burst of edits, e.g. holding a spin-box arrow
+        d.setProp("font_size", size)
+        qapp.processEvents()
+    assert d.wait_for_render()
+    assert calls and not any(calls), "preview must render in a worker thread"
+    assert len(calls) <= 3, f"edits were not coalesced: {len(calls)} renders"
+    v = d.previewSource
+    d.setProp("x", 4.0)
+    assert d.wait_for_render() and d.previewSource != v and d.previewError == ""
+
+
+def test_element_list_describes_shapes_by_geometry():
+    from labelapp.bridge.models import ElementListModel as M
+    assert M.describe({"type": "box", "x": 0, "y": 1.25, "w": 50, "h": 25}) == "50 × 25 mm  at 0, 1.25"
+    assert M.describe({"type": "line", "x": 1, "y": 20, "x2": 49, "y2": 20}) == "— 48 mm  at y 20"
+    assert M.describe({"type": "line", "x": 30, "y": 2, "x2": 30, "y2": 20}) == "| 18 mm  at x 30"
+    assert M.describe({"type": "text", "text": "{{Brand}}"}) == "{{Brand}}"
