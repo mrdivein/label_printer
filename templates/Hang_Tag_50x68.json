@@ -1,0 +1,366 @@
+{
+  "width_mm": 50,
+  "height_mm": 68,
+  "dpi": 300,
+  "orientation": "portrait",
+  "copies": 1,
+  "offset_x_mm": 0,
+  "offset_y_mm": 0,
+  "threshold": 180,
+  "elements": [
+    {
+      "type": "box",
+      "x": 0,
+      "y": 0,
+      "w": 50,
+      "h": 25,
+      "thickness": 0.18
+    },
+    {
+      "type": "text",
+      "text": "{{Brand}}",
+      "x": 1.3,
+      "y": 1.1,
+      "w": 27.5,
+      "h": 4.1,
+      "font": "Arial",
+      "font_size": 12.2,
+      "bold": true,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "text",
+      "text": "{{Model}}",
+      "x": 1.3,
+      "y": 5.2,
+      "w": 23,
+      "h": 3,
+      "font": "Arial",
+      "font_size": 7.0,
+      "bold": true,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "box",
+      "x": 34.2,
+      "y": 1.1,
+      "w": 14.8,
+      "h": 4.0,
+      "thickness": 0.18
+    },
+    {
+      "type": "text",
+      "text": "{{Price}}",
+      "x": 34.5,
+      "y": 1.75,
+      "w": 14.2,
+      "h": 2.7,
+      "font": "Arial",
+      "font_size": 5.3,
+      "bold": true,
+      "align": "center",
+      "wrap": false,
+      "auto_fit": true,
+      "min_font_size": 4.5
+    },
+    {
+      "type": "line",
+      "x": 1.3,
+      "y": 7.7,
+      "x2": 48.7,
+      "y2": 7.7,
+      "thickness": 0.18
+    },
+    {
+      "type": "line",
+      "x": 30.6,
+      "y": 9.0,
+      "x2": 30.6,
+      "y2": 23.2,
+      "thickness": 0.12
+    },
+    {
+      "type": "text",
+      "text": "NHÀ NHẬP KHẨU",
+      "x": 31.8,
+      "y": 9.2,
+      "w": 16.8,
+      "h": 2.5,
+      "font": "Arial",
+      "font_size": 5.5,
+      "bold": true,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "line",
+      "x": 31.8,
+      "y": 11.5,
+      "x2": 48.5,
+      "y2": 11.5,
+      "thickness": 0.12
+    },
+    {
+      "type": "text",
+      "text": "{{Importer}}",
+      "x": 31.8,
+      "y": 12.5,
+      "w": 16.4,
+      "h": 4.6,
+      "font": "Arial",
+      "font_size": 4.2,
+      "bold": true,
+      "align": "left",
+      "wrap": true,
+      "auto_fit": true,
+      "min_font_size": 3.6
+    },
+    {
+      "type": "text",
+      "text": "{{ImporterAddress}}",
+      "x": 31.8,
+      "y": 17.7,
+      "w": 16.4,
+      "h": 4.8,
+      "font": "Arial",
+      "font_size": 3.55,
+      "align": "left",
+      "wrap": true,
+      "auto_fit": true,
+      "min_font_size": 3.0
+    },
+    {
+      "type": "box",
+      "x": 20.0,
+      "y": 25.0,
+      "w": 10.0,
+      "h": 18.0,
+      "thickness": 0.18
+    },
+    {
+      "type": "box",
+      "x": 0,
+      "y": 43.0,
+      "w": 50,
+      "h": 25,
+      "thickness": 0.18
+    },
+    {
+      "type": "barcode",
+      "value": "{{Barcode}}",
+      "x": 6.3,
+      "y": 44.4,
+      "w": 37.4,
+      "h": 7.8,
+      "symbology": "code128",
+      "barcode_height_mm": 7.2,
+      "module_width": 0.29,
+      "quiet_zone": 0.8,
+      "show_text": false
+    },
+    {
+      "type": "text",
+      "text": "{{Barcode}}",
+      "x": 2,
+      "y": 52.1,
+      "w": 46,
+      "h": 2.2,
+      "font": "Arial",
+      "font_size": 4.8,
+      "bold": true,
+      "align": "center",
+      "wrap": false
+    },
+    {
+      "type": "line",
+      "x": 1.3,
+      "y": 54.1,
+      "x2": 48.7,
+      "y2": 54.1,
+      "thickness": 0.12
+    },
+    {
+      "type": "text",
+      "text": "NHÀ SẢN XUẤT",
+      "x": 1.7,
+      "y": 55.0,
+      "w": 20,
+      "h": 2.5,
+      "font": "Arial",
+      "font_size": 5.2,
+      "bold": true,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "text",
+      "text": "{{Manufacturer}}",
+      "x": 1.7,
+      "y": 57.7,
+      "w": 20,
+      "h": 2.3,
+      "font": "Arial",
+      "font_size": 4.8,
+      "bold": true,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "text",
+      "text": "{{ManufacturerCountry}}",
+      "x": 1.7,
+      "y": 60.4,
+      "w": 20,
+      "h": 2.2,
+      "font": "Arial",
+      "font_size": 4.4,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "line",
+      "x": 25.3,
+      "y": 55.0,
+      "x2": 25.3,
+      "y2": 62.2,
+      "thickness": 0.12
+    },
+    {
+      "type": "text",
+      "text": "THÔNG TIN SẢN PHẨM",
+      "x": 26.6,
+      "y": 55.0,
+      "w": 21.5,
+      "h": 2.5,
+      "font": "Arial",
+      "font_size": 5.0,
+      "bold": true,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "text",
+      "text": "Sản phẩm: {{ProductType}}",
+      "x": 26.6,
+      "y": 57.7,
+      "w": 21.5,
+      "h": 2.2,
+      "font": "Arial",
+      "font_size": 4.4,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "text",
+      "text": "Xuất xứ: {{Origin}}",
+      "x": 26.6,
+      "y": 60.4,
+      "w": 21.5,
+      "h": 2.2,
+      "font": "Arial",
+      "font_size": 4.4,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "line",
+      "x": 1.3,
+      "y": 62.8,
+      "x2": 48.7,
+      "y2": 62.8,
+      "thickness": 0.12
+    },
+    {
+      "type": "text",
+      "text": "Thành phần: {{Material}}",
+      "x": 1.7,
+      "y": 63.5,
+      "w": 46.3,
+      "h": 1.8,
+      "font": "Arial",
+      "font_size": 3.9,
+      "align": "left",
+      "wrap": false
+    },
+    {
+      "type": "text",
+      "text": "Hướng dẫn sử dụng: {{Usage}}",
+      "x": 1.7,
+      "y": 65.4,
+      "w": 46.3,
+      "h": 1.8,
+      "font": "Arial",
+      "font_size": 3.45,
+      "align": "left",
+      "wrap": false,
+      "auto_fit": true,
+      "min_font_size": 3.0
+    }
+  ],
+  "data_bindings": {
+    "Brand": "Brand",
+    "Model": "Model",
+    "Price": "Price",
+    "Barcode": "Barcode",
+    "Manufacturer": "Manufacturer",
+    "ManufacturerCountry": "ManufacturerCountry",
+    "ProductType": "ProductType",
+    "Origin": "Origin",
+    "Importer": "Importer",
+    "ImporterAddress": "ImporterAddress",
+    "Material": "Material",
+    "Usage": "Usage"
+  },
+  "fold_regions": [
+    {
+      "name": "BACK",
+      "x": 0,
+      "y": 43,
+      "w": 50,
+      "h": 25,
+      "angle": 180,
+      "enabled": true
+    }
+  ],
+  "preview_guides": [
+    {
+      "name": "Front 50x25",
+      "type": "box",
+      "x": 0,
+      "y": 0,
+      "w": 50,
+      "h": 25,
+      "color": "blue",
+      "show": true
+    },
+    {
+      "name": "Connector 10x35-ish",
+      "type": "box",
+      "x": 20,
+      "y": 25,
+      "w": 10,
+      "h": 18,
+      "color": "orange",
+      "show": true
+    },
+    {
+      "name": "Back 50x25",
+      "type": "box",
+      "x": 0,
+      "y": 43,
+      "w": 50,
+      "h": 25,
+      "color": "green",
+      "show": true
+    }
+  ],
+  "virtual_print_area": {
+    "show": true,
+    "x": 0.0,
+    "y": 0.0,
+    "w": 50.0,
+    "h": 68.0
+  }
+}

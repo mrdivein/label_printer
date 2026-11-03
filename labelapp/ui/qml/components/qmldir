@@ -1,0 +1,17 @@
+module components
+AppButton 1.0 AppButton.qml
+IconButton 1.0 IconButton.qml
+SectionHeader 1.0 SectionHeader.qml
+Separator 1.0 Separator.qml
+Panel 1.0 Panel.qml
+Toolbar 1.0 Toolbar.qml
+AppTextField 1.0 AppTextField.qml
+NumberField 1.0 NumberField.qml
+ComboField 1.0 ComboField.qml
+CheckField 1.0 CheckField.qml
+PropertyRow 1.0 PropertyRow.qml
+AppDialog 1.0 AppDialog.qml
+AppMenu 1.0 AppMenu.qml
+AppMenuItem 1.0 AppMenuItem.qml
+AppMenuSeparator 1.0 AppMenuSeparator.qml
+BusyIndicator2 1.0 BusyIndicator2.qml

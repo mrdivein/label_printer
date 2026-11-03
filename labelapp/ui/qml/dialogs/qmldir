@@ -1,0 +1,12 @@
+module dialogs
+TextPromptDialog 1.0 TextPromptDialog.qml
+MessageDialog 1.0 MessageDialog.qml
+ConfirmPrintDialog 1.0 ConfirmPrintDialog.qml
+PrintQueueDialog 1.0 PrintQueueDialog.qml
+BatchDialog 1.0 BatchDialog.qml
+TemplateLibraryDialog 1.0 TemplateLibraryDialog.qml
+NewTemplateDialog 1.0 NewTemplateDialog.qml
+GoogleSheetDialog 1.0 GoogleSheetDialog.qml
+FieldPickerDialog 1.0 FieldPickerDialog.qml
+CompensationDialog 1.0 CompensationDialog.qml
+ProfilesDialog 1.0 ProfilesDialog.qml
