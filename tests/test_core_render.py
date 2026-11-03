@@ -87,3 +87,15 @@ def test_all_element_types_render(sample_row):
         {"type": "text", "text": "hi", "x": 20, "y": 15, "w": 20, "h": 5, "angle": 30}, {"type": "line", "x": 1, "y": 30, "x2": 40, "y2": 35}]})
     img = render_label(c)
     assert img.convert('L').getextrema() == (0, 255)
+
+
+def test_cached_auto_fit_matches_direct_measurement():
+    from PIL import Image, ImageDraw
+    from labelapp.core.label_engine import _fit_font, fit_font
+    draw = ImageDraw.Draw(Image.new("L", (400, 200), 255))
+    for text, w, h, wrap in [("NORTHWIND", 300, 60, False), ("123 Đường Mẫu, Quận 1, TP Hồ Chí Minh", 200, 80, True),
+                             ("X" * 80, 50, 10, False)]:
+        for _ in range(2):          # second call is served from the cache
+            f1, t1 = fit_font(draw, text, w, h, "Arial", 14, 4, False, wrap, 300)
+            f2, t2 = _fit_font(draw, text, w, h, "Arial", 14, 4, False, wrap, 300)
+            assert t1 == t2 and f1.size == f2.size

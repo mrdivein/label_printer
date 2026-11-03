@@ -6,6 +6,7 @@ from PySide6.QtQuick import QQuickImageProvider
 PREVIEW_MARGIN_RGB = (242, 242, 242)     # grey surround drawn by render_preview_with_guides()
 PAPER_RGB = (255, 255, 255)
 WORKSPACE_BORDER_RGB = (100, 100, 100)   # outline of the whole workspace page (not the nominal paper guide)
+PREVIEW_TRANSPARENT = (PREVIEW_MARGIN_RGB, PAPER_RGB, WORKSPACE_BORDER_RGB)
 
 
 def _alpha_lut(colors):
@@ -38,8 +39,12 @@ class PreviewProvider(QQuickImageProvider):
         super().__init__(QQuickImageProvider.ImageType.Image)
         self._images = {}
 
-    def set_image(self, name, pil_image, transparent=(PREVIEW_MARGIN_RGB, PAPER_RGB, WORKSPACE_BORDER_RGB)):
+    def set_image(self, name, pil_image, transparent=PREVIEW_TRANSPARENT):
         self._images[name] = pil_to_qimage(pil_image, transparent)
+
+    def set_qimage(self, name, qimage):
+        """Store an image already converted with pil_to_qimage() (e.g. in a worker thread)."""
+        self._images[name] = qimage
 
     def drop(self, name):
         self._images.pop(name, None)

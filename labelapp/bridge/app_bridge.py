@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-from PySide6.QtCore import Property, QObject, QUrl, Signal, Slot
+from PySide6.QtCore import Property, QObject, QThreadPool, QUrl, Signal, Slot
 
 from ..paths import app_root
 from ..services.print_service import PrintService
@@ -133,6 +133,7 @@ class AppBridge(QObject):
 
     @Slot()
     def shutdown(self):
+        QThreadPool.globalInstance().waitForDone(3000)     # let a running preview render / file load finish
         self.document.flush()
         self.workspace.save()
         self.updates.install_on_quit()

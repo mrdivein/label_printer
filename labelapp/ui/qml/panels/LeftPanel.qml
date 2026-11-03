@@ -126,7 +126,9 @@ Panel {
                                 color: row.selected ? Theme.accent : Theme.textMuted; textFormat: Text.PlainText; font.capitalization: Font.AllUppercase }
                             Text { text: row.summary; anchors.left: tcol.right; anchors.right: lockText.left; anchors.rightMargin: Theme.s1
                                 anchors.verticalCenter: parent.verticalCenter; elide: Text.ElideRight; textFormat: Text.PlainText
-                                font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; color: Theme.text }
+                                font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase
+                                // shapes are described by their size: muted so the content-bearing rows stand out
+                                color: ["box", "fill_box", "line", "ellipse"].indexOf(row.etype) >= 0 ? Theme.textMuted : Theme.text }
                             Text { id: lockText; visible: row.locked; text: "locked"; anchors.right: parent.right; anchors.rightMargin: Theme.s2
                                 anchors.verticalCenter: parent.verticalCenter; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.italic: true; color: Theme.textFaint
                                 width: visible ? implicitWidth : 0 }

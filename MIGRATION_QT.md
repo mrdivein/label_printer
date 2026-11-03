@@ -17,7 +17,8 @@ QML (labelapp/ui/qml)  ->  bridge QObjects (labelapp/bridge)  ->  services / cor
 Key design points
 * Document coordinates are millimetres everywhere. QML sends pointer positions in mm (`screen = pan + mm * pxPerMm`); zoom/pan never touch the document (tested).
 * The canvas shows the Python renderer's output (`image://preview`) with a QML overlay for selection/handles/guides; dragging shows a lightweight ghost and commits once on release (no re-render per mouse move).
-* Blocking work off the UI thread only where it really blocks: Google Sheet / Excel loading, printer enumeration. Print jobs run one per event-loop tick (same as Tk) with progress, cancel and skip/retry/stop.
+* The designer preview renders in the thread pool (one render at a time; edits arriving meanwhile are coalesced into one follow-up render of the latest document), so dragging, typing and spin-box edits never wait for the ~50–100 ms render. `render_label` is serialised by a lock because Pillow font objects are shared with the print path on the UI thread.
+* Other blocking work off the UI thread: Google Sheet / Excel loading, printer enumeration. Print jobs run one per event-loop tick (same as Tk) with progress, cancel and skip/retry/stop.
 * The old `app.py` imports the same core (`labelapp`), so there is one source of truth; the Tk designer's own geometry code is still its own copy until it is retired.
 
 ## Backward compatibility
