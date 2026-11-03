@@ -1,4 +1,4 @@
-"""OTA updates from the public releases repository (no UI toolkit; used by bridge/update_controller).
+"""OTA updates from the GitHub Releases of this (public) repository (no UI toolkit; used by bridge/update_controller).
 
 Each GitHub Release of ``UPDATE_REPO`` carries the installer and a ``latest.json`` manifest:
     {"version": "22.1.0", "file": "Label-Printer-Setup-22.1.0.exe", "sha256": "<hex>", "size": 12345}

@@ -3,7 +3,6 @@ name: Test and release
 on:
   pull_request:
   push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -24,16 +23,17 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
 
-  # A new __version__ in labelapp/version.py on main builds the Windows installer and publishes it,
-  # with latest.json, to the public releases repo. Installed apps pick it up within 4 hours.
-  # A version that already has a release is skipped.
+  # A new __version__ in labelapp/version.py on the default branch builds the Windows installer and publishes it,
+  # with latest.json, as a GitHub Release of this repository. Installed apps pick it up within 4 hours.
+  # A version that already has a release is skipped. Needs the repository to be public (apps read releases anonymously).
   release:
     needs: test
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: windows-latest
+    permissions:
+      contents: write
     env:
-      RELEASES_REPO: mrdivein/label-printer-releases
-      RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
     defaults:
       run:
         shell: bash
@@ -44,10 +44,8 @@ jobs:
         run: |
           VER=$(python -c "import re;print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', open('labelapp/version.py').read()).group(1))")
           echo "version=$VER" >> "$GITHUB_OUTPUT"
-          if [ -z "$RELEASES_TOKEN" ]; then
-            echo "::warning::RELEASES_TOKEN is not set, release skipped"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif git ls-remote --exit-code --tags "https://x-access-token:${RELEASES_TOKEN}@github.com/${RELEASES_REPO}.git" "refs/tags/v$VER" >/dev/null 2>&1; then
+          if gh release view "v$VER" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release v$VER already exists, skipped"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
@@ -67,10 +65,8 @@ jobs:
           ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
           if [ ! -f "$ISCC" ]; then choco install innosetup -y --no-progress; fi
           MSYS_NO_PATHCONV=1 "$ISCC" "/DAppVersion=${{ steps.ver.outputs.version }}" installer/label_printer.iss
-      - name: Publish to the releases repo
+      - name: Publish the release
         if: steps.ver.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
           VER=${{ steps.ver.outputs.version }}
           FILE="Label-Printer-Setup-$VER.exe"
@@ -79,5 +75,5 @@ jobs:
           SIZE=$(stat -c %s "$FILE")
           printf '{"version":"%s","file":"%s","sha256":"%s","size":%s}\n' "$VER" "$FILE" "$SHA" "$SIZE" > latest.json
           cat latest.json
-          gh release create "v$VER" "$FILE" latest.json --repo "$RELEASES_REPO" --title "Label Printer $VER" \
-            --notes "Label Printer $VER. Installed apps update themselves; new PCs: download $FILE and run it."
+          gh release create "v$VER" "$FILE" latest.json --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Label Printer $VER" --generate-notes
