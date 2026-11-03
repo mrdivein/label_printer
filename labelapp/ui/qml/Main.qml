@@ -192,4 +192,5 @@ C.ApplicationWindow {
     }
 
     Connections { target: App; function onErrorRaised(t, m) { msg.show(t, m) } }
+    Connections { target: Updates; function onQuitRequested() { win.close() } }   // window state is saved, then the installer restarts the app
 }

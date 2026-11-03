@@ -20,9 +20,11 @@ from .preview_provider import PreviewProvider
 from .print_controller import PrintController
 from .profile_controller import ProfileController
 from ..services.profile_service import ProfileService
+from ..version import __version__
+from .update_controller import UpdateController
 
 APP_NAME = "ECG Label Tool"
-APP_VERSION = "22.0 (Qt)"
+APP_VERSION = __version__
 
 
 class AppBridge(QObject):
@@ -42,6 +44,7 @@ class AppBridge(QObject):
         self.print_service = PrintService(history_enabled=bool(self.workspace.get('save_history', True)))
         self.printing = PrintController(self.workspace, self.document, self.data, self.print_service, self)
         self.profiles = ProfileController(ProfileService(), self.document, self.printing, self)
+        self.updates = UpdateController(self)
         self._status = 'Ready'
         self._dark = bool(self.workspace.get('qt_dark', False))
 
@@ -111,6 +114,7 @@ class AppBridge(QObject):
         self.document.restore_session(self.library.names)
         self.data.restore_last()
         self.printing.refreshPrinters()
+        self.updates.start()
 
     def _get_legacy(self):
         return os.path.exists(os.path.join(app_root(), 'app.py')) and not getattr(sys, 'frozen', False)
@@ -129,3 +133,4 @@ class AppBridge(QObject):
     def shutdown(self):
         self.document.flush()
         self.workspace.save()
+        self.updates.install_on_quit()

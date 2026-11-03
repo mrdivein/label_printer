@@ -1,0 +1,83 @@
+name: Test and release
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Qt runtime libraries
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libegl1 libgl1 libxkbcommon0 libfontconfig1 libdbus-1-3
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: python -m pytest -q tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+
+  # A new __version__ in labelapp/version.py on main builds the Windows installer and publishes it,
+  # with latest.json, to the public releases repo. Installed apps pick it up within 4 hours.
+  # A version that already has a release is skipped.
+  release:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    env:
+      RELEASES_REPO: mrdivein/label-printer-releases
+      RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check whether this version is already released
+        id: ver
+        run: |
+          VER=$(python -c "import re;print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', open('labelapp/version.py').read()).group(1))")
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          if [ -z "$RELEASES_TOKEN" ]; then
+            echo "::warning::RELEASES_TOKEN is not set, release skipped"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --tags "https://x-access-token:${RELEASES_TOKEN}@github.com/${RELEASES_REPO}.git" "refs/tags/v$VER" >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.ver.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build app
+        if: steps.ver.outputs.skip == 'false'
+        run: |
+          pip install -r requirements.txt pyinstaller
+          pyinstaller --noconfirm packaging_qt.spec
+      - name: Build installer
+        if: steps.ver.outputs.skip == 'false'
+        run: |
+          ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
+          if [ ! -f "$ISCC" ]; then choco install innosetup -y --no-progress; fi
+          MSYS_NO_PATHCONV=1 "$ISCC" "/DAppVersion=${{ steps.ver.outputs.version }}" installer/label_printer.iss
+      - name: Publish to the releases repo
+        if: steps.ver.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          VER=${{ steps.ver.outputs.version }}
+          FILE="Label-Printer-Setup-$VER.exe"
+          cd dist
+          SHA=$(sha256sum "$FILE" | cut -d' ' -f1)
+          SIZE=$(stat -c %s "$FILE")
+          printf '{"version":"%s","file":"%s","sha256":"%s","size":%s}\n' "$VER" "$FILE" "$SHA" "$SIZE" > latest.json
+          cat latest.json
+          gh release create "v$VER" "$FILE" latest.json --repo "$RELEASES_REPO" --title "Label Printer $VER" \
+            --notes "Label Printer $VER. Installed apps update themselves; new PCs: download $FILE and run it."

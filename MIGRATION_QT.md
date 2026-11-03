@@ -36,7 +36,7 @@ Batch Scan / quick-scan printing, print-history viewer + reprint, guide (preview
 | Dimensions, ZPL header/copies, vector PDF page size, zoom-independence, editor, services, bridge, batch printing (printer mocked) | 51 automated tests pass (Linux, offscreen Qt) |
 | Mouse/keyboard interaction (move, resize, rotate, marquee, fold, nudge, undo, Ctrl+wheel) | Driven with real synthetic Qt events against the running QML window (Linux, offscreen) |
 | High-DPI (1.75x) and minimum window size (1060x640) layouts | Checked via screenshots (Linux, offscreen) |
-| Real Windows printing, printed physical size, Windows DPI scaling, native file dialogs, PyInstaller `.exe` | **Not verified** — no Windows/printer in the dev sandbox. The print code is unchanged and called through `PrintService`; please print a compare sheet and a real label on the G530 before retiring Tk. `packaging_qt.spec` is a first draft, untested. |
+| Real Windows printing, printed physical size, Windows DPI scaling, native file dialogs, PyInstaller `.exe` | **Not verified** — no Windows/printer in the dev sandbox. The print code is unchanged and called through `PrintService`; please print a compare sheet and a real label on the G530 before retiring Tk. `packaging_qt.spec` + `installer/label_printer.iss` are built by `.github/workflows/release.yml` (see README.txt, UPDATES). |
 
 ## Known issues / notes
 * Previews use `render_label` (as the Tk app did); the HQ print route re-renders from the vector PDF, so tiny anti-aliasing differences between preview and print are possible, as before. Use "PDF proof" to inspect the exact print master.
