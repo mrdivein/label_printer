@@ -19,6 +19,7 @@ from .library_controller import LibraryController
 from .preview_provider import PreviewProvider
 from .print_controller import PrintController
 from .profile_controller import ProfileController
+from .scan_controller import ScanController
 from ..services.profile_service import ProfileService
 from ..version import __version__
 from .update_controller import UpdateController
@@ -43,14 +44,15 @@ class AppBridge(QObject):
         self.library = LibraryController(self.templates, self.document, self.data, self.provider, self)
         self.print_service = PrintService(history_enabled=bool(self.workspace.get('save_history', True)))
         self.printing = PrintController(self.workspace, self.document, self.data, self.print_service, self)
+        self.scan = ScanController(self.workspace, self.data, self.printing, self)
         self.profiles = ProfileController(ProfileService(), self.document, self.printing, self)
         self.updates = UpdateController(self)
         self._status = 'Ready'
         self._dark = bool(self.workspace.get('qt_dark', False))
 
-        for src in (self.document, self.library, self.data, self.printing, self.profiles):
+        for src in (self.document, self.library, self.data, self.printing, self.profiles, self.scan):
             src.message.connect(self.setStatus)
-        for src in (self.data, self.printing):
+        for src in (self.data, self.printing, self.scan):
             src.error.connect(self.errorRaised)
         self.data.rowChanged.connect(self.document._schedule_render)
         self.data.rowChanged.connect(self.document._refresh_overlay)
@@ -123,7 +125,7 @@ class AppBridge(QObject):
 
     @Slot()
     def launchLegacy(self):
-        """Open the original Tkinter app (Batch Scan, print history, guide editor... not yet in the Qt UI)."""
+        """Open the original Tkinter app (print history, guide editor... not yet in the Qt UI)."""
         try:
             subprocess.Popen([sys.executable, os.path.join(app_root(), 'app.py')], cwd=app_root())
         except Exception as e:

@@ -12,7 +12,7 @@ import barcode
 from barcode.writer import ImageWriter
 
 from ..services.image_service import load_element_image
-from .geometry import _element_angle, element_rotation_center
+from .geometry import _element_angle, element_center_mm, element_rotation_center, in_fold_band
 from .models import normalize_cfg, scale_layout_cfg
 from .units import DEFAULT_DPI, mm_to_px
 
@@ -96,6 +96,42 @@ def make_barcode(value, dpi, kind="code128", height_mm=10, module_width=0.25, qu
     buf.seek(0)
     return Image.open(buf).convert("L")
 
+@functools.lru_cache(maxsize=256)
+def code128_modules(value):
+    """Code128 bar pattern as ((offset, width), ...) in modules, plus the total module count (no quiet zone).
+
+    Single source of truth shared by the preview raster and the vector PDF / RAW print path."""
+    from reportlab.graphics.barcode import code128
+    b = code128.Code128(str(value), barWidth=1, quiet=False, humanReadable=False)
+    b.validate(); b.encode(); b.decompose()
+    bars, pos = [], 0
+    for ch in b.decomposed:
+        wd = ord(ch.upper()) - 64
+        if ch.isupper():
+            bars.append((pos, wd))
+        pos += wd
+    return tuple(bars), pos
+
+def code128_layout(e, w_px, h_px, dpi):
+    """Whole-dot Code128 layout for a box of w_px x h_px printer dots.
+
+    Returns (mod_px, left_px, bar_h_px, bars). Default 'fill' mode makes the barcode as wide as the box allows
+    on a whole number of dots per module, so preview == print and every bar edge sits on a printer dot.
+    fit == "module" (or physical) keeps the authored module_width / barcode_height_mm instead."""
+    bars, total = code128_modules(str(e.get("value", "")).strip())
+    if e.get("fit") == "module" or e.get("physical"):
+        mod = max(1, int(round(max(0.12, float(e.get("module_width", 0.25))) * dpi / 25.4)))
+        while mod > 1 and mod * total > w_px:
+            mod -= 1
+        bar_h = min(h_px, max(1, mm_to_px(e.get("barcode_height_mm", max(5, h_px * 25.4 / dpi - 2)), dpi)))
+    else:
+        mod = max(1, w_px // total)
+        bar_h = h_px
+        if e.get("crop_height"):                      # fill the width, cut the bars to barcode_height_mm
+            bar_h = min(h_px, mm_to_px(e.get("barcode_height_mm", 0), dpi) or h_px)
+    left = max(0, (w_px - mod * total) // 2)
+    return mod, left, bar_h, bars
+
 @functools.lru_cache(maxsize=64)
 def qr_matrix(value, level="M"):
     """Boolean module matrix of a QR code (uses reportlab's encoder; no extra dependency)."""
@@ -115,10 +151,26 @@ def _qr_square_px(w, h, n):
     return mod, mod * n
 
 
+def barcode_text_size(e):
+    """Point size of the digits under a barcode (`text_size`, else `font_size`, else 6)."""
+    return float(e.get("text_size", e.get("font_size", 6.0)))
+
+
+def barcode_full_code(value, kind):
+    """Digits as they print under an EAN/UPC symbol (check digit included)."""
+    kind = (kind or "code128").lower()
+    if kind in ("ean13", "ean8", "upca"):
+        try:
+            return barcode.get_barcode_class(kind)(str(value).strip()).get_fullcode()
+        except Exception:
+            pass
+    return str(value).strip()
+
+
 def barcode_text_height_mm(e):
     if not e.get("show_text"):
         return 0.0
-    return float(e.get("text_size", 6.0)) * 25.4 / 72.0 * 1.2
+    return barcode_text_size(e) * 25.4 / 72.0 * 1.2
 
 def apply_fold_regions(img, cfg):
     cfg = normalize_cfg(cfg)
@@ -159,7 +211,7 @@ def _draw_element(img, draw, e, cfg, dpi):
         font_name = e.get("font", "Arial")
         bold = bool(e.get("bold", False))
         size = float(e.get("font_size", 8))
-        wrap = bool(e.get("wrap", True))
+        wrap = bool(e.get("wrap", False))
         align = e.get("align", "left")
         if e.get("auto_fit", False):
             f, final_text = fit_font(draw, text, w, h, font_name, size, e.get("min_font_size", 4), bold, wrap, dpi)
@@ -194,22 +246,60 @@ def _draw_element(img, draw, e, cfg, dpi):
         text_h = mm_to_px(barcode_text_height_mm(e), dpi)
         bars_h = max(1, h - text_h)
         value = str(e.get("value", "")).strip()
-        bc = make_barcode(
-            value, dpi,
-            e.get("symbology", "code128"),
-            e.get("barcode_height_mm", max(5, e.get("h", 12)-2)),
-            e.get("module_width", 0.25),
-            e.get("quiet_zone", 1.0)
-        )
-        ratio = min(w / bc.width, bars_h / bc.height)
-        nw, nh = max(1, int(bc.width * ratio)), max(1, int(bc.height * ratio))
-        bc = bc.resize((nw, nh), Image.Resampling.NEAREST)
-        by = y + (bars_h - nh) // 2
-        img.paste(bc, (x + (w - nw) // 2, by))
+        sym = str(e.get("symbology", "code128")).lower()
+        dark = None
+        if value and sym == "code128":
+            mod, left, bar_h, bars = code128_layout(e, w, bars_h, dpi)
+            by = y + (bars_h - bar_h) // 2
+            for off, wd in bars:
+                draw.rectangle((x + left + off * mod, by, x + left + (off + wd) * mod - 1, by + bar_h - 1), fill=0)
+        elif value:
+            bc = make_barcode(
+                value, dpi,
+                e.get("symbology", "code128"),
+                60 if e.get("crop_height", False) else e.get("barcode_height_mm", max(5, e.get("h", 12)-2)),
+                e.get("module_width", 0.25),
+                e.get("quiet_zone", 1.0)
+            )
+            if e.get("crop_height", False):
+                # Scale by width only, then cut the bars to the wanted height (bars carry no information vertically).
+                ratio = w / bc.width
+                nw, nh = max(1, int(bc.width * ratio)), max(1, int(bc.height * ratio))
+                bc = bc.resize((nw, nh), Image.Resampling.NEAREST)
+                want_h = mm_to_px(e.get("barcode_height_mm", 0), dpi) or bars_h
+                keep = max(1, min(nh, bars_h, want_h))
+                top = (nh - keep) // 2
+                bc = bc.crop((0, top, nw, top + keep))
+                nh = keep
+            else:
+                ratio = min(w / bc.width, bars_h / bc.height)
+                nw, nh = max(1, int(bc.width * ratio)), max(1, int(bc.height * ratio))
+                bc = bc.resize((nw, nh), Image.Resampling.NEAREST)
+            by = y + (bars_h - nh) // 2
+            img.paste(bc, (x + (w - nw) // 2, by))
+            dark = bc.point(lambda p: 255 if p < 128 else 0).getbbox()
         if text_h and value:
-            f = load_font(e.get("font", "Arial"), float(e.get("text_size", 6.0)), False, dpi)
-            bb = draw.textbbox((0, 0), value, font=f)
-            draw.text((x + max(0, (w - (bb[2] - bb[0])) // 2) - bb[0], y + bars_h - bb[1]), value, font=f, fill=0)
+            f = load_font(e.get("font", "Arial"), barcode_text_size(e), False, dpi)
+            kind = str(e.get("symbology", "code128")).lower()
+            code = barcode_full_code(value, kind)
+            ty = y + bars_h
+            if kind == "ean13" and len(code) == 13 and dark:
+                # EAN-13 layout: 1st digit left of the bars, then 6 digits under each half.
+                bx = x + (w - nw) // 2
+                m = (dark[2] - dark[0]) / 95.0
+                x0 = bx + dark[0]
+                def put(txt, x_from):
+                    for i, ch in enumerate(txt):  # one 7-module cell per digit, like a printed EAN-13
+                        bb = draw.textbbox((0, 0), ch, font=f)
+                        cx = x_from + (i + 0.5) * 7 * m
+                        draw.text((int(cx - (bb[2] - bb[0]) / 2) - bb[0], ty - bb[1]), ch, font=f, fill=0)
+                bb = draw.textbbox((0, 0), code[0], font=f)
+                draw.text((int(x0 - 7 * m - (bb[2] - bb[0]) / 2) - bb[0], ty - bb[1]), code[0], font=f, fill=0)
+                put(code[1:7], x0 + 3 * m)
+                put(code[7:], x0 + 50 * m)
+            else:
+                bb = draw.textbbox((0, 0), code, font=f)
+                draw.text((x + max(0, (w - (bb[2] - bb[0])) // 2) - bb[0], ty - bb[1]), code, font=f, fill=0)
 
     elif t == "qr":
         value = str(e.get("value", "")).strip()
@@ -292,18 +382,48 @@ def render_label(cfg):
     img = Image.new("L", (wpx, hpx), 255)
     draw = ImageDraw.Draw(img)
 
+    # Fold regions: an element belongs to a region by its centre (same rule as the PDF export and the designer),
+    # and is flipped 180 degrees about the region centre as a whole -- so text running past the region/label edge
+    # stays attached to its element instead of being cut at the region border.
+    folds = [r for r in cfg.get("fold_regions", [])
+             if r.get("enabled", True) and int(r.get("angle", 180)) % 360 == 180
+             and float(r.get("w", 0)) > 0 and float(r.get("h", 0)) > 0]
+    layers = {}
+
+    def _fold_of(e):
+        cx, cy = element_center_mm(e)
+        for i, r in enumerate(folds):
+            if in_fold_band(cx, cy, r):
+                return i
+        return None
+
     for e in cfg["elements"]:
         if e.get("physical"):
             continue
+        fi = _fold_of(e) if folds else None
+        if fi is None:
+            target, tdraw = img, draw
+        else:
+            if fi not in layers:
+                layer = Image.new("L", (wpx, hpx), 255)
+                layers[fi] = (layer, ImageDraw.Draw(layer))
+            target, tdraw = layers[fi]
         angle = _element_angle(e) % 360.0
         if abs(angle) > 0.0001 and abs(angle - 360.0) > 0.0001:
-            _draw_element_rotated(img, e, cfg, dpi, angle)
+            _draw_element_rotated(target, e, cfg, dpi, angle)
         else:
-            _draw_element(img, draw, e, cfg, dpi)
+            _draw_element(target, tdraw, e, cfg, dpi)
+
+    for fi, (layer, _) in layers.items():
+        r = folds[fi]
+        cx = mm_to_px(float(r["x"]) + float(r["w"]) / 2, dpi)
+        cy = mm_to_px(float(r["y"]) + float(r["h"]) / 2, dpi)
+        flipped = Image.new("L", (wpx, hpx), 255)
+        flipped.paste(layer.rotate(180), (2 * cx - wpx, 2 * cy - hpx))   # point p -> 2c - p
+        img = ImageChops.darker(img, flipped)
 
     threshold = int(cfg.get("threshold", 180))
     out = img.point(lambda p: 0 if p < threshold else 255, mode="1")
-    out = apply_fold_regions(out, cfg)
     physical = [e for e in cfg["elements"] if e.get("physical")]
     if physical:
         # "Physical" elements (rulers/test marks) are placed on the paper AFTER folding,

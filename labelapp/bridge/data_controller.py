@@ -275,6 +275,15 @@ class DataController(QObject):
         self.currentChanged.emit()
         self._row_timer.start()
 
+    def selectSource(self, source_index):
+        """Make a data row current by its source index, clearing the search filter if it hides that row."""
+        if source_index not in self.ds.filtered:
+            self._query = ''
+            self.ds.search('')
+            self._push_model()
+            self.dataChanged.emit()
+        self._set_current(source_index)
+
     @Slot(int)
     def selectViewRow(self, view_row):
         i = self._model.sourceIndex(view_row)

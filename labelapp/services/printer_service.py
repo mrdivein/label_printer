@@ -5,17 +5,17 @@ Moved verbatim from the original app.py. win32 modules are imported lazily so th
 import os
 
 def image_to_zpl_gfa(img):
+    # 1-bit image packs MSB-first with rows padded to whole bytes; PIL's 1 = white, ZPL's 1 = black.
     mono = img.convert("1")
     width, height = mono.size
     row_bytes = (width + 7) // 8
-    data = bytearray()
-    pix = mono.load()
-    for y in range(height):
-        row = bytearray(row_bytes)
-        for x in range(width):
-            if pix[x, y] == 0:
-                row[x // 8] |= (1 << (7 - (x % 8)))
-        data.extend(row)
+    data = bytes(b ^ 0xFF for b in mono.tobytes())
+    if width % 8:
+        mask = (0xFF << (8 - width % 8)) & 0xFF
+        data = bytearray(data)
+        for i in range(row_bytes - 1, len(data), row_bytes):
+            data[i] &= mask
+        data = bytes(data)
     total = len(data)
     return f"^GFA,{total},{total},{row_bytes},{data.hex().upper()}"
 
@@ -126,10 +126,21 @@ def print_pdf_via_windows_driver(pdf_path, printer_name):
     """
     import win32api
     params = f'"{printer_name}"'
-    result = win32api.ShellExecute(0, "printto", pdf_path, params, os.path.dirname(pdf_path) or ".", 1)
-    if int(result) <= 32:
+    folder = os.path.dirname(pdf_path) or "."
+    try:
+        result = int(win32api.ShellExecute(0, "printto", pdf_path, params, folder, 1))
+        if result > 32:
+            return result
+        err = f"error code {result}"
+    except Exception as exc:  # e.g. (31, 'ShellExecute', 'A device attached to the system is not functioning.')
+        err = str(exc)
+    # The default PDF app has no working 'printto' handler for this printer (common with
+    # Microsoft Print to PDF). Open the PDF instead so it can be printed/saved from the viewer.
+    try:
+        win32api.ShellExecute(0, "open", pdf_path, None, folder, 1)
+    except Exception:
         raise RuntimeError(
-            f"Windows PDF print handler returned error code {result}. "
-            "Open the PDF Proof and print manually to this printer if its PDF app does not support PrintTo."
+            f"Windows PDF print handler failed ({err}). The PDF was saved at:\n{pdf_path}\n"
+            "Open it and print manually to this printer."
         )
-    return result
+    return 33

@@ -77,3 +77,26 @@ def bind_row_to_template(template_cfg, row):
         except Exception:
             pass
     return cfg
+
+
+def missing_fields(template_cfg, row):
+    """Placeholder fields the label would print for this row that are empty in the data (Instant print guard).
+
+    Only elements that survive their "show_if" are considered (a dropped element needs nothing), and a field that
+    appears only in a "show_if" is optional by definition. Returns the field names in template order.
+    """
+    cfg = normalize_cfg(template_cfg)
+    bindings = dict(cfg.get("data_bindings", {}))
+    missing = []
+    for e in cfg["elements"]:
+        if e.get("show_if") and not replace_placeholders(str(e["show_if"]), row, bindings).strip():
+            continue
+        for prop in ("text", "value", "path"):
+            v = e.get(prop)
+            if not isinstance(v, str):
+                continue
+            for m in PLACEHOLDER_RE.finditer(v):
+                key = m.group(1).strip()
+                if not format_binding_value(key, resolve_row_value(row, bindings.get(key, key))).strip() and key not in missing:
+                    missing.append(key)
+    return missing

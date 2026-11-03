@@ -24,16 +24,16 @@ Key design points
 No storage schema changed (the data folder is now `%APPDATA%\LabelPrinter`; an earlier one is copied over on first start). Template JSON, `%APPDATA%\LabelPrinter` (templates, `printer_profiles.json`, `workspace_v20.json`, `data_sources.json`, `active_working_template.json`, backups, print history) are read/written identically. The Qt UI only *adds* keys prefixed `qt_` to the workspace file (`qt_window`, `qt_dark`).
 
 ## Migrated to Qt
-Template library (list/preview/new/duplicate/rename/delete/import/export), save / save-as with backups, undo/redo, working-copy recovery, canvas (zoom, pan, rulers, select, marquee, drag, resize, rotate, fold line, print-area guide, nudge, copy/paste, align, lock, layer order), inspector for every element property, label/paper/compensation/quality settings, Excel + Google Sheet data (saved sources, search, row navigation), data-field picker, print current (preflight, confirmation), print selected/all queue with quantities, batch progress/cancel/skip/retry, PDF export of the queue, PDF proof, print via Windows driver, test prints (calibration, text/barcode quality, ruler overlay, compare sheets), measure & apply compensation, printer profiles, print history files, light/dark theme.
+Template library (list/preview/new/duplicate/rename/delete/import/export), save / save-as with backups, undo/redo, working-copy recovery, canvas (zoom, pan, rulers, select, marquee, drag, resize, rotate, fold line, print-area guide, nudge, copy/paste, align, lock, layer order), inspector for every element property, label/paper/compensation/quality settings, Excel + Google Sheet data (saved sources, search, row navigation), data-field picker, print current (preflight, confirmation), print selected/all queue with quantities, batch progress/cancel/skip/retry, PDF export of the queue, PDF proof, print via Windows driver, test prints (calibration, text/barcode quality, ruler overlay, compare sheets), measure & apply compensation, printer profiles, print history files, light/dark theme, quick scan with Instant print / Print last (Data tab, Ctrl+L), Batch Scan queue (F8: multi-code paste, glued-scan splitting, repeat mode, duplicate resolve, qty, remove-after-print).
 
 ## Still only in the Tkinter app (use `Data ▾ → Open legacy app`)
-Batch Scan / quick-scan printing, print-history viewer + reprint, guide (preview guides) editor, JSON editor, "print via PDF" route, threshold sweep test, printer sync/proof info dialogs beyond the basic summary.
+print-history viewer + reprint, guide (preview guides) editor, JSON editor, "print via PDF" route, threshold sweep test, printer sync/proof info dialogs beyond the basic summary.
 
 ## Verification status
 | Item | Status |
 |---|---|
 | Core extraction is output-identical | 93 digests (render, preview, HQ raster, PDF raster, ZPL, test patterns, data helpers) identical before/after the move |
-| Dimensions, ZPL header/copies, vector PDF page size, zoom-independence, editor, services, bridge, batch printing (printer mocked) | 51 automated tests pass (Linux, offscreen Qt) |
+| Dimensions, ZPL header/copies, vector PDF page size, zoom-independence, editor, services, bridge, batch printing (printer mocked) | 57 automated tests pass (Linux, offscreen Qt) |
 | Mouse/keyboard interaction (move, resize, rotate, marquee, fold, nudge, undo, Ctrl+wheel) | Driven with real synthetic Qt events against the running QML window (Linux, offscreen) |
 | High-DPI (1.75x) and minimum window size (1060x640) layouts | Checked via screenshots (Linux, offscreen) |
 | Real Windows printing, printed physical size, Windows DPI scaling, native file dialogs, PyInstaller `.exe` | **Not verified** — no Windows/printer in the dev sandbox. The print code is unchanged and called through `PrintService`; please print a compare sheet and a real label on the G530 before retiring Tk. `packaging_qt.spec` + `installer/label_printer.iss` are built by `.github/workflows/release.yml` (see README.txt, UPDATES). |
@@ -45,5 +45,5 @@ Batch Scan / quick-scan printing, print-history viewer + reprint, guide (preview
 
 ## Next steps
 1. Verify on Windows with the real printer; build and test the PyInstaller bundle.
-2. Port Batch Scan and the history viewer to QML (logic in `core/barcode_lookup.py` and `PrintService` already exists).
+2. Port the history viewer to QML (logic in `PrintService` already exists). Batch Scan has no live label preview pane yet (use "Show" to preview a queued row in the editor).
 3. Retire the Tk designer (`VisualDesignerDialog`), then the rest of `app.py`.

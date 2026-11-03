@@ -38,7 +38,7 @@ def element_in_fold_region(e, fr):
     x, y, w, h = source_box(e)
     cx, cy = x + w / 2, y + h / 2
     rx = float(fr.get('x', 0)); ry = float(fr.get('y', 0)); rw = float(fr.get('w', 0)); rh = float(fr.get('h', 0))
-    return rx <= cx <= rx + rw and ry <= cy <= ry + rh
+    return ry <= cy <= ry + rh      # horizontal band: x is ignored (see geometry.in_fold_band)
 
 
 def fold_for_element(cfg, e):

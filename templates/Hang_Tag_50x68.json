@@ -113,7 +113,7 @@
       "font_size": 4.2,
       "bold": true,
       "align": "left",
-      "wrap": true,
+      "wrap": false,
       "auto_fit": true,
       "min_font_size": 3.6
     },
@@ -127,7 +127,7 @@
       "font": "Arial",
       "font_size": 3.55,
       "align": "left",
-      "wrap": true,
+      "wrap": false,
       "auto_fit": true,
       "min_font_size": 3.0
     },

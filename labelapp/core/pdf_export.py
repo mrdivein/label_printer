@@ -7,9 +7,9 @@ import tempfile
 from PIL import Image
 
 from ..services.image_service import load_element_image
-from .geometry import (_element_angle, element_center_mm, element_rotation_center, point_in_region,
+from .geometry import (_element_angle, element_center_mm, element_rotation_center, in_fold_band,
                        rotate_point_cw)
-from .label_engine import barcode_text_height_mm, find_font, make_barcode, qr_matrix, render_label
+from .label_engine import barcode_full_code, barcode_text_height_mm, code128_layout, barcode_text_size, find_font, make_barcode, qr_matrix, render_label
 from .models import normalize_cfg, scale_layout_cfg
 from .units import DEFAULT_DPI, mm_to_px
 
@@ -63,7 +63,7 @@ def _element_fold_region(cfg, e):
             continue
         if int(r.get("angle", 180)) % 360 != 180:
             continue
-        if point_in_region(cx, cy, r):
+        if in_fold_band(cx, cy, r):
             return r
     return None
 
@@ -214,7 +214,7 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
             font_name = _pdf_font_name(e.get("font", "Arial"), bool(e.get("bold", False)))
             size = float(e.get("font_size", 8))
             min_size = float(e.get("min_font_size", 4))
-            wrap = bool(e.get("wrap", True))
+            wrap = bool(e.get("wrap", False))
             auto_fit = bool(e.get("auto_fit", False))
             align = str(e.get("align", "left")).lower()
 
@@ -258,35 +258,22 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
                 sym = str(e.get("symbology", "code128")).lower()
                 if text_mm:
                     # Human-readable digits under the bars; bars use the remaining height.
-                    tsize = float(e.get("text_size", 6.0))
+                    tsize = barcode_text_size(e)
                     tfont = _pdf_font_name(e.get("font", "Arial"), False)
                     c.setFont(tfont, tsize)
-                    c.drawString(left + max(0.0, (w * RL_MM - pdfmetrics.stringWidth(value, tfont, tsize)) / 2.0),
-                                 bottom + tsize * 0.2, value)
+                    code = barcode_full_code(value, sym)
+                    c.drawString(left + max(0.0, (w * RL_MM - pdfmetrics.stringWidth(code, tfont, tsize)) / 2.0),
+                                 bottom + tsize * 0.2, code)
                     bottom += text_mm * RL_MM
                     h -= text_mm
                 if sym == "code128":
-                    target_w = w * RL_MM
-                    target_h = min(
-                        h,
-                        float(e.get("barcode_height_mm", max(5, h - 2)))
-                    ) * RL_MM
-
                     pdpi = max(1, int(cfg.get("dpi", DEFAULT_DPI)))
-                    wanted_mm = max(0.12, float(e.get("module_width", 0.25)))
-                    wanted_dots = max(1, int(round(wanted_mm * pdpi / 25.4)))
-                    bc = None
-                    for dots in range(wanted_dots, 0, -1):
-                        snapped_mm = dots * 25.4 / pdpi
-                        trial_width = snapped_mm * RL_MM
-                        trial = code128.Code128(value, barHeight=target_h, barWidth=trial_width, humanReadable=False)
-                        if trial.width <= target_w or dots == 1:
-                            bc = trial
-                            break
-
-                    bx = left + max(0.0, (target_w - bc.width) / 2.0)
-                    by = bottom + max(0.0, (h * RL_MM - target_h) / 2.0)
-                    bc.drawOn(c, bx, by)
+                    dot = RL_MM * 25.4 / pdpi                       # one printer dot in points
+                    w_px = int(round(w * pdpi / 25.4)); h_px = int(round(h * pdpi / 25.4))
+                    mod, left_px, bar_h_px, bars = code128_layout(e, w_px, h_px, pdpi)
+                    by = bottom + ((h_px - bar_h_px) - (h_px - bar_h_px) // 2) * dot   # PDF y runs up; preview floors from the top
+                    for off, wd in bars:
+                        c.rect(left + (left_px + off * mod) * dot, by, wd * mod * dot, bar_h_px * dot, fill=1, stroke=0)
                 else:
                     # Unsupported barcode types keep a high-resolution raster fallback,
                     # but Code128 (the bundled templates) remains vector.

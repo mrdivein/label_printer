@@ -91,6 +91,11 @@ def point_in_region(x, y, r):
         y <= float(r["y"]) + float(r["h"])
     )
 
+def in_fold_band(x, y, r):
+    """Fold regions are horizontal bands: membership depends on the vertical position only, so dragging an
+    element (or letting text run) past the left/right edge never flips it out of its fold."""
+    return float(r["y"]) <= y <= float(r["y"]) + float(r["h"])
+
 def shift_element(e, dx, dy):
     e["x"] = round(float(e.get("x",0)) + dx, 3)
     e["y"] = round(float(e.get("y",0)) + dy, 3)

@@ -47,6 +47,8 @@ INSPECTOR_FIELDS = [
     {'key': 'wrap', 'label': 'Wrap lines', 'kind': 'bool', 'group': 'Text', 'types': {'text'}},
     {'key': 'symbology', 'label': 'Type', 'kind': 'choice', 'group': 'Barcode', 'types': {'barcode'},
      'choices': ['code128', 'ean13', 'ean8', 'upca', 'code39', 'itf']},
+    {'key': 'crop_height', 'label': 'Crop bar height', 'kind': 'bool', 'group': 'Barcode', 'types': {'barcode'}},
+    {'key': 'barcode_height_mm', 'label': 'Bar height', 'kind': 'number', 'group': 'Barcode', 'types': {'barcode'}, 'unit': 'mm'},
     {'key': 'show_text', 'label': 'Digits under bars', 'kind': 'bool', 'group': 'Barcode', 'types': {'barcode'}},
     {'key': 'ecc', 'label': 'Error correction', 'kind': 'choice', 'group': 'QR', 'types': {'qr'}, 'choices': ['L', 'M', 'Q', 'H']},
     {'key': 'fit', 'label': 'Fit', 'kind': 'choice', 'group': 'Image', 'types': {'image'}, 'choices': ['contain', 'stretch']},
@@ -534,7 +536,11 @@ class LabelEditor:
             try:
                 pts = element_outline(cfg, e)
             except Exception:
-                continue
+                try:   # never drop an element's frame: fall back to its unrotated box
+                    x, y, w, h = display_box_mm(cfg, e)
+                    pts = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
+                except Exception:
+                    continue
             els.append({'index': i, 'type': _etype(e), 'locked': bool(e.get('locked')),
                         'selected': i in self.selected, 'rotated': element_is_rotated(e),
                         'poly': [[p[0], p[1]] for p in pts]})

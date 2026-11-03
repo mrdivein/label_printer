@@ -41,6 +41,7 @@ C.ApplicationWindow {
         onPrintRequested: win.doPrint("current")
         onPrintSelected: win.openQueue("selected")
         onPrintAll: win.openQueue("all")
+        onBatchScanRequested: batchScan.open()
         onProofRequested: Printing.pdfProof()
         onDriverRequested: win.doPrint("driver")
         onTestRequested: (kind) => win.doPrint("test:" + kind)
@@ -65,6 +66,7 @@ C.ApplicationWindow {
             onAddFieldRequested: fieldPicker.open()
             onAddImageRequested: { imageDialog.forProperty = false; imageDialog.open() }
             onPrintQueue: (scope) => win.openQueue(scope)
+            onOpenBatchScan: batchScan.open()
         }
         CanvasView {
             id: canvas
@@ -94,6 +96,8 @@ C.ApplicationWindow {
     Shortcut { sequences: ["Ctrl+Shift+S"]; onActivated: top.saveAs() }
     Shortcut { sequences: ["Ctrl+P"]; onActivated: win.doPrint("current") }
     Shortcut { sequences: ["Ctrl+O"]; onActivated: excelDialog.open() }
+    Shortcut { sequences: ["F8"]; onActivated: batchScan.open() }
+    Shortcut { sequences: ["Ctrl+L"]; onActivated: left.focusScan() }
     Shortcut { sequences: ["F5"]; onActivated: Data.reload() }
     Shortcut { sequences: ["Ctrl+Z"]; enabled: !win.typing; onActivated: Doc.undo() }
     Shortcut { sequences: ["Ctrl+Y", "Ctrl+Shift+Z"]; enabled: !win.typing; onActivated: Doc.redo() }
@@ -125,6 +129,7 @@ C.ApplicationWindow {
     ProfilesDialog { id: profilesDlg }
     CompensationDialog { id: compDlg; onVerifyRequested: win.doPrint("test:compare_comp") }
     PrintQueueDialog { id: queueDlg; objectName: "queueDlg"; onExportRequested: pdfDialog.open() }
+    BatchScanDialog { id: batchScan; objectName: "batchScan" }
     BatchDialog { id: batch; objectName: "batch" }
     GoogleSheetDialog { id: googleDlg; objectName: "googleDlg" }
     FieldPickerDialog { id: fieldPicker; objectName: "fieldPicker" }

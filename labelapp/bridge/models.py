@@ -127,6 +127,33 @@ class QueueModel(QAbstractListModel):
             self.dataChanged.emit(self.index(0), self.index(len(self.items) - 1))
 
 
+class ScanQueueModel(QAbstractListModel):
+    """Batch Scan queue rows (scanned code, product summary, qty, checked, status)."""
+    KEYS = ("code", "brand", "model", "price", "qty", "checked", "status", "ready")
+    ROLES = {Qt.ItemDataRole.UserRole + 1 + i: k.encode() for i, k in enumerate(KEYS)}
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.rows = []
+
+    def roleNames(self):
+        return dict(self.ROLES)
+
+    def rowCount(self, parent=QModelIndex()):
+        return 0 if parent.isValid() else len(self.rows)
+
+    def data(self, index, role):
+        key = self.ROLES.get(role)
+        if not index.isValid() or key is None:
+            return None
+        return self.rows[index.row()].get(key.decode())
+
+    def reset(self, rows):
+        self.beginResetModel()
+        self.rows = rows
+        self.endResetModel()
+
+
 class InspectorModel(QAbstractListModel):
     """Property rows for the current selection. Updated in place while the field set is unchanged, so editors
     keep keyboard focus while values commit."""

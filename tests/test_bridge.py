@@ -265,3 +265,91 @@ def test_printer_profiles_round_trip_in_original_format(app, qapp):
     assert app.profiles.save("") != ""
     app.profiles.delete("G530 56x83")
     assert "G530 56x83" not in app.profiles.names
+
+
+# ---------------------------------------------------------------------- scan -> print
+def test_quick_scan_selects_and_instant_prints(app, qapp, printer_log):
+    load_data(app)
+    app.printing.printer = "Godex EZ530+"
+    s = app.scan
+    assert s.quickScan("012345678905") and s.statusKind == "ok" and s.status.startswith("FOUND")
+    assert app.data.currentIndex == 0 and not printer_log["raw"]       # instant print is off
+    s.instantPrint = True
+    s.qty = 3
+    assert s.quickScan(" 012345678905 ")
+    assert s.status.startswith("PRINTED 3") and len(printer_log["raw"]) == 1
+    assert b"^PQ3," in printer_log["raw"][0][1]
+    s.printLast()
+    assert len(printer_log["raw"]) == 2
+    assert s.quickScan("000") and s.status.startswith("NOT FOUND") and len(printer_log["raw"]) == 2
+
+
+def test_scan_suggest_only_when_instant_print_is_off(app, qapp, printer_log):
+    load_data(app)
+    app.printing.printer = "Godex EZ530+"
+    s = app.scan
+    row0 = app.data.ds.rows[0]
+    assert s.suggest("012345") and s.suggest("012345")[0]["index"] == 0   # partial UPC suggests
+    assert s.suggest(str(row0["Brand"])[:3])                                # brand
+    assert not s.isExactCode("012345")
+    assert s.submit("012345", -1) and app.data.currentIndex == 0 and not printer_log["raw"]
+    s.pick(1)
+    assert app.data.currentIndex == 1 and s.hasLast and s.status.startswith("FOUND")
+    assert not s.submit("no-such-thing-xyz", -1) and s.status.startswith("NO MATCH")
+    s.instantPrint = True
+    assert s.suggest("012345") == []                                        # exact-only while instant print is on
+    assert not s.submit("012345", -1) or s.status.startswith("NOT FOUND")   # partial UPC is not printed
+    assert not printer_log["raw"]
+
+
+def test_instant_print_blocks_rows_with_missing_fields(app, qapp, printer_log):
+    load_data(app)
+    app.printing.printer = "Godex EZ530+"
+    app.document.cfg["elements"] = [
+        {"type": "text", "x": 1, "y": 1, "w": 30, "h": 5, "text": "{{Brand}} {{Price}}"},
+        {"type": "text", "x": 1, "y": 8, "w": 30, "h": 5, "text": "{{Origin}}", "show_if": "{{Origin}}"},    # optional
+    ]
+    rows = app.data.ds.rows
+    code0, code1 = str(rows[0]["Barcode"]), str(rows[1]["Barcode"])
+    rows[0]["Price"] = ""
+    rows[1]["Origin"] = ""
+    s = app.scan
+    s.instantPrint = True
+    assert s.quickScan(code0) and s.statusKind == "error"
+    assert "missing data: Price" in s.status and not printer_log["raw"]
+    assert app.data.currentIndex == 0                                    # row is still shown so it can be fixed
+    s.printLast()
+    assert "missing data: Price" in s.status and not printer_log["raw"]
+    assert s.quickScan(code1) and s.status.startswith("PRINTED") and len(printer_log["raw"]) == 1   # optional field ok
+    s.quickScan(code0 + code1)                                           # glued scan: one bad row blocks all
+    assert s.statusKind == "error" and len(printer_log["raw"]) == 1
+
+
+def test_quick_scan_shows_row_hidden_by_search_and_reports_print_errors(app, qapp, printer_log):
+    load_data(app)
+    app.printing.printer = "Godex EZ530+"
+    app.data.search("NW-1041")
+    other = app.data.ds.rows[0]["Barcode"] if app.data.currentIndex == 1 else app.data.ds.rows[1]["Barcode"]
+    app.scan.quickScan(str(other))
+    assert app.data.filteredCount == app.data.rowCount                  # filter cleared so the row is visible
+    printer_log["fail_rows"].add(0)
+    app.scan.instantPrint = True
+    app.scan.quickScan(str(other))
+    assert app.scan.statusKind == "error" and "spooler offline" in app.scan.status
+
+
+def test_batch_scan_queue_prints_checked_rows_and_removes_them(app, qapp, printer_log):
+    load_data(app)
+    app.printing.printer = "Godex EZ530+"
+    s = app.scan
+    codes = [str(r["Barcode"]) for r in app.data.ds.rows]
+    s.removeAfterPrint = True
+    s.process(f"{codes[0]} {codes[0]} {codes[1]} 123")
+    assert s.queueModel.rowCount() == 3 and s.checkedLabels == 3
+    pre = s.prepareBatch()
+    assert pre["ok"] and pre["products"] == 2 and pre["labels"] == 3
+    s.printChecked()
+    wait_for(lambda: not app.printing.busy and len(printer_log["raw"]) == 2)
+    assert [b"^PQ2," in printer_log["raw"][0][1], b"^PQ1," in printer_log["raw"][1][1]] == [True, True]
+    wait_for(lambda: s.queueModel.rowCount() == 1)                      # only the NOT FOUND entry is left
+    assert s.queueModel.rows[0]["status"] == "NOT FOUND"

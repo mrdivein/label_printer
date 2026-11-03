@@ -19,7 +19,12 @@ Item {
     property bool spaceDown: false
     property bool showBounds: false
     property bool showRulers: true
-    readonly property real rulerSize: showRulers ? 20 : 0
+    // View-only rotation (0/90/180/270) to preview the label the way it sits on the physical tag. Never touches the
+    // document or the print output. Rulers are in unrotated label mm, so they are hidden while rotated.
+    property int viewRotation: 0
+    readonly property bool rotated: viewRotation !== 0
+    readonly property real rulerSize: (showRulers && !rotated) ? 20 : 0
+    readonly property bool quarterTurn: viewRotation === 90 || viewRotation === 270
     readonly property var ws: Doc.workspaceRect
     readonly property var paper: Doc.paperRect
     readonly property var ov: Doc.overlay
@@ -36,8 +41,34 @@ Item {
     function toMmX(px) { return (px - panX) / pxPerMm }
     function toMmY(px) { return (px - panY) / pxPerMm }
 
+    function paperCenterScreen() {
+        var p = view.paper
+        return Qt.point(toScreenX(p.x + p.w / 2), toScreenY(p.y + p.h / 2))
+    }
+    // Overlay canvases are drawn in unrotated screen space (rotating the canvas item itself stops it covering the view
+    // once the paper is panned), so the review rotation is applied to points while painting.
+    function rotPt(sx, sy) {
+        if (viewRotation === 0) return [sx, sy]
+        var c = paperCenterScreen(), a = viewRotation * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a)
+        var dx = sx - c.x, dy = sy - c.y
+        return [c.x + dx * ca - dy * sa, c.y + dx * sa + dy * ca]
+    }
+    function rectPath(g, x, y, w, h) {
+        var s = pxPerMm, pts = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
+        g.beginPath()
+        for (var k = 0; k < 4; k++) { var q = rotPt(panX + pts[k][0] * s, panY + pts[k][1] * s); if (k === 0) g.moveTo(q[0], q[1]); else g.lineTo(q[0], q[1]) }
+        g.closePath()
+    }
+    function rotateView() { viewRotation = (viewRotation + 90) % 360; Qt.callLater(fit) }
+    // screen (view coords) -> label mm, honouring the view rotation
+    function viewToMm(vx, vy) {
+        var q = content.mapFromItem(view, vx, vy)
+        return Qt.point(toMmX(q.x), toMmY(q.y))
+    }
+
     function setZoomAt(z, sx, sy) {
         z = Math.max(0.1, Math.min(16, z))
+        if (rotated) { var c = paperCenterScreen(); sx = c.x; sy = c.y }   // keep the rotation pivot fixed
         var mx = toMmX(sx), my = toMmY(sy)
         zoom = z
         panX = sx - mx * pxPerMm
@@ -48,7 +79,8 @@ Item {
         var p = Doc.paperRect
         var aw = width - rulerSize - 80, ah = height - rulerSize - 80
         if (aw < 50 || ah < 50 || p.w <= 0 || p.h <= 0) return
-        var z = Math.min(aw / p.w, ah / p.h) / (96 / 25.4)
+        var pw = quarterTurn ? p.h : p.w, ph = quarterTurn ? p.w : p.h
+        var z = Math.min(aw / pw, ah / ph) / (96 / 25.4)
         zoom = Math.max(0.1, Math.min(16, z))
         panX = rulerSize + (width - rulerSize - p.w * pxPerMm) / 2 - p.x * pxPerMm
         panY = rulerSize + (height - rulerSize - p.h * pxPerMm) / 2 - p.y * pxPerMm
@@ -61,6 +93,15 @@ Item {
     Connections { target: Doc; function onTemplateLoaded() { Qt.callLater(view.fit) } }
 
     Rectangle { anchors.fill: parent; color: Theme.canvas }
+
+    Item {
+    id: content
+    anchors.fill: parent
+    transform: Rotation {
+        angle: view.viewRotation
+        origin.x: view.toScreenX(view.paper.x + view.paper.w / 2)
+        origin.y: view.toScreenY(view.paper.y + view.paper.h / 2)
+    }
 
     // ---- paper shadow + rendered label (physical position) ----
     Rectangle {
@@ -82,24 +123,30 @@ Item {
         fillMode: Image.Stretch
     }
 
+    }   // content
+
     // ---- overlay: element bounds, selection, handles, print area, fold ----
     Canvas {
         id: overlayCanvas
         anchors.fill: parent
-        renderStrategy: Canvas.Threaded
+        renderStrategy: Canvas.Cooperative   // Threaded could drop repaint requests after many drag/rotate updates -> frame vanished
+        onAvailableChanged: if (available) requestPaint()
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        Connections { target: Doc; function onOverlayChanged() { overlayCanvas.requestPaint() } function onGhostChanged() { overlayCanvas.requestPaint() } }
         property var theme: Theme.dark
         onThemeChanged: requestPaint()
         Connections { target: view; function onPanXChanged() { overlayCanvas.requestPaint() } function onPanYChanged() { overlayCanvas.requestPaint() }
             function onPxPerMmChanged() { overlayCanvas.requestPaint() } function onOvChanged() { overlayCanvas.requestPaint() }
             function onHoverIndexChanged() { overlayCanvas.requestPaint() } function onShowBoundsChanged() { overlayCanvas.requestPaint() }
-            function onWidthChanged() { overlayCanvas.requestPaint() } function onHeightChanged() { overlayCanvas.requestPaint() } }
+            function onViewRotationChanged() { overlayCanvas.requestPaint() } function onWidthChanged() { overlayCanvas.requestPaint() } function onHeightChanged() { overlayCanvas.requestPaint() } }
         onPaint: {
             var g = getContext("2d")
             g.reset()
             var o = view.ov
             if (!o || !o.elements) return
             var s = view.pxPerMm
-            function P(p) { return [view.panX + p[0] * s, view.panY + p[1] * s] }
+            function P(p) { return view.rotPt(view.panX + p[0] * s, view.panY + p[1] * s) }
             function poly(pts) { g.beginPath(); for (var k = 0; k < pts.length; k++) { var q = P(pts[k]); if (k === 0) g.moveTo(q[0], q[1]); else g.lineTo(q[0], q[1]) } g.closePath() }
             var acc = Theme.accent
             // paper outline-less: bounds
@@ -120,9 +167,9 @@ Item {
             if (o.virtual) {
                 var v = o.virtual, a = P([v.x, v.y]), b = P([v.x + v.w, v.y + v.h])
                 g.strokeStyle = Theme.guideArea; g.lineWidth = 1.5; g.setLineDash([6, 4])
-                g.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]); g.setLineDash([])
+                view.rectPath(g, v.x, v.y, v.w, v.h); g.stroke(); g.setLineDash([])
                 g.fillStyle = Theme.guideArea; g.font = "600 10px sans-serif"
-                g.fillText("PRINT AREA", b[0] - g.measureText("PRINT AREA").width - 4, a[1] - 5)
+                var pa = P([v.x + v.w, v.y]); g.fillText("PRINT AREA", pa[0] - g.measureText("PRINT AREA").width - 4, pa[1] - 5)
                 for (var h = 0; h < v.handles.length; h++) {
                     var hp = P([v.handles[h].x, v.handles[h].y])
                     g.fillStyle = Theme.surface; g.strokeStyle = Theme.guideArea; g.lineWidth = 1.5
@@ -173,21 +220,20 @@ Item {
     Canvas {
         id: ghostCanvas
         anchors.fill: parent
-        renderStrategy: Canvas.Threaded
+        renderStrategy: Canvas.Cooperative
         Connections { target: Doc; function onGhostChanged() { ghostCanvas.requestPaint() } }
-        Connections { target: view; function onPanXChanged() { ghostCanvas.requestPaint() } function onPanYChanged() { ghostCanvas.requestPaint() } function onPxPerMmChanged() { ghostCanvas.requestPaint() } }
+        Connections { target: view; function onPanXChanged() { ghostCanvas.requestPaint() } function onPanYChanged() { ghostCanvas.requestPaint() } function onPxPerMmChanged() { ghostCanvas.requestPaint() } function onViewRotationChanged() { ghostCanvas.requestPaint() } }
         onPaint: {
             var g = getContext("2d"); g.reset()
             var gh = Doc.ghost
             if (!gh || !gh.mode) return
             var s = view.pxPerMm
-            function P(x, y) { return [view.panX + x * s, view.panY + y * s] }
+            function P(x, y) { return view.rotPt(view.panX + x * s, view.panY + y * s) }
             g.setLineDash([4, 3]); g.lineWidth = 1.5; g.strokeStyle = Theme.accent; g.fillStyle = Qt.alpha(Theme.accent, 0.08)
             var label = gh.text || ""
             var lx = 0, ly = 0
             if (gh.mode === "marquee") {
-                var a = P(gh.rect[0], gh.rect[1]), b = P(gh.rect[2], gh.rect[3])
-                g.fillRect(a[0], a[1], b[0] - a[0], b[1] - a[1]); g.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1])
+                view.rectPath(g, gh.rect[0], gh.rect[1], gh.rect[2] - gh.rect[0], gh.rect[3] - gh.rect[1]); g.fill(); g.stroke()
                 return
             }
             if (gh.polys) {
@@ -198,8 +244,8 @@ Item {
                     if (i === 0) { var q0 = P(pts[0][0], pts[0][1]); lx = q0[0]; ly = q0[1] }
                 }
             }
-            if (gh.area) { var a1 = P(gh.area[0], gh.area[1]), a2 = P(gh.area[0] + gh.area[2], gh.area[1] + gh.area[3])
-                g.strokeStyle = Theme.guideArea; g.strokeRect(a1[0], a1[1], a2[0] - a1[0], a2[1] - a1[1]); lx = a1[0]; ly = a1[1] }
+            if (gh.area) { var a1 = P(gh.area[0], gh.area[1])
+                g.strokeStyle = Theme.guideArea; view.rectPath(g, gh.area[0], gh.area[1], gh.area[2], gh.area[3]); g.stroke(); lx = a1[0]; ly = a1[1] }
             if (gh.fold_y !== undefined) { var o = Doc.overlay.fold; if (o) { var f1 = P(o.x1, gh.fold_y), f2 = P(o.x2, gh.fold_y)
                 g.strokeStyle = Theme.guideFold; g.lineWidth = 2; g.beginPath(); g.moveTo(f1[0], f1[1]); g.lineTo(f2[0], f2[1]); g.stroke(); lx = f1[0]; ly = f1[1] } }
             if (label.length) {
@@ -211,11 +257,12 @@ Item {
         }
     }
 
+
     // ---- rulers (millimetres) ----
     Canvas {
         id: rulers
         anchors.fill: parent
-        visible: view.showRulers
+        visible: view.showRulers && !view.rotated
         renderStrategy: Canvas.Threaded
         Connections { target: view; function onPanXChanged() { rulers.requestPaint() } function onPanYChanged() { rulers.requestPaint() }
             function onPxPerMmChanged() { rulers.requestPaint() } function onWidthChanged() { rulers.requestPaint() } function onHeightChanged() { rulers.requestPaint() }
@@ -285,7 +332,7 @@ Item {
             if (r === "locked") return Qt.ForbiddenCursor
             return Qt.ArrowCursor
         }
-        function mm(mouse) { return Qt.point(view.toMmX(mouse.x + view.rulerSize), view.toMmY(mouse.y + view.rulerSize)) }
+        function mm(mouse) { return view.viewToMm(mouse.x + view.rulerSize, mouse.y + view.rulerSize) }
 
         Timer { id: hoverThrottle; interval: 30; property point at; onTriggered: {
                 var h = Doc.hover(at.x, at.y); view.hoverIndex = h.element; view.hoverRole = h.role } }
@@ -342,6 +389,17 @@ Item {
         width: parent.width * 0.7; wrapMode: Text.Wrap; horizontalAlignment: Text.AlignHCenter
     }
 
+    // ---- review-rotation badge ----
+    Rectangle {
+        visible: view.rotated
+        anchors.left: parent.left; anchors.top: parent.top; anchors.margins: Theme.s4
+        width: rotLabel.implicitWidth + Theme.s3 * 2; height: 24; radius: Theme.radiusMd
+        color: Theme.surface; border.width: 1; border.color: Theme.border
+        Text { id: rotLabel; anchors.centerIn: parent; text: "Review view " + view.viewRotation + "° — print unchanged"
+            font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
+        MouseArea { anchors.fill: parent; onClicked: { view.viewRotation = 0; Qt.callLater(view.fit) } }
+    }
+
     // ---- floating view controls ----
     Rectangle {
         anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.margins: Theme.s4
@@ -366,6 +424,8 @@ Item {
             AppButton { text: "Fit"; kind: "ghost"; compact: true; onClicked: view.fit(); anchors.verticalCenter: parent.verticalCenter }
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
             IconButton { text: "▭"; tip: "Show element bounds"; active: view.showBounds; width: 28; height: 28; onClicked: view.showBounds = !view.showBounds }
+            IconButton { text: "⟳"; tip: view.rotated ? "Rotate review view 90° (now " + view.viewRotation + "°; view only, print unchanged)" : "Rotate review view 90° (view only, print unchanged)"
+                active: view.rotated; width: 28; height: 28; onClicked: view.rotateView() }
             IconButton { text: "⌗"; tip: "Rulers"; active: view.showRulers; width: 28; height: 28; onClicked: view.showRulers = !view.showRulers }
         }
     }

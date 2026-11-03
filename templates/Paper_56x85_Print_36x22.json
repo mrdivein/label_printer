@@ -83,7 +83,7 @@
       "font_size": 4.0,
       "bold": true,
       "align": "left",
-      "wrap": true,
+      "wrap": false,
       "auto_fit": true,
       "min_font_size": 3.3
     },
@@ -98,7 +98,7 @@
       "font_size": 3.3,
       "bold": false,
       "align": "left",
-      "wrap": true,
+      "wrap": false,
       "auto_fit": true,
       "min_font_size": 2.8
     },

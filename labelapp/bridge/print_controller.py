@@ -33,6 +33,7 @@ class PrintController(QObject):
     error = Signal(str, str)                # title, text
     batchError = Signal(int, str)           # 1-based row number, message
     batchFinished = Signal(str)
+    jobsPrinted = Signal(str, 'QVariantList')   # action, ids of the jobs that printed (see startJobs)
 
     def __init__(self, workspace, document, data, service: PrintService, parent=None):
         super().__init__(parent)
@@ -409,6 +410,10 @@ class PrintController(QObject):
     @Slot()
     def startQueue(self):
         """Print queued rows one per UI tick, with progress, cancel, and skip/retry/stop on errors."""
+        self.startJobs([(i['row'], i['qty']) for i in self._queue.items], self._queue_title)
+
+    def startJobs(self, jobs, action, ids=None):
+        """Run [(row_index, qty)] as a batch. `ids` (parallel list) come back in jobsPrinted for the jobs that printed."""
         if self._batch is not None:
             return
         try:
@@ -416,8 +421,9 @@ class PrintController(QObject):
         except Exception as e:
             self.error.emit('Print', str(e))
             return
-        self._batch = {'jobs': [(i['row'], i['qty']) for i in self._queue.items], 'n': 0, 'failed': 0, 'cancel': False,
-                       'waiting': False, 'printer': printer, 'base': self.document.cfg, 'action': self._queue_title}
+        self._batch = {'jobs': list(jobs), 'ids': list(ids) if ids is not None else list(range(len(jobs))), 'done': [],
+                       'n': 0, 'failed': 0, 'cancel': False, 'waiting': False, 'printer': printer,
+                       'base': self.document.cfg, 'action': action}
         self._busy = True
         self._progress = 0.0
         self._progress_text = 'Starting…'
@@ -425,12 +431,27 @@ class PrintController(QObject):
         self.progressChanged.emit()
         self._batch_timer.start(50)
 
+    def print_row(self, row_index, qty, action):
+        """Print one data row right now (instant scan print). Raises on preflight errors or printer failure."""
+        printer = self._validated_printer()
+        row = self.data.ds.rows[row_index]
+        cfg = bind_row_to_template(self.document.cfg, row)
+        cfg['copies'] = max(1, int(qty))
+        errors, _warnings = self.service.preflight(cfg)
+        if errors:
+            raise RuntimeError('Preflight: ' + '; '.join(errors[:4]))
+        self.service.print_cfg(cfg, printer, row)
+        self.service.record_history(cfg, printer, row, action, self.document.templateName)
+
     def _finish_batch(self, text):
+        b = self._batch
         self._batch = None
         self._busy = False
         self.busyChanged.emit()
         self.message.emit(text)
         self.batchFinished.emit(text)
+        if b is not None:
+            self.jobsPrinted.emit(b['action'], [b['ids'][n] for n in b['done']])
 
     @Slot()
     def cancelBatch(self):
@@ -480,6 +501,7 @@ class PrintController(QObject):
             b['waiting'] = True
             self.batchError.emit(i + 1, str(ex))
             return
+        b['done'].append(b['n'])
         b['n'] += 1
         self._progress = b['n'] / max(1, len(jobs))
         self.progressChanged.emit()

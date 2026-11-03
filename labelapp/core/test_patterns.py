@@ -56,12 +56,12 @@ def make_barcode_quality_test_cfg(base_cfg):
     else: ox=0.0; oy=0.0; w=pw; h=ph
     cfg["copies"]=1; cfg["fold_regions"]=[]; cfg["data_bindings"]={}; cfg["elements"]=[]
     cfg["elements"].append({"type":"text","text":"BARCODE QUALITY","x":ox+1.5,"y":oy+1.5,"w":max(8,w-3),"h":4,"font":"Tahoma","font_size":6.5,"bold":True,"align":"left","wrap":False,"auto_fit":True,"min_font_size":4.5})
-    dpi=max(1,int(cfg.get("dpi",300))); y=oy+6.0; value="889214705891"
+    dpi=max(1,int(cfg.get("dpi",300))); y=oy+6.0; value="012345678905"
     for dots in (2,3,4):
         if y+10.8 > oy+h-0.5: break
         mw=dots*25.4/dpi
         cfg["elements"].append({"type":"text","text":f"Code128 {dots} dots/module ({mw:.3f} mm)","x":ox+1.5,"y":y,"w":max(8,w-3),"h":2.5,"font":"Verdana","font_size":3.4,"bold":False,"align":"left","wrap":False,"auto_fit":True,"min_font_size":2.8})
-        cfg["elements"].append({"type":"barcode","value":value,"x":ox+1.5,"y":y+2.3,"w":max(8,w-3),"h":5.8,"symbology":"code128","barcode_height_mm":5.4,"module_width":mw,"quiet_zone":1.0,"show_text":False})
+        cfg["elements"].append({"type":"barcode","value":value,"x":ox+1.5,"y":y+2.3,"w":max(8,w-3),"h":5.8,"symbology":"code128","barcode_height_mm":5.4,"module_width":mw,"fit":"module","quiet_zone":1.0,"show_text":False})
         cfg["elements"].append({"type":"text","text":value,"x":ox+1.5,"y":y+8.2,"w":max(8,w-3),"h":2.0,"font":"Verdana","font_size":3.0,"bold":False,"align":"center","wrap":False})
         y += 10.5
     return cfg

@@ -15,6 +15,8 @@ Panel {
     signal addFieldRequested()
     signal addImageRequested()
     signal printQueue(string scope)
+    signal openBatchScan()
+    function focusScan() { tab = 1; dataTab.focusScan() }
 
     function showData() { tab = 1 }
 
@@ -145,9 +147,11 @@ Panel {
 
             // ---------------- Data ----------------
             DataTab {
+                id: dataTab
                 onOpenExcel: p.openExcel()
                 onOpenGoogle: p.openGoogle()
                 onPrintQueue: (scope) => p.printQueue(scope)
+                onOpenBatchScan: p.openBatchScan()
             }
         }
     }

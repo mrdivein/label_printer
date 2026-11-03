@@ -11,6 +11,7 @@ Panel {
     signal printRequested()
     signal printSelected()
     signal printAll()
+    signal batchScanRequested()
     signal proofRequested()
     signal driverRequested()
     signal printerInfoRequested()
@@ -65,6 +66,7 @@ Panel {
                     AppMenuItem { text: "Print current label"; hint: "Ctrl+P"; onTriggered: bar.printRequested() }
                     AppMenuItem { text: "Print selected rows…"; enabled: Data.hasData; onTriggered: bar.printSelected() }
                     AppMenuItem { text: "Print all rows…"; enabled: Data.hasData; onTriggered: bar.printAll() }
+                    AppMenuItem { text: "Batch scan queue…"; hint: "F8"; enabled: Data.hasData; onTriggered: bar.batchScanRequested() }
                     AppMenuSeparator {}
                     AppMenuItem { text: "PDF proof (nothing printed)"; onTriggered: bar.proofRequested() }
                     AppMenuItem { text: "Print vector PDF via Windows driver…"; onTriggered: bar.driverRequested() }
