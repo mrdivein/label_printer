@@ -3,6 +3,7 @@ import copy
 
 import pytest
 
+from labelapp.core.designer_geometry import element_outline, outline_bbox
 from labelapp.core.editor import LabelEditor
 
 
@@ -167,3 +168,93 @@ def test_undo_stack_is_bounded(ed):
     for _ in range(80):
         ed.nudge(1, 0)
     assert len(ed.undo_stack) == 60
+
+def test_group_click_selects_all_and_moves_together(ed):
+    ed.set_selection({1, 2}, 1)
+    assert ed.can_group and ed.group_selected() == "Grouped"
+    assert ed.selection_is_group and not ed.can_group and ed.can_ungroup
+    ed.set_selection(set(), None)
+    x1, x2 = ed.elements[1]["x"], ed.elements[2]["x"]
+    cx, cy = centre(ed, 2)
+    assert ed.press(cx, cy) == "move" and ed.selected == {1, 2}
+    ed.release(cx + 2.0, cy)
+    assert ed.elements[1]["x"] == pytest.approx(x1 + 2) and ed.elements[2]["x"] == pytest.approx(x2 + 2)
+    ed.undo()
+    assert ed.ungroup_selected() == "Ungrouped"
+    assert not any("group_id" in e for e in ed.elements)
+    ed.undo()
+    assert ed.elements[1]["group_id"] == ed.elements[2]["group_id"]
+
+
+def test_marquee_takes_whole_group_and_list_pick_stays_single(ed):
+    ed.set_selection({1, 2}, 1)
+    ed.group_selected()
+    ed.set_selection(set(), None)
+    cx, cy = centre(ed, 1)
+    ed.marquee_select(cx - 0.1, cy - 0.1, cx + 0.1, cy + 0.1)
+    assert {1, 2} <= ed.selected
+    ed.set_selection({2}, 2)                                 # the layer list edits one member
+    assert ed.selected == {2} and ed.can_ungroup and not ed.can_group
+
+
+def test_group_hides_fields_that_would_collapse_its_layout(ed):
+    ed.set_selection({1, 2}, 1)
+    assert "x" in [f["key"] for f in ed.inspector_fields()]
+    ed.group_selected()
+    keys = [f["key"] for f in ed.inspector_fields()]
+    assert "x" not in keys and "text" not in keys and "font_size" in keys
+
+
+def test_copies_of_a_group_get_their_own_group(ed):
+    ed.set_selection({1, 2}, 1)
+    ed.group_selected()
+    gid = ed.elements[1]["group_id"]
+    ed.duplicate_selected()
+    a, b = ed.elements[-2], ed.elements[-1]
+    assert a["group_id"] == b["group_id"] != gid
+    ed.set_selection({1, 2}, 1)
+    ed.copy_selected()
+    ed.paste()
+    assert ed.elements[-1]["group_id"] not in (gid, a["group_id"])
+
+
+def test_deleting_down_to_one_member_dissolves_the_group(ed):
+    ed.set_selection({1, 2}, 1)
+    ed.group_selected()
+    ed.set_selection({2}, 2)
+    ed.delete_selected()
+    assert not any("group_id" in e for e in ed.elements)
+
+
+def test_double_click_edit_changes_one_member_only(ed):
+    ed.set_selection({1, 2}, 1)
+    ed.group_selected()
+    other = ed.elements[2]["text"]
+    assert ed.set_element_text(1, "Mới")
+    assert ed.elements[1]["text"] == "Mới" and ed.elements[2]["text"] == other
+
+
+def test_block_rotation_is_rigid_across_a_fold(ed):
+    from labelapp.core.designer_geometry import visual_frame
+    from labelapp.core.geometry import rotate_point_cw
+    ed.select_all()
+    ed.group_selected()
+    before = [visual_frame(ed.cfg, e) for e in ed.elements]
+    boxes = [outline_bbox(element_outline(ed.cfg, e)) for e in ed.elements]
+    px = (min(b[0] for b in boxes) + max(b[2] for b in boxes)) / 2
+    py = (min(b[1] for b in boxes) + max(b[3] for b in boxes)) / 2
+    assert ed.rotate_selected(90) == "Rotated"
+    for f0, f1 in zip(before, [visual_frame(ed.cfg, e) for e in ed.elements]):
+        tx, ty = rotate_point_cw(f0[0], f0[1], px, py, 90)
+        assert (f1[0], f1[1]) == pytest.approx((tx, ty), abs=0.01)
+        assert (f1[4] - f0[4] - 90) % 360 == pytest.approx(0, abs=0.02) or (f1[4] - f0[4] - 90) % 360 == pytest.approx(360, abs=0.02)
+
+
+def test_four_quarter_turns_restore_the_block(ed):
+    ed.select_all()
+    before = copy.deepcopy(ed.elements)
+    for _ in range(4):
+        ed.rotate_selected(90)
+    for a, b in zip(before, ed.elements):
+        assert float(b["x"]) == pytest.approx(float(a["x"]), abs=0.02) and float(b["y"]) == pytest.approx(float(a["y"]), abs=0.02)
+        assert float(b.get("angle", 0)) % 360 == pytest.approx(float(a.get("angle", 0)) % 360, abs=0.02)

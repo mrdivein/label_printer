@@ -19,7 +19,7 @@ C.ComboBox {
     }
     contentItem: Text {
         leftPadding: 0
-        text: c.mixed ? "Mixed" : c.displayText
+        text: c.mixed ? "Nhiều giá trị" : c.displayText
         font: c.font
         color: c.mixed ? Theme.textFaint : (c.enabled ? Theme.text : Theme.disabledFg)
         verticalAlignment: Text.AlignVCenter

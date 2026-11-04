@@ -6,8 +6,8 @@ import "../components"
 
 AppDialog {
     id: d
-    title: "Add data field"
-    subtitle: "Columns of the loaded data. {{Column Name}} binds automatically."
+    title: "Chèn trường dữ liệu"
+    subtitle: "Các cột của dữ liệu đang mở. {{Tên cột}} tự lấy giá trị theo từng dòng."
     contentPadding: Theme.s5
     property var fields: []
     property var picked: ({})
@@ -20,7 +20,7 @@ AppDialog {
     body: [
         ColumnLayout {
             Layout.preferredWidth: 560; spacing: Theme.s2
-            AppTextField { id: search; Layout.fillWidth: true; placeholderText: "Search fields or sample values"; onTextChanged: d.refresh() }
+            AppTextField { id: search; Layout.fillWidth: true; placeholderText: "Tìm tên cột hoặc giá trị mẫu"; onTextChanged: d.refresh() }
             ListView {
                 id: list
                 Layout.fillWidth: true; Layout.preferredHeight: 280
@@ -38,15 +38,15 @@ AppDialog {
                     MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; onClicked: d.toggle(modelData.field)
                         onDoubleClicked: { d.picked = ({}); d.toggle(modelData.field); addText.clicked() } }
                 }
-                Text { visible: list.count === 0; anchors.centerIn: parent; text: Data.hasData ? "No matching fields" : "Load data to see its columns, or type a custom field below."
+                Text { visible: list.count === 0; anchors.centerIn: parent; text: Data.hasData ? "Không có cột phù hợp" : "Mở dữ liệu để thấy các cột, hoặc gõ tên cột bên dưới."
                     font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; color: Theme.textFaint }
             }
-            PropertyRow { label: "Custom field"; labelWidth: 96; AppTextField { id: custom; Layout.fillWidth: true; placeholderText: "Column name" } }
+            PropertyRow { label: "Cột tự nhập"; labelWidth: 96; AppTextField { id: custom; Layout.fillWidth: true; placeholderText: "Tên cột" } }
         }
     ]
     buttons: [
-        AppButton { text: "Cancel"; kind: "ghost"; onClicked: d.close() },
-        AppButton { text: "Add as barcode"; enabled: d.names().length === 1; onClicked: { Doc.addFields(d.names(), true); d.close() } },
-        AppButton { id: addText; text: "Add as text"; kind: "primary"; enabled: d.names().length > 0; onClicked: { Doc.addFields(d.names(), false); d.close() } }
+        AppButton { text: "Huỷ"; kind: "ghost"; onClicked: d.close() },
+        AppButton { text: "Chèn dạng mã vạch"; enabled: d.names().length === 1; onClicked: { Doc.addFields(d.names(), true); d.close() } },
+        AppButton { id: addText; text: "Chèn dạng chữ"; kind: "primary"; enabled: d.names().length > 0; onClicked: { Doc.addFields(d.names(), false); d.close() } }
     ]
 }

@@ -12,7 +12,7 @@ C.TextField {
     font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase
     color: Theme.text
     placeholderTextColor: Theme.textFaint
-    placeholderText: mixed ? "Mixed" : ""
+    placeholderText: mixed ? "Nhiều giá trị" : ""
     selectionColor: Theme.accent; selectedTextColor: Theme.onAccent
     selectByMouse: true
     hoverEnabled: true

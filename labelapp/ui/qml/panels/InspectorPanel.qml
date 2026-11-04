@@ -12,6 +12,9 @@ Panel {
 
     readonly property bool hasSel: Doc.selectionCount > 0
     readonly property var d: Doc.doc
+    // printer-specific tuning lives in printer profiles; keep it out of the way unless asked for
+    property bool showAdvanced: false
+    property bool showView: false
 
     C.ScrollView {
         id: scroll
@@ -29,13 +32,13 @@ Panel {
                 Layout.fillWidth: true; Layout.preferredHeight: 56
                 Column {
                     anchors.left: parent.left; anchors.leftMargin: Theme.s4; anchors.verticalCenter: parent.verticalCenter; spacing: 1
-                    Text { text: p.hasSel ? Doc.selectionTitle : "Label"; font.family: Theme.fontFamily; font.pixelSize: Theme.fsLg; font.weight: Font.DemiBold; color: Theme.text }
-                    Text { text: p.hasSel ? (Doc.selectionCount > 1 ? "Edits apply to every selected element" : "Element " + (Doc.selection[0] + 1))
+                    Text { text: p.hasSel ? Doc.selectionTitle : "Khổ tem"; font.family: Theme.fontFamily; font.pixelSize: Theme.fsLg; font.weight: Font.DemiBold; color: Theme.text }
+                    Text { text: p.hasSel ? (Doc.selectionCount > 1 ? "Thay đổi áp dụng cho mọi phần tử đang chọn" : "Phần tử số " + (Doc.selection[0] + 1))
                                           : (d.width_mm + " × " + d.height_mm + " mm  ·  " + d.dpi + " dpi")
                         font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
                 }
                 AppButton {
-                    visible: p.hasSel; text: Doc.selectionLocked ? "Unlock" : "Lock"; compact: true; kind: "secondary"
+                    visible: p.hasSel; text: Doc.selectionLocked ? "Mở khoá" : "Khoá"; compact: true; kind: "secondary"
                     anchors.right: parent.right; anchors.rightMargin: Theme.s4; anchors.verticalCenter: parent.verticalCenter
                     onClicked: Doc.setLocked(!Doc.selectionLocked)
                 }
@@ -65,9 +68,12 @@ Panel {
                     required property string kind
                     required property string unit
                     required property var choices
+                    required property var choice_labels
                     required property var value
                     required property bool mixed
                     readonly property var val: (value === undefined || value === null) ? null : value     // Python None arrives as undefined
+                    // what the combo shows: Vietnamese labels when the schema has them, else the stored values
+                    readonly property var shown: (choice_labels && choice_labels.length === (choices ? choices.length : -1)) ? choice_labels : choices
                     width: props.width; height: 36
                     PropertyRow {
                         anchors.left: parent.left; anchors.right: parent.right; anchors.leftMargin: Theme.s4; anchors.rightMargin: Theme.s4
@@ -88,13 +94,14 @@ Panel {
                         CheckField { text: row.label; checked: row.val === true; mixed: row.mixed
                             onToggled: Doc.setProp(row.key, checked) } }
                     Component { id: choiceC
-                        ComboField { model: row.choices; mixed: row.mixed
-                            currentIndex: Math.max(0, row.choices.indexOf(row.val === null ? "" : row.val))
-                            displayText: (!row.mixed && row.val === "") ? "None" : (row.val === null ? "" : String(row.val))
+                        ComboField { model: row.shown; mixed: row.mixed
+                            readonly property int at: row.choices.indexOf(row.val === null ? "" : row.val)
+                            currentIndex: Math.max(0, at)
+                            displayText: at >= 0 ? String(row.shown[at]) : (row.val === null || row.val === "" ? "Không" : String(row.val))
                             onActivated: (i) => Doc.setProp(row.key, row.choices[i]) } }
                     Component { id: textC
                         AppTextField { mixed: row.mixed; text: row.val === null ? "" : String(row.val)
-                            placeholderText: row.key === "show_if" ? "e.g. {{Origin}}" : (row.mixed ? "Mixed" : "")
+                            placeholderText: row.key === "show_if" ? "vd. {{XuatXu}}" : (row.mixed ? "Nhiều giá trị" : "")
                             onEditingFinished: if (text !== (row.val === null ? "" : String(row.val))) Doc.setProp(row.key, text) } }
                     Component { id: pathC
                         RowLayout { spacing: Theme.s1
@@ -104,27 +111,33 @@ Panel {
                 }
             }
 
-            // ---------- arrange ----------
+            // ---------- arrange (several elements: the floating toolbar covers single ones) ----------
             ColumnLayout {
                 visible: p.hasSel
                 Layout.fillWidth: true; Layout.leftMargin: Theme.s4; Layout.rightMargin: Theme.s4; Layout.topMargin: Theme.s3
                 spacing: Theme.s2
-                SectionHeader { text: "Arrange"; Layout.fillWidth: true }
+                SectionHeader { text: "Sắp xếp"; Layout.fillWidth: true }
                 Flow {
                     Layout.fillWidth: true; spacing: Theme.s1
-                    AppButton { text: "Center H"; compact: true; onClicked: Doc.centerOnLabel("h") }
-                    AppButton { text: "Center V"; compact: true; onClicked: Doc.centerOnLabel("v") }
+                    AppButton { text: "Giữa ngang"; compact: true; onClicked: Doc.centerOnLabel("h") }
+                    AppButton { text: "Giữa dọc"; compact: true; onClicked: Doc.centerOnLabel("v") }
                     AppButton { text: "↺ 90°"; compact: true; onClicked: Doc.rotateBy(-90) }
                     AppButton { text: "↻ 90°"; compact: true; onClicked: Doc.rotateBy(90) }
                     AppButton { text: "0°"; compact: true; onClicked: Doc.resetRotation() }
                 }
                 Flow {
-                    visible: Doc.selectionCount > 1
+                    visible: Doc.canGroup || Doc.canUngroup
                     Layout.fillWidth: true; spacing: Theme.s1
-                    AppButton { text: "Align left"; compact: true; onClicked: Doc.align("left") }
-                    AppButton { text: "Align top"; compact: true; onClicked: Doc.align("top") }
-                    AppButton { text: "Center ↔"; compact: true; onClicked: Doc.align("hcenter") }
-                    AppButton { text: "Center ↕"; compact: true; onClicked: Doc.align("vcenter") }
+                    AppButton { visible: Doc.canGroup; text: "Nhóm (Ctrl+G)"; compact: true; onClicked: Doc.groupSelected() }
+                    AppButton { visible: Doc.canUngroup; text: "Bỏ nhóm (Ctrl+Shift+G)"; compact: true; onClicked: Doc.ungroupSelected() }
+                }
+                Flow {
+                    visible: Doc.selectionCount > 1 && !Doc.selectionIsGroup
+                    Layout.fillWidth: true; spacing: Theme.s1
+                    AppButton { text: "Căn trái"; compact: true; onClicked: Doc.align("left") }
+                    AppButton { text: "Căn trên"; compact: true; onClicked: Doc.align("top") }
+                    AppButton { text: "Giữa ↔"; compact: true; onClicked: Doc.align("hcenter") }
+                    AppButton { text: "Giữa ↕"; compact: true; onClicked: Doc.align("vcenter") }
                 }
                 Item { Layout.preferredHeight: Theme.s4 }
             }
@@ -135,43 +148,78 @@ Panel {
                 Layout.fillWidth: true; Layout.leftMargin: Theme.s4; Layout.rightMargin: Theme.s4; Layout.topMargin: Theme.s1
                 spacing: Theme.s2
 
-                SectionHeader { text: "Paper"; Layout.fillWidth: true }
-                PropertyRow { label: "Width"; NumberField { value: d.width_mm; unit: "mm"; from: 1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("width_mm", v) } }
-                PropertyRow { label: "Height"; NumberField { value: d.height_mm; unit: "mm"; from: 1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("height_mm", v) } }
-                PropertyRow { label: "Orientation"
-                    ComboField { Layout.fillWidth: true; model: ["portrait", "landscape"]; currentIndex: d.orientation === "landscape" ? 1 : 0
-                        onActivated: (i) => Doc.setDoc("orientation", model[i]) } }
-                PropertyRow { label: "Printer DPI"
-                    NumberField { value: d.dpi; step: 1; decimals: 0; from: 72; to: 1200; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("dpi", v) } }
-                PropertyRow { label: "Copies"
+                SectionHeader { text: "Kích thước"; Layout.fillWidth: true }
+                PropertyRow { label: "Rộng"; NumberField { value: d.width_mm; unit: "mm"; from: 1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("width_mm", v) } }
+                PropertyRow { label: "Cao"; NumberField { value: d.height_mm; unit: "mm"; from: 1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("height_mm", v) } }
+                PropertyRow { label: "Hướng in"
+                    ComboField { Layout.fillWidth: true; model: ["Dọc", "Ngang"]; currentIndex: d.orientation === "landscape" ? 1 : 0
+                        onActivated: (i) => Doc.setDoc("orientation", ["portrait", "landscape"][i]) } }
+                PropertyRow { label: "DPI máy in"
+                    ComboField { Layout.fillWidth: true; model: ["203", "300", "600"]
+                        currentIndex: Math.max(0, model.indexOf(String(d.dpi)))
+                        displayText: String(d.dpi)
+                        onActivated: (i) => Doc.setDoc("dpi", parseInt(model[i])) } }
+                PropertyRow { label: "Số bản (mẫu)"
                     NumberField { value: d.copies; step: 1; decimals: 0; from: 1; to: 999; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("copies", v) } }
+                Text { text: "Bấm vào một phần tử trên tem để chỉnh thuộc tính của nó."
+                    Layout.fillWidth: true; Layout.topMargin: Theme.s1; wrapMode: Text.Wrap
+                    font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
 
-                SectionHeader { text: "Printer compensation"; Layout.fillWidth: true; Layout.topMargin: Theme.s3 }
-                PropertyRow { label: "Offset X"; NumberField { value: d.offset_x_mm; unit: "mm"; step: 0.1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("offset_x_mm", v) } }
-                PropertyRow { label: "Offset Y"; NumberField { value: d.offset_y_mm; unit: "mm"; step: 0.1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("offset_y_mm", v) } }
-                PropertyRow { label: "Skew"; NumberField { value: d.rotation_deg; unit: "°"; step: 0.05; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("rotation_deg", v) } }
-                PropertyRow { label: "Scale X"; NumberField { value: d.scale_x_pct; unit: "%"; step: 0.1; Layout.fillWidth: true; from: 50; to: 150; onEdited: (v) => Doc.setDoc("scale_x_pct", v) } }
-                PropertyRow { label: "Scale Y"; NumberField { value: d.scale_y_pct; unit: "%"; step: 0.1; Layout.fillWidth: true; from: 50; to: 150; onEdited: (v) => Doc.setDoc("scale_y_pct", v) } }
+                // ---- view options (collapsed) ----
+                Disclosure { text: "Hiển thị & canh lề"; open: p.showView; onClicked: p.showView = !p.showView; Layout.topMargin: Theme.s3 }
+                ColumnLayout {
+                    visible: p.showView; Layout.fillWidth: true; spacing: Theme.s2
+                    CheckField { text: "Hiện khung vùng in"; checked: d.virtual_area_show; onToggled: Doc.setDoc("virtual_area_show", checked) }
+                    CheckField { text: "Hiện đường hướng dẫn"; checked: Doc.showGuides; onToggled: Doc.showGuides = checked }
+                    CheckField { text: "Hiện vùng gập"; checked: Doc.showFold; onToggled: Doc.showFold = checked }
+                    PropertyRow { label: "Bước bám"
+                        NumberField { value: Doc.snapMm; unit: "mm"; step: 0.05; from: 0; to: 5; Layout.fillWidth: true; onEdited: (v) => Doc.snapMm = v } }
+                }
 
-                SectionHeader { text: "Print quality"; Layout.fillWidth: true; Layout.topMargin: Theme.s3 }
-                PropertyRow { label: "Render mode"
-                    ComboField { Layout.fillWidth: true; model: ["thermal_crisp", "standard"]; currentIndex: d.render_mode === "standard" ? 1 : 0
-                        onActivated: (i) => Doc.setDoc("render_mode", model[i]) } }
-                PropertyRow { label: "Threshold"
-                    NumberField { value: d.threshold; step: 1; decimals: 0; from: 1; to: 255; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("threshold", v) } }
-                PropertyRow { label: "Oversample"
-                    NumberField { value: d.oversample; step: 1; decimals: 0; from: 1; to: 6; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("oversample", v) } }
-                Text { text: "Recommended for 300 dpi thermal: threshold 135–155, oversample 4."
-                    Layout.fillWidth: true; wrapMode: Text.Wrap; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
+                // ---- printer tuning (collapsed) ----
+                Disclosure { text: "Nâng cao — bù sai số & chất lượng in"; open: p.showAdvanced; onClicked: p.showAdvanced = !p.showAdvanced }
+                ColumnLayout {
+                    visible: p.showAdvanced; Layout.fillWidth: true; spacing: Theme.s2
+                    Text { text: "Các thông số này phụ thuộc máy in. Nên chỉnh một lần rồi lưu vào Hồ sơ máy in (menu ▾ cạnh nút In)."
+                        Layout.fillWidth: true; wrapMode: Text.Wrap; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
+                    SectionHeader { text: "Bù sai số máy in"; Layout.fillWidth: true }
+                    PropertyRow { label: "Lệch X"; NumberField { value: d.offset_x_mm; unit: "mm"; step: 0.1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("offset_x_mm", v) } }
+                    PropertyRow { label: "Lệch Y"; NumberField { value: d.offset_y_mm; unit: "mm"; step: 0.1; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("offset_y_mm", v) } }
+                    PropertyRow { label: "Nghiêng"; NumberField { value: d.rotation_deg; unit: "°"; step: 0.05; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("rotation_deg", v) } }
+                    PropertyRow { label: "Tỉ lệ X"; NumberField { value: d.scale_x_pct; unit: "%"; step: 0.1; Layout.fillWidth: true; from: 50; to: 150; onEdited: (v) => Doc.setDoc("scale_x_pct", v) } }
+                    PropertyRow { label: "Tỉ lệ Y"; NumberField { value: d.scale_y_pct; unit: "%"; step: 0.1; Layout.fillWidth: true; from: 50; to: 150; onEdited: (v) => Doc.setDoc("scale_y_pct", v) } }
 
-                SectionHeader { text: "Guides"; Layout.fillWidth: true; Layout.topMargin: Theme.s3 }
-                CheckField { text: "Show print area guide"; checked: d.virtual_area_show; onToggled: Doc.setDoc("virtual_area_show", checked) }
-                CheckField { text: "Show preview guides"; checked: Doc.showGuides; onToggled: Doc.showGuides = checked }
-                CheckField { text: "Show fold regions"; checked: Doc.showFold; onToggled: Doc.showFold = checked }
-                PropertyRow { label: "Snap"
-                    NumberField { value: Doc.snapMm; unit: "mm"; step: 0.05; from: 0; to: 5; Layout.fillWidth: true; onEdited: (v) => Doc.snapMm = v } }
+                    SectionHeader { text: "Chất lượng in"; Layout.fillWidth: true; Layout.topMargin: Theme.s2 }
+                    PropertyRow { label: "Chế độ"
+                        ComboField { Layout.fillWidth: true; model: ["Nhiệt — nét sắc", "Chuẩn"]; currentIndex: d.render_mode === "standard" ? 1 : 0
+                            onActivated: (i) => Doc.setDoc("render_mode", ["thermal_crisp", "standard"][i]) } }
+                    PropertyRow { label: "Ngưỡng đen"
+                        NumberField { value: d.threshold; step: 1; decimals: 0; from: 1; to: 255; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("threshold", v) } }
+                    PropertyRow { label: "Lấy mẫu"
+                        NumberField { value: d.oversample; step: 1; decimals: 0; from: 1; to: 6; Layout.fillWidth: true; onEdited: (v) => Doc.setDoc("oversample", v) } }
+                    Text { text: "Gợi ý cho máy in nhiệt 300 dpi: ngưỡng 135–155, lấy mẫu 4."
+                        Layout.fillWidth: true; wrapMode: Text.Wrap; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
+                }
                 Item { Layout.preferredHeight: Theme.s5 }
             }
+        }
+    }
+
+    // clickable section title that shows / hides the block below it
+    component Disclosure: C.AbstractButton {
+        id: dc
+        property bool open: false
+        Layout.fillWidth: true
+        implicitHeight: 32
+        hoverEnabled: true
+        background: Rectangle { radius: Theme.radiusSm; color: dc.hovered ? Theme.hover : "transparent" }
+        contentItem: Row {
+            spacing: Theme.s2
+            leftPadding: 2
+            Text { text: dc.open ? "▾" : "▸"; anchors.verticalCenter: parent.verticalCenter
+                font.pixelSize: Theme.fsBase; color: Theme.textMuted }
+            Text { text: dc.text.toUpperCase(); anchors.verticalCenter: parent.verticalCenter
+                font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; font.letterSpacing: 0.6; color: Theme.textMuted }
         }
     }
 }

@@ -7,7 +7,7 @@ import "../components"
 // Progress of a running print batch + the skip / retry / stop choice when a row fails.
 AppDialog {
     id: d
-    title: "Printing…"
+    title: "Đang in…"
     closePolicy: C.Popup.NoAutoClose
     property int errorRow: 0
     property string errorText: ""
@@ -23,7 +23,7 @@ AppDialog {
     body: [
         ColumnLayout {
             Layout.preferredWidth: 420; spacing: Theme.s3
-            Text { text: d.failed ? "Row " + d.errorRow + " failed" : Printing.progressText
+            Text { text: d.failed ? "Dòng " + d.errorRow + " bị lỗi" : Printing.progressText
                 font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; font.weight: Font.Medium; color: d.failed ? Theme.danger : Theme.text }
             Text { visible: d.failed; text: d.errorText; Layout.fillWidth: true; wrapMode: Text.Wrap; textFormat: Text.PlainText
                 font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
@@ -36,9 +36,9 @@ AppDialog {
         }
     ]
     buttons: [
-        AppButton { visible: !d.failed; text: "Cancel"; kind: "ghost"; onClicked: Printing.cancelBatch() },
-        AppButton { visible: d.failed; text: "Stop"; kind: "danger"; onClicked: Printing.batchDecision("stop") },
-        AppButton { visible: d.failed; text: "Skip row"; onClicked: { d.failed = false; Printing.batchDecision("skip") } },
-        AppButton { visible: d.failed; text: "Retry"; kind: "primary"; onClicked: { d.failed = false; Printing.batchDecision("retry") } }
+        AppButton { visible: !d.failed; text: "Huỷ"; kind: "ghost"; onClicked: Printing.cancelBatch() },
+        AppButton { visible: d.failed; text: "Dừng"; kind: "danger"; onClicked: Printing.batchDecision("stop") },
+        AppButton { visible: d.failed; text: "Bỏ qua dòng"; onClicked: { d.failed = false; Printing.batchDecision("skip") } },
+        AppButton { visible: d.failed; text: "Thử lại"; kind: "primary"; onClicked: { d.failed = false; Printing.batchDecision("retry") } }
     ]
 }

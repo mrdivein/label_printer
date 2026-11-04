@@ -26,7 +26,7 @@ class ProfileController(QObject):
         except Exception as e:
             return str(e)
         self.namesChanged.emit()
-        self.message.emit(f'Printer profile saved: {saved}')
+        self.message.emit(f'Đã lưu hồ sơ máy in: {saved}')
         return ''
 
     @Slot(str, result=str)
@@ -37,7 +37,7 @@ class ProfileController(QObject):
         self.document.apply_profile(profile)
         if profile.get('printer') and profile['printer'] in self.printing.printers:
             self.printing.printer = profile['printer']
-        self.message.emit(f'Printer profile loaded: {name}')
+        self.message.emit(f'Đã nạp hồ sơ máy in: {name}')
         return ''
 
     @Slot(str)

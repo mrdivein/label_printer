@@ -152,7 +152,7 @@ class DataController(QObject):
     def loadExcel(self, path_or_url):
         path = _local(path_or_url)
         self._set_loading(True)
-        self.message.emit(f'Loading {os.path.basename(path)}…')
+        self.message.emit(f'Đang mở {os.path.basename(path)}…')
 
         def work():
             ds = DataSet()
@@ -189,7 +189,7 @@ class DataController(QObject):
             self.dataChanged.emit()
             self.currentChanged.emit()
             self.rowChanged.emit()
-            self.message.emit(f'Sheet: {name} — {len(ds.rows)} rows')
+            self.message.emit(f'Trang tính: {name} — {len(ds.rows)} dòng')
 
         run_async(work, done, self._fail('Excel error'))
 
@@ -198,7 +198,7 @@ class DataController(QObject):
         url = (url or '').strip()
         tab = (tab or '').strip()
         self._set_loading(True)
-        self.message.emit('Loading Google Sheet…')
+        self.message.emit('Đang tải Google Sheet…')
 
         def work():
             headers, rows = fetch_google_sheet_rows(url, tab or None)

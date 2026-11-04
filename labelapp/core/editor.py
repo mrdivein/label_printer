@@ -10,9 +10,10 @@ import copy
 import math
 
 from .designer_geometry import (display_box_mm, display_to_source_box, element_is_rotated, element_outline,
-                                first_fold, fold_for_element, frame_corners, line_display_endpoints, outline_bbox,
-                                point_near_poly, source_box, virtual_area, visual_frame, element_in_fold_region)
-from .geometry import _element_angle, rotate_point_cw
+                                first_fold, flip_point, fold_at, fold_for_element, frame_corners,
+                                line_display_endpoints, outline_bbox, point_near_poly, source_box, virtual_area,
+                                visual_frame, element_in_fold_region)
+from .geometry import _element_angle, element_rotation_center, rotate_point_cw
 from .models import normalize_cfg
 from .profiles import apply_profile
 
@@ -26,39 +27,49 @@ DRAWABLE = {'text', 'barcode', 'qr', 'image', 'line', 'box', 'fill_box', 'ellips
 ALL = DRAWABLE
 
 # key, label, kind, element types it applies to, extra
-# kind: number | text | bool | choice | path ; extra: unit / choices / step
+# kind: number | text | bool | choice | path ; extra: unit / choices (+ choice_labels shown instead of the stored value)
 INSPECTOR_FIELDS = [
-    {'key': 'x', 'label': 'X', 'kind': 'number', 'group': 'Position', 'types': ALL, 'unit': 'mm'},
-    {'key': 'y', 'label': 'Y', 'kind': 'number', 'group': 'Position', 'types': ALL, 'unit': 'mm'},
-    {'key': 'w', 'label': 'Width', 'kind': 'number', 'group': 'Position', 'types': ALL - {'line'}, 'unit': 'mm'},
-    {'key': 'h', 'label': 'Height', 'kind': 'number', 'group': 'Position', 'types': ALL - {'line'}, 'unit': 'mm'},
-    {'key': 'x2', 'label': 'X end', 'kind': 'number', 'group': 'Position', 'types': {'line'}, 'unit': 'mm'},
-    {'key': 'y2', 'label': 'Y end', 'kind': 'number', 'group': 'Position', 'types': {'line'}, 'unit': 'mm'},
-    {'key': 'angle', 'label': 'Rotation', 'kind': 'number', 'group': 'Position', 'types': ALL, 'unit': '°'},
-    {'key': 'text', 'label': 'Text', 'kind': 'text', 'group': 'Content', 'types': {'text'}},
-    {'key': 'value', 'label': 'Value', 'kind': 'text', 'group': 'Content', 'types': {'barcode', 'qr'}},
-    {'key': 'path', 'label': 'Image file', 'kind': 'path', 'group': 'Content', 'types': {'image'}},
-    {'key': 'font', 'label': 'Font', 'kind': 'choice', 'group': 'Text', 'types': {'text', 'barcode'}, 'choices': list(FONT_CHOICES)},
-    {'key': 'font_size', 'label': 'Size', 'kind': 'number', 'group': 'Text', 'types': {'text'}, 'unit': 'pt'},
-    {'key': 'bold', 'label': 'Bold', 'kind': 'bool', 'group': 'Text', 'types': {'text'}},
-    {'key': 'align', 'label': 'Align', 'kind': 'choice', 'group': 'Text', 'types': {'text'}, 'choices': ['left', 'center', 'right']},
-    {'key': 'auto_fit', 'label': 'Shrink to fit', 'kind': 'bool', 'group': 'Text', 'types': {'text'}},
-    {'key': 'min_font_size', 'label': 'Min size', 'kind': 'number', 'group': 'Text', 'types': {'text'}, 'unit': 'pt'},
-    {'key': 'wrap', 'label': 'Wrap lines', 'kind': 'bool', 'group': 'Text', 'types': {'text'}},
-    {'key': 'symbology', 'label': 'Type', 'kind': 'choice', 'group': 'Barcode', 'types': {'barcode'},
-     'choices': ['code128', 'ean13', 'ean8', 'upca', 'code39', 'itf']},
-    {'key': 'crop_height', 'label': 'Crop bar height', 'kind': 'bool', 'group': 'Barcode', 'types': {'barcode'}},
-    {'key': 'barcode_height_mm', 'label': 'Bar height', 'kind': 'number', 'group': 'Barcode', 'types': {'barcode'}, 'unit': 'mm'},
-    {'key': 'show_text', 'label': 'Digits under bars', 'kind': 'bool', 'group': 'Barcode', 'types': {'barcode'}},
-    {'key': 'ecc', 'label': 'Error correction', 'kind': 'choice', 'group': 'QR', 'types': {'qr'}, 'choices': ['L', 'M', 'Q', 'H']},
-    {'key': 'fit', 'label': 'Fit', 'kind': 'choice', 'group': 'Image', 'types': {'image'}, 'choices': ['contain', 'stretch']},
-    {'key': 'thickness', 'label': 'Line width', 'kind': 'number', 'group': 'Stroke', 'types': {'line', 'box', 'ellipse'}, 'unit': 'mm'},
-    {'key': 'transform', 'label': 'Case', 'kind': 'choice', 'group': 'Data', 'types': {'text'}, 'choices': ['', 'upper', 'lower', 'title']},
-    {'key': 'prefix', 'label': 'Prefix', 'kind': 'text', 'group': 'Data', 'types': {'text'}},
-    {'key': 'suffix', 'label': 'Suffix', 'kind': 'text', 'group': 'Data', 'types': {'text'}},
-    {'key': 'show_if', 'label': 'Only print if', 'kind': 'text', 'group': 'Data', 'types': ALL},
+    {'key': 'x', 'label': 'X', 'kind': 'number', 'group': 'Vị trí', 'types': ALL, 'unit': 'mm'},
+    {'key': 'y', 'label': 'Y', 'kind': 'number', 'group': 'Vị trí', 'types': ALL, 'unit': 'mm'},
+    {'key': 'w', 'label': 'Rộng', 'kind': 'number', 'group': 'Vị trí', 'types': ALL - {'line'}, 'unit': 'mm'},
+    {'key': 'h', 'label': 'Cao', 'kind': 'number', 'group': 'Vị trí', 'types': ALL - {'line'}, 'unit': 'mm'},
+    {'key': 'x2', 'label': 'X cuối', 'kind': 'number', 'group': 'Vị trí', 'types': {'line'}, 'unit': 'mm'},
+    {'key': 'y2', 'label': 'Y cuối', 'kind': 'number', 'group': 'Vị trí', 'types': {'line'}, 'unit': 'mm'},
+    {'key': 'angle', 'label': 'Xoay', 'kind': 'number', 'group': 'Vị trí', 'types': ALL, 'unit': '°'},
+    {'key': 'text', 'label': 'Nội dung', 'kind': 'text', 'group': 'Nội dung', 'types': {'text'}},
+    {'key': 'value', 'label': 'Giá trị', 'kind': 'text', 'group': 'Nội dung', 'types': {'barcode', 'qr'}},
+    {'key': 'path', 'label': 'Tệp ảnh', 'kind': 'path', 'group': 'Nội dung', 'types': {'image'}},
+    {'key': 'font', 'label': 'Phông chữ', 'kind': 'choice', 'group': 'Chữ', 'types': {'text', 'barcode'}, 'choices': list(FONT_CHOICES)},
+    {'key': 'font_size', 'label': 'Cỡ chữ', 'kind': 'number', 'group': 'Chữ', 'types': {'text'}, 'unit': 'pt'},
+    {'key': 'bold', 'label': 'In đậm', 'kind': 'bool', 'group': 'Chữ', 'types': {'text'}},
+    {'key': 'align', 'label': 'Căn lề', 'kind': 'choice', 'group': 'Chữ', 'types': {'text'}, 'choices': ['left', 'center', 'right'],
+     'choice_labels': ['Trái', 'Giữa', 'Phải']},
+    {'key': 'auto_fit', 'label': 'Tự thu nhỏ cho vừa khung', 'kind': 'bool', 'group': 'Chữ', 'types': {'text'}},
+    {'key': 'min_font_size', 'label': 'Cỡ nhỏ nhất', 'kind': 'number', 'group': 'Chữ', 'types': {'text'}, 'unit': 'pt'},
+    {'key': 'wrap', 'label': 'Xuống dòng', 'kind': 'bool', 'group': 'Chữ', 'types': {'text'}},
+    {'key': 'symbology', 'label': 'Loại mã', 'kind': 'choice', 'group': 'Mã vạch', 'types': {'barcode'},
+     'choices': ['code128', 'ean13', 'ean8', 'upca', 'code39', 'itf'],
+     'choice_labels': ['Code 128', 'EAN-13', 'EAN-8', 'UPC-A', 'Code 39', 'ITF (2 of 5)']},
+    {'key': 'crop_height', 'label': 'Cắt chiều cao vạch', 'kind': 'bool', 'group': 'Mã vạch', 'types': {'barcode'}},
+    {'key': 'barcode_height_mm', 'label': 'Cao vạch', 'kind': 'number', 'group': 'Mã vạch', 'types': {'barcode'}, 'unit': 'mm'},
+    {'key': 'show_text', 'label': 'Hiện số dưới vạch', 'kind': 'bool', 'group': 'Mã vạch', 'types': {'barcode'}},
+    {'key': 'ecc', 'label': 'Mức sửa lỗi', 'kind': 'choice', 'group': 'QR', 'types': {'qr'}, 'choices': ['L', 'M', 'Q', 'H'],
+     'choice_labels': ['L · 7%', 'M · 15%', 'Q · 25%', 'H · 30%']},
+    {'key': 'fit', 'label': 'Co giãn', 'kind': 'choice', 'group': 'Ảnh', 'types': {'image'}, 'choices': ['contain', 'stretch'],
+     'choice_labels': ['Giữ tỉ lệ', 'Kéo giãn']},
+    {'key': 'thickness', 'label': 'Độ dày nét', 'kind': 'number', 'group': 'Nét', 'types': {'line', 'box', 'ellipse'}, 'unit': 'mm'},
+    {'key': 'transform', 'label': 'Kiểu chữ', 'kind': 'choice', 'group': 'Dữ liệu', 'types': {'text'}, 'choices': ['', 'upper', 'lower', 'title'],
+     'choice_labels': ['Giữ nguyên', 'IN HOA', 'in thường', 'Hoa Đầu Từ']},
+    {'key': 'prefix', 'label': 'Thêm trước', 'kind': 'text', 'group': 'Dữ liệu', 'types': {'text'}},
+    {'key': 'suffix', 'label': 'Thêm sau', 'kind': 'text', 'group': 'Dữ liệu', 'types': {'text'}},
+    {'key': 'show_if', 'label': 'Chỉ in khi có', 'kind': 'text', 'group': 'Dữ liệu', 'types': ALL},
 ]
+# Vietnamese names of element types (lists, titles, canvas tags)
+TYPE_LABELS = {'text': 'Chữ', 'barcode': 'Mã vạch', 'qr': 'QR', 'image': 'Ảnh', 'line': 'Đường kẻ', 'box': 'Khung',
+               'fill_box': 'Khối tô', 'ellipse': 'Elip'}
 FIELD_BY_KEY = {f['key']: f for f in INSPECTOR_FIELDS}
+# Setting one value on every member would collapse a group's layout, so these are edited member by member.
+GROUP_HIDDEN_KEYS = {'x', 'y', 'w', 'h', 'x2', 'y2', 'angle', 'text', 'value', 'path'}
 DEFAULTS = {'font': 'Arial', 'bold': False, 'align': 'left', 'auto_fit': False, 'wrap': False, 'transform': '',
             'prefix': '', 'suffix': '', 'show_if': '', 'thickness': 0.2, 'symbology': 'code128', 'show_text': False,
             'ecc': 'M', 'path': '', 'fit': 'contain', 'min_font_size': 4, 'font_size': 8, 'angle': 0.0}
@@ -176,15 +187,92 @@ class LabelEditor:
     def selection_types(self):
         return {_etype(self.elements[i]) for i in self.selected}
 
+    # ------------------------------------------------------------------ groups
+    # A group is the elements sharing a 'group_id'. Canvas clicks and the marquee take the whole group; the layer
+    # list still picks a single member, which is how a member is edited on its own.
+    def with_groups(self, indices):
+        """`indices` plus every other member of the groups they belong to."""
+        out = {int(i) for i in indices}
+        gids = {self.elements[i].get('group_id') for i in out} - {None}
+        out.update(i for i, e in enumerate(self.elements) if e.get('group_id') in gids)
+        return out
+
+    def _selected_groups(self):
+        return {self.elements[i].get('group_id') for i in self.selected} - {None}
+
+    @property
+    def can_group(self):
+        return len(self.selected) >= 2 and not self.selection_is_group
+
+    @property
+    def can_ungroup(self):
+        return bool(self._selected_groups())
+
+    @property
+    def selection_is_group(self):
+        """The selection is exactly one complete group."""
+        gids = {self.elements[i].get('group_id') for i in self.selected}
+        return len(self.selected) >= 2 and len(gids) == 1 and None not in gids and self.with_groups(self.selected) == self.selected
+
+    def _new_group_id(self):
+        used = {e.get('group_id') for e in self.elements}
+        n = 1
+        while f'g{n}' in used:
+            n += 1
+        return f'g{n}'
+
+    def _prune_groups(self):
+        """A group of one is no group: drop the id left on the last member."""
+        counts = {}
+        for e in self.elements:
+            if e.get('group_id') is not None:
+                counts[e['group_id']] = counts.get(e['group_id'], 0) + 1
+        for e in self.elements:
+            if counts.get(e.get('group_id')) == 1:
+                del e['group_id']
+
+    def _regroup_copies(self, indices):
+        """Copies must not join the originals' groups: give them groups of their own."""
+        fresh = {}
+        for i in indices:
+            e = self.elements[i]
+            gid = e.get('group_id')
+            if gid is not None:
+                if gid not in fresh:
+                    fresh[gid] = self._new_group_id()
+                e['group_id'] = fresh[gid]             # written at once, so the next new id differs
+        self._prune_groups()
+
+    def group_selected(self):
+        if not self.can_group:
+            return None
+        self.push_undo()
+        gid = self._new_group_id()
+        for i in self.selected:
+            self.elements[i]['group_id'] = gid
+        self._prune_groups()
+        return 'Grouped'
+
+    def ungroup_selected(self):
+        gids = self._selected_groups()
+        if not gids:
+            return None
+        self.push_undo()
+        for e in self.elements:
+            if e.get('group_id') in gids:
+                del e['group_id']
+        return 'Ungrouped'
+
     # ------------------------------------------------------------------ inspector
     def inspector_fields(self):
         """Fields applicable to the current selection (schema + current value; None = mixed values)."""
         if not self.selected:
             return []
         types = self.selection_types()
+        grouped = len(self.selected) > 1 and bool(self._selected_groups())
         out = []
         for f in INSPECTOR_FIELDS:
-            if not types & f['types']:
+            if not types & f['types'] or (grouped and f['key'] in GROUP_HIDDEN_KEYS):
                 continue
             vals = []
             for i in sorted(self.selected):
@@ -313,10 +401,10 @@ class LabelEditor:
         self.set_selection(set(new), new[-1])
         return note
 
-    def add_text(self, text='New text'):
+    def add_text(self, text='New text', font_size=5.0, bold=False, w=25.0, h=4.0):
         x, y = self._default_add_xy()
-        return self._append([{'type': 'text', 'text': text, 'x': x, 'y': y, 'w': 25.0, 'h': 4.0, 'font': 'Segoe UI',
-                              'font_size': 5.0, 'bold': False, 'align': 'left', 'wrap': False, 'auto_fit': False}],
+        return self._append([{'type': 'text', 'text': text, 'x': x, 'y': y, 'w': float(w), 'h': float(h), 'font': 'Segoe UI',
+                              'font_size': float(font_size), 'bold': bool(bold), 'align': 'left', 'wrap': False, 'auto_fit': False}],
                             'Free text added')
 
     def add_fields(self, fields, as_barcode=False):
@@ -367,6 +455,7 @@ class LabelEditor:
         self.push_undo()
         for i in ids:
             self.elements.pop(i)
+        self._prune_groups()
         self.selected = set()
         self.primary = None
         return 'Element(s) deleted'
@@ -385,6 +474,7 @@ class LabelEditor:
             if 'y2' in e: e['y2'] = round(float(e.get('y2', 0)) + 1, 3)
             self.elements.append(e)
             new.append(len(self.elements) - 1)
+        self._regroup_copies(new)
         self.set_selection(set(new), new[-1] if new else None)
         return 'Duplicated'
 
@@ -405,6 +495,7 @@ class LabelEditor:
             _shift(e, 2, 2)
             self.elements.append(e)
             new.append(len(self.elements) - 1)
+        self._regroup_copies(new)
         self.clipboard = [copy.deepcopy(self.elements[i]) for i in new]     # next paste cascades
         self.set_selection(set(new), new[-1])
         return 'Pasted'
@@ -475,14 +566,46 @@ class LabelEditor:
         return 'Layer order changed'
 
     def rotate_selected(self, delta):
+        """Rotate by `delta` degrees: one element about its centre, several as one rigid block. None resets angles."""
         ids = self._unlocked()
         if not ids:
             return None
         self.push_undo()
+        if delta is not None and len(ids) > 1:
+            self._rotate_block(ids, float(delta))
+            return 'Rotated'
         for i in ids:
             e = self.elements[i]
             _set_angle(e, 0.0 if delta is None else _element_angle(e) + float(delta))
         return 'Rotated'
+
+    def _rotate_block(self, ids, delta):
+        """Turn the elements about the centre of their common box, working in display space: a member may cross a
+        fold band, where its source position is the mirror of what is shown and its angle carries the 180 degrees."""
+        boxes = [outline_bbox(element_outline(self.cfg, self.elements[i])) for i in ids]
+        px = (min(b[0] for b in boxes) + max(b[2] for b in boxes)) / 2
+        py = (min(b[1] for b in boxes) + max(b[3] for b in boxes)) / 2
+        for i in ids:
+            e = self.elements[i]
+            old_fold = fold_for_element(self.cfg, e) is not None
+            sx, sy = element_rotation_center(e)
+            cx, cy = visual_frame(self.cfg, e)[:2]
+            nx, ny = rotate_point_cw(cx, cy, px, py, delta)
+            fr = fold_at(self.cfg, ny)
+            tx, ty = flip_point(fr, nx, ny) if fr is not None else (nx, ny)
+            _shift(e, tx - sx, ty - sy)
+            _set_angle(e, _element_angle(e) + delta + (180.0 if old_fold else 0.0) - (180.0 if fr is not None else 0.0))
+
+    def set_element_text(self, index, text):
+        """Edit one element's text by index (double click): the selection may be a whole group."""
+        if not 0 <= index < len(self.elements):
+            return None
+        e = self.elements[index]
+        if _etype(e) != 'text' or e.get('locked') or e.get('text') == text:
+            return None
+        self.push_undo()
+        e['text'] = text
+        return f"{FIELD_BY_KEY['text']['label']} changed"
 
     def change_font_size(self, direction, step=0.2):
         ids = [i for i in self._unlocked() if _etype(self.elements[i]) == 'text']
@@ -693,13 +816,14 @@ class LabelEditor:
         if idx is not None:
             if shift:
                 ns = set(self.selected)
-                if idx in ns: ns.remove(idx)
-                else: ns.add(idx)
+                members = self.with_groups({idx})
+                if idx in ns: ns -= members
+                else: ns |= members
                 self.set_selection(ns, idx if idx in ns else (min(ns) if ns else None))
                 d['mode'] = None
                 return 'select'
             if idx not in self.selected:
-                self.set_selection({idx}, idx)
+                self.set_selection(self.with_groups({idx}), idx)
             else:
                 self.primary = idx
             movable = [i for i in self.selected if not self.elements[i].get('locked', False)]
@@ -866,6 +990,7 @@ class LabelEditor:
             bx1, by1, bx2, by2 = outline_bbox(element_outline(self.cfg, e))
             if not (bx2 < lx or bx1 > hx or by2 < ly or by1 > hy):
                 hits.add(i)
+        hits = self.with_groups(hits)
         self.set_selection(hits, min(hits) if hits else None)
 
     def release(self, x, y, shift=False):

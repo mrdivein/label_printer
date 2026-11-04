@@ -91,7 +91,7 @@ Item {
     }
     function actualSize() { setZoomAt(1.0, (width + rulerSize) / 2, (height + rulerSize) / 2) }
 
-    onPxPerMmChanged: Doc.setViewScale(pxPerMm)
+    onPxPerMmChanged: { Doc.setViewScale(pxPerMm); Qt.callLater(updateSelBox) }
     // The label stays fitted to the view (window resize, panel changes, first layout) until the user zooms or pans;
     // "Fit" / Ctrl+0 turns this back on. Width and height arrive separately at start-up, so both re-arm the fit.
     property bool autoFit: true
@@ -179,7 +179,7 @@ Item {
                 g.strokeStyle = Theme.guideArea; g.lineWidth = 1.5; g.setLineDash([6, 4])
                 view.rectPath(g, v.x, v.y, v.w, v.h); g.stroke(); g.setLineDash([])
                 g.fillStyle = Theme.guideArea; g.font = "600 10px sans-serif"
-                var pa = P([v.x + v.w, v.y]); g.fillText("PRINT AREA", pa[0] - g.measureText("PRINT AREA").width - 4, pa[1] - 5)
+                var pa = P([v.x + v.w, v.y]); g.fillText("VÙNG IN", pa[0] - g.measureText("VÙNG IN").width - 4, pa[1] - 5)
                 for (var h = 0; h < v.handles.length; h++) {
                     var hp = P([v.handles[h].x, v.handles[h].y])
                     g.fillStyle = Theme.surface; g.strokeStyle = Theme.guideArea; g.lineWidth = 1.5
@@ -192,7 +192,7 @@ Item {
                 g.strokeStyle = Theme.guideFold; g.lineWidth = 2.5
                 g.beginPath(); g.moveTo(f1[0], f1[1]); g.lineTo(f2[0], f2[1]); g.stroke()
                 g.fillStyle = Theme.surface; g.fillRect(f1[0] - 6, f1[1] - 6, 12, 12); g.strokeRect(f1[0] - 6, f1[1] - 6, 12, 12)
-                g.fillStyle = Theme.guideFold; g.font = "600 10px sans-serif"; g.fillText("FOLD", f1[0] + 12, f1[1] - 6)
+                g.fillStyle = Theme.guideFold; g.font = "600 10px sans-serif"; g.fillText("GẬP", f1[0] + 12, f1[1] - 6)
             }
             // selection
             var nSel = 0
@@ -206,7 +206,7 @@ Item {
                 if (nSel <= 3) {
                     var lp = P(se.poly[0]); g.fillStyle = se.locked ? Theme.textMuted : acc
                     g.font = "600 10px sans-serif"
-                    g.fillText((j + 1) + " " + se.type + (se.locked ? "  (locked)" : ""), lp[0] + 1, lp[1] - 6)
+                    g.fillText((j + 1) + " " + Doc.typeLabel(se.type) + (se.locked ? "  (đã khoá)" : ""), lp[0] + 1, lp[1] - 6)
                 }
             }
             // handles
@@ -392,6 +392,75 @@ Item {
         }
     }
 
+    // ---- floating context toolbar over the selection ----
+    // Screen box of the selection (rotation aware). Recomputed after overlay / pan / zoom changes settle, not as a
+    // binding: overlay updates arrive re-entrantly from Python while the view is still evaluating.
+    property var selBox: null
+    function updateSelBox() {
+        var o = view.ov, s = view.pxPerMm
+        if (!o || !o.elements || Doc.selectionCount === 0) { selBox = null; return }
+        var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, n = 0
+        for (var i = 0; i < o.elements.length; i++) {
+            var e = o.elements[i]
+            if (!e.selected) continue
+            for (var k = 0; k < e.poly.length; k++) {
+                var q = view.rotPt(view.panX + e.poly[k][0] * s, view.panY + e.poly[k][1] * s)
+                x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]); n++
+            }
+        }
+        selBox = n ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null
+    }
+    onOvChanged: Qt.callLater(updateSelBox)
+    onPanXChanged: Qt.callLater(updateSelBox)
+    onPanYChanged: Qt.callLater(updateSelBox)
+    onViewRotationChanged: Qt.callLater(updateSelBox)
+    Connections { target: Doc; function onSelectionChanged() { Qt.callLater(view.updateSelBox) } }
+    readonly property int selFirst: Doc.selectionCount > 0 ? Doc.selection[0] : -1
+    readonly property bool selText: Doc.selectionCount === 1 && Doc.elementType(selFirst) === "text"
+
+    Rectangle {
+        id: ctxBar
+        objectName: "ctxBar"
+        visible: view.selBox !== null && view.dragMode === "" && !pointer.panning
+        readonly property real gap: 40                      // clears the rotate knob above the selection
+        x: view.selBox ? Math.max(view.rulerSize + 4, Math.min(view.width - width - 4, view.selBox.x + view.selBox.w / 2 - width / 2)) : 0
+        y: {
+            if (!view.selBox) return 0
+            var above = view.selBox.y - height - gap
+            if (above >= view.rulerSize + 4) return above
+            return Math.min(view.height - height - viewControls.height - Theme.s5, view.selBox.y + view.selBox.h + 14)
+        }
+        width: ctxRow.implicitWidth + Theme.s1 * 2; height: 38; radius: Theme.radiusLg
+        color: Theme.surface; border.width: 1; border.color: Theme.border
+        Rectangle { z: -1; anchors.fill: parent; anchors.topMargin: 3; anchors.bottomMargin: -3; radius: parent.radius; color: Theme.shadow; opacity: 0.6 }
+        Row {
+            id: ctxRow
+            anchors.centerIn: parent; spacing: 1
+            IconButton { visible: view.selText; text: "✎"; tip: "Sửa chữ (nhấp đúp)"; onClicked: view.editTextRequested(view.selFirst) }
+            IconButton { visible: view.selText; text: "A−"; tip: "Giảm cỡ chữ 1 pt"; onClicked: Doc.changeFontSize(-5) }
+            IconButton { visible: view.selText; text: "A+"; tip: "Tăng cỡ chữ 1 pt"; onClicked: Doc.changeFontSize(5) }
+            IconButton { visible: view.selText; text: "B"; font.bold: true; tip: "In đậm"
+                active: { var dep = view.ov; return view.selText && Doc.elementBold(view.selFirst) }   // overlay changes on every commit
+                onClicked: Doc.setProp("bold", !Doc.elementBold(view.selFirst)) }
+            Separator { visible: view.selText; vertical: true; anchors.verticalCenter: parent.verticalCenter }
+            AppButton { visible: Doc.canGroup; text: "Nhóm"; compact: true; anchors.verticalCenter: parent.verticalCenter; onClicked: Doc.groupSelected()
+                C.ToolTip.visible: hovered; C.ToolTip.text: "Nhóm các phần tử đang chọn (Ctrl+G)"; C.ToolTip.delay: 500 }
+            AppButton { visible: Doc.canUngroup; text: "Bỏ nhóm"; compact: true; anchors.verticalCenter: parent.verticalCenter; onClicked: Doc.ungroupSelected()
+                C.ToolTip.visible: hovered; C.ToolTip.text: "Bỏ nhóm (Ctrl+Shift+G)"; C.ToolTip.delay: 500 }
+            IconButton { text: "⧉"; tip: "Nhân bản (Ctrl+D)"; onClicked: Doc.duplicateSelected() }
+            IconButton { text: "↺"; tip: Doc.selectionCount > 1 ? "Xoay cả khối −90°" : "Xoay −90°"; onClicked: Doc.rotateBy(-90) }
+            IconButton { text: "↻"; tip: Doc.selectionCount > 1 ? "Xoay cả khối 90°" : "Xoay 90°"; onClicked: Doc.rotateBy(90) }
+            IconButton { text: "⇔"; tip: "Căn giữa theo chiều ngang của tem"; onClicked: Doc.centerOnLabel("h") }
+            IconButton { text: "⇕"; tip: "Căn giữa theo chiều dọc của tem"; onClicked: Doc.centerOnLabel("v") }
+            IconButton { visible: Doc.selectionCount === 1; text: "▲"; tip: "Đưa lớp lên"; onClicked: Doc.reorder(-1) }
+            IconButton { visible: Doc.selectionCount === 1; text: "▼"; tip: "Đưa lớp xuống"; onClicked: Doc.reorder(1) }
+            Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
+            IconButton { text: Doc.selectionLocked ? "🔒" : "🔓"; active: Doc.selectionLocked; tip: Doc.selectionLocked ? "Mở khoá" : "Khoá vị trí"
+                onClicked: Doc.setLocked(!Doc.selectionLocked) }
+            IconButton { text: "✕"; tip: "Xoá (Del)"; enabled: !Doc.selectionLocked; onClicked: Doc.deleteSelected() }
+        }
+    }
+
     // ---- preview error / empty state ----
     Text {
         visible: Doc.previewError.length > 0
@@ -407,7 +476,7 @@ Item {
         anchors.left: parent.left; anchors.top: parent.top; anchors.margins: Theme.s4
         width: rotLabel.implicitWidth + Theme.s3 * 2; height: 24; radius: Theme.radiusMd
         color: Theme.surface; border.width: 1; border.color: Theme.border
-        Text { id: rotLabel; anchors.centerIn: parent; text: "Review view " + view.viewRotation + "° — print unchanged"
+        Text { id: rotLabel; anchors.centerIn: parent; text: "Đang xem xoay " + view.viewRotation + "° — bản in không đổi"
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
         MouseArea { anchors.fill: parent; onClicked: { view.viewRotation = 0; Qt.callLater(view.fit) } }
     }
@@ -421,7 +490,7 @@ Item {
         Row {
             id: zoomRow
             anchors.centerIn: parent; spacing: 2
-            IconButton { text: "−"; tip: "Zoom out (Ctrl+−)"; width: 28; height: 28; onClicked: view.zoomBy(1 / 1.25) }
+            IconButton { text: "−"; tip: "Thu nhỏ (Ctrl+−)"; width: 28; height: 28; onClicked: view.zoomBy(1 / 1.25) }
             C.Button {
                 id: zoomLabel
                 width: 56; height: 28; flat: true; padding: 0
@@ -430,16 +499,16 @@ Item {
                 background: Rectangle { radius: Theme.radiusSm; color: zoomLabel.hovered ? Theme.hover : "transparent" }
                 hoverEnabled: true
                 onClicked: view.actualSize()
-                C.ToolTip.visible: hovered; C.ToolTip.text: "Actual size (100% = real millimetres)"; C.ToolTip.delay: 500
+                C.ToolTip.visible: hovered; C.ToolTip.text: "Kích thước thật (100% = đúng milimét)"; C.ToolTip.delay: 500
             }
-            IconButton { text: "+"; tip: "Zoom in (Ctrl+=)"; width: 28; height: 28; onClicked: view.zoomBy(1.25) }
+            IconButton { text: "+"; tip: "Phóng to (Ctrl+=)"; width: 28; height: 28; onClicked: view.zoomBy(1.25) }
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
-            AppButton { text: "Fit"; kind: "ghost"; compact: true; onClicked: view.fit(); anchors.verticalCenter: parent.verticalCenter }
+            AppButton { text: "Vừa khung"; kind: "ghost"; compact: true; onClicked: view.fit(); anchors.verticalCenter: parent.verticalCenter }
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
-            IconButton { text: "▭"; tip: "Show element bounds"; active: view.showBounds; width: 28; height: 28; onClicked: view.showBounds = !view.showBounds }
-            IconButton { text: "⟳"; tip: view.rotated ? "Rotate review view 90° (now " + view.viewRotation + "°; view only, print unchanged)" : "Rotate review view 90° (view only, print unchanged)"
+            IconButton { text: "▭"; tip: "Hiện khung bao các phần tử"; active: view.showBounds; width: 28; height: 28; onClicked: view.showBounds = !view.showBounds }
+            IconButton { text: "⟳"; tip: view.rotated ? "Xoay góc nhìn 90° (đang " + view.viewRotation + "°; chỉ để xem, bản in không đổi)" : "Xoay góc nhìn 90° (chỉ để xem, bản in không đổi)"
                 active: view.rotated; width: 28; height: 28; onClicked: view.rotateView() }
-            IconButton { text: "⌗"; tip: "Rulers"; active: view.showRulers; width: 28; height: 28; onClicked: view.showRulers = !view.showRulers }
+            IconButton { text: "⌗"; tip: "Thước đo"; active: view.showRulers; width: 28; height: 28; onClicked: view.showRulers = !view.showRulers }
         }
     }
 }

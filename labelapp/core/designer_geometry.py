@@ -48,6 +48,22 @@ def fold_for_element(cfg, e):
     return None
 
 
+def fold_at(cfg, y):
+    """The enabled 180 degree fold whose horizontal band contains display (or source) height y, else None."""
+    for fr in cfg.get('fold_regions', []):
+        if fr.get('enabled', True) and int(fr.get('angle', 180)) % 360 == 180:
+            ry = float(fr.get('y', 0))
+            if ry <= y <= ry + float(fr.get('h', 0)):
+                return fr
+    return None
+
+
+def flip_point(fr, x, y):
+    """Point mirrored through the centre of a fold region (its own inverse: source <-> display)."""
+    return (2 * float(fr.get('x', 0)) + float(fr.get('w', 0)) - x,
+            2 * float(fr.get('y', 0)) + float(fr.get('h', 0)) - y)
+
+
 def _flip_box(fr, x, y, w, h):
     rx = float(fr.get('x', 0)); ry = float(fr.get('y', 0)); rw = float(fr.get('w', 0)); rh = float(fr.get('h', 0))
     return rx + rw - (x - rx) - w, ry + rh - (y - ry) - h, w, h

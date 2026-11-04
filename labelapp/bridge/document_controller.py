@@ -10,7 +10,7 @@ from PySide6.QtCore import Property, QObject, QTimer, Signal, Slot
 
 from ..core.binding import bind_row_to_template
 from ..core.designer_geometry import render_workspace
-from ..core.editor import DOC_CHOICE_KEYS, DOC_NUMBER_KEYS, LabelEditor
+from ..core.editor import DOC_CHOICE_KEYS, DOC_NUMBER_KEYS, TYPE_LABELS, LabelEditor
 from ..core.designer_geometry import virtual_area
 from ..core.models import normalize_cfg
 from ..services.template_service import TemplateService
@@ -21,6 +21,29 @@ from .tasks import run_async
 
 RENDER_SCALE = 2                # preview supersampling relative to printer DPI (same as the Tk designer)
 DOC_KEYS = DOC_NUMBER_KEYS + tuple(DOC_CHOICE_KEYS)
+
+# The editor's status notes are short English keys (tests and the Tk app use them); the Qt UI shows Vietnamese.
+NOTES_VI = {
+    'Undo': 'Đã hoàn tác', 'Redo': 'Đã làm lại', 'Printer profile loaded': 'Đã nạp hồ sơ máy in',
+    'Paper settings changed': 'Đã đổi cài đặt khổ tem', 'Free text added': 'Đã thêm chữ',
+    'Dynamic field(s) added': 'Đã thêm trường dữ liệu', 'Element added': 'Đã thêm phần tử', 'Shape added': 'Đã thêm hình',
+    'Element(s) deleted': 'Đã xoá phần tử', 'Duplicated': 'Đã nhân bản', 'Pasted': 'Đã dán', 'Centered': 'Đã căn giữa',
+    'Aligned': 'Đã căn chỉnh', 'Moved': 'Đã di chuyển', 'Layer order changed': 'Đã đổi thứ tự lớp', 'Rotated': 'Đã xoay',
+    'Font size changed': 'Đã đổi cỡ chữ', 'Locked': 'Đã khoá', 'Unlocked': 'Đã mở khoá',
+    'All elements unlocked': 'Đã mở khoá tất cả', 'Virtual area visible': 'Đã hiện vùng in', 'Fold region added': 'Đã thêm vùng gập',
+    'Fold moved': 'Đã dời đường gập', 'Resized': 'Đã đổi kích thước', 'Print area resized': 'Đã đổi vùng in',
+    'Changed': 'Đã thay đổi', 'Grouped': 'Đã nhóm', 'Ungrouped': 'Đã bỏ nhóm',
+}
+
+
+def note_vi(note):
+    if note in NOTES_VI:
+        return NOTES_VI[note]
+    if note.endswith(' changed'):
+        return 'Đã đổi ' + note[:-len(' changed')].lower()
+    if note.startswith('Copied '):
+        return 'Đã sao chép ' + note[len('Copied '):].replace(' element(s)', ' phần tử')
+    return note
 
 
 class DocumentController(QObject):
@@ -141,9 +164,9 @@ class DocumentController(QObject):
         if n == 0:
             return ''
         if n > 1:
-            return f'{n} elements'
+            return f'Nhóm · {n} phần tử' if self.editor.selection_is_group else f'{n} phần tử'
         e = self.cfg['elements'][next(iter(self.editor.selected))]
-        return str(e.get('type', '')).replace('_', ' ').capitalize() + (' — locked' if e.get('locked') else '')
+        return self.typeLabel(str(e.get('type', ''))) + (' — đã khoá' if e.get('locked') else '')
 
     selectionTitle = Property(str, _get_selection_title, notify=selectionChanged)
 
@@ -161,6 +184,21 @@ class DocumentController(QObject):
         return bool(self.editor.selected) and all(self.cfg['elements'][i].get('locked') for i in self.editor.selected)
 
     selectionLocked = Property(bool, _get_sel_locked, notify=selectionChanged)
+
+    def _get_can_group(self):
+        return self.editor.can_group
+
+    canGroup = Property(bool, _get_can_group, notify=selectionChanged)
+
+    def _get_can_ungroup(self):
+        return self.editor.can_ungroup
+
+    canUngroup = Property(bool, _get_can_ungroup, notify=selectionChanged)
+
+    def _get_selection_is_group(self):
+        return self.editor.selection_is_group
+
+    selectionIsGroup = Property(bool, _get_selection_is_group, notify=selectionChanged)
 
     def _get_elements_model(self):
         return self._elements_model
@@ -273,7 +311,7 @@ class DocumentController(QObject):
         self._render_finished()
 
     def _render_failed(self, message):
-        self._preview_error = f'Preview error: {message}'
+        self._preview_error = f'Lỗi xem trước: {message}'
         self._render_finished()
 
     def _render_finished(self):
@@ -312,7 +350,7 @@ class DocumentController(QObject):
         self.historyChanged.emit()
         self._schedule_render()
         self._save_timer.start()
-        self.message.emit(f"{note} — live for printing, not saved to the template yet.")
+        self.message.emit(f"{note_vi(note)} — đã áp dụng khi in, chưa lưu vào mẫu.")
         self.committed.emit()
         return True
 
@@ -402,6 +440,15 @@ class DocumentController(QObject):
         e = self.cfg['elements'][i] if 0 <= i < len(self.cfg['elements']) else {}
         return str(e.get('type', ''))
 
+    @Slot(str, result=str)
+    def typeLabel(self, etype):
+        return TYPE_LABELS.get(etype, etype.replace('_', ' ').capitalize())
+
+    @Slot(int, result=bool)
+    def elementBold(self, i):
+        e = self.cfg['elements'][i] if 0 <= i < len(self.cfg['elements']) else {}
+        return bool(e.get('bold'))
+
     # ------------------------------------------------------------------ edits
     @Slot(str, 'QVariant')
     def setProp(self, key, value):
@@ -435,7 +482,12 @@ class DocumentController(QObject):
 
     @Slot(str)
     def addText(self, text):
-        self._commit(self.editor.add_text(text or 'New text'))
+        self._commit(self.editor.add_text(text or 'Chữ mới'))
+
+    @Slot(str, float, bool, float, float)
+    def addTextStyled(self, text, font_size, bold, w, h):
+        """Palette presets (title / subtitle / body): same text element, different starting style and box."""
+        self._commit(self.editor.add_text(text or 'Chữ mới', font_size, bold, w, h))
 
     @Slot('QStringList', bool)
     def addFields(self, fields, as_barcode):
@@ -453,6 +505,18 @@ class DocumentController(QObject):
     def addShape(self, kind):
         self._commit(self.editor.add_shape(kind))
 
+    @Slot(int, str)
+    def setElementText(self, index, text):
+        self._commit(self.editor.set_element_text(index, text))
+
+    @Slot()
+    def groupSelected(self):
+        self._commit(self.editor.group_selected())
+
+    @Slot()
+    def ungroupSelected(self):
+        self._commit(self.editor.ungroup_selected())
+
     @Slot()
     def deleteSelected(self):
         self._commit(self.editor.delete_selected())
@@ -466,7 +530,7 @@ class DocumentController(QObject):
         n = self.editor.copy_selected()
         if n:
             self.historyChanged.emit()
-            self.message.emit(n + ' — Ctrl+V to paste')
+            self.message.emit(note_vi(n) + ' — Ctrl+V để dán')
 
     @Slot()
     def paste(self):
@@ -517,7 +581,7 @@ class DocumentController(QObject):
         n = self.editor.ensure_fold_line()
         self._commit(n or None)
         if n is None:
-            self.message.emit('Drag the orange fold line vertically. Back-face elements stay visually fixed.')
+            self.message.emit('Kéo đường gập màu cam lên/xuống. Các phần tử mặt sau giữ nguyên vị trí nhìn thấy.')
 
     # ------------------------------------------------------------------ template persistence
     @Slot(str, result=str)
@@ -530,7 +594,7 @@ class DocumentController(QObject):
         self.workspace.clear_working_copy()
         self.load_cfg(cfg, name)
         self.workspace.set('last_template', name)
-        self.message.emit(f'Template loaded: {name}')
+        self.message.emit(f'Đã mở mẫu: {name}')
         return ''
 
     @Slot(result=str)
@@ -545,13 +609,13 @@ class DocumentController(QObject):
         self._dirty = False
         self.workspace.clear_working_copy()
         self.templateChanged.emit()
-        self.message.emit(f'Template saved: {self._template_name}')
+        self.message.emit(f'Đã lưu mẫu: {self._template_name}')
         return ''
 
     @Slot(str, result=str)
     def saveTemplateAs(self, name):
         if not (name or '').strip():
-            return 'Enter a template name.'
+            return 'Hãy nhập tên mẫu.'
         try:
             saved = self.templates.save_as(name, self.cfg)
         except Exception as e:
@@ -561,7 +625,7 @@ class DocumentController(QObject):
         self.workspace.clear_working_copy()
         self.workspace.set('last_template', saved)
         self.templateChanged.emit()
-        self.message.emit(f'Template saved to library: {saved}')
+        self.message.emit(f'Đã lưu vào thư viện: {saved}')
         return ''
 
     @Slot()
@@ -584,4 +648,4 @@ class DocumentController(QObject):
         if recovered:
             self.load_cfg(recovered, name, dirty=True)
             self._write_working_copy()                              # keep the recovered layout safe until saved
-            self.message.emit('Recovered unsaved layout from the previous session. Save the template when ready.')
+            self.message.emit('Đã khôi phục bố cục chưa lưu từ lần trước. Nhớ lưu mẫu khi xong.')

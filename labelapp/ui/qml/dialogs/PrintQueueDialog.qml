@@ -27,7 +27,7 @@ AppDialog {
                     Repeater { model: Printing.queueColumns
                         Text { required property string modelData; text: modelData; Layout.fillWidth: true; Layout.preferredWidth: 100; elide: Text.ElideRight
                             font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted } }
-                    Text { text: "Qty"; Layout.preferredWidth: 70; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted }
+                    Text { text: "SL"; Layout.preferredWidth: 70; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted }
                     Item { Layout.preferredWidth: 30 }
                 }
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.border }
@@ -60,7 +60,7 @@ AppDialog {
             Separator { Layout.fillWidth: true }
             RowLayout {
                 Layout.fillWidth: true; Layout.margins: Theme.s3; Layout.leftMargin: Theme.s5; spacing: Theme.s2
-                Text { text: "Set all quantities to"; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
+                Text { text: "Đặt số lượng tất cả bằng"; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
                 NumberField { id: allQty; Layout.preferredWidth: 64; implicitHeight: 26; value: 1; step: 1; decimals: 0; from: 1; to: 999; onEdited: (v) => Printing.setAllQty(v) }
                 Item { Layout.fillWidth: true }
                 Text { id: err; visible: text.length > 0; color: Theme.danger; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; elide: Text.ElideRight; Layout.maximumWidth: 360 }
@@ -68,10 +68,10 @@ AppDialog {
         }
     ]
     buttons: [
-        AppButton { text: "Export all as PDF…"; kind: "ghost"; onClicked: d.exportRequested() },
+        AppButton { text: "Xuất tất cả ra PDF…"; kind: "ghost"; onClicked: d.exportRequested() },
         Item { Layout.fillWidth: true },
-        AppButton { text: "Cancel"; kind: "ghost"; onClicked: d.close() },
-        AppButton { text: "Print " + Printing.queueSummary.split("·").pop().trim(); kind: "primary"; enabled: !Printing.busy
+        AppButton { text: "Huỷ"; kind: "ghost"; onClicked: d.close() },
+        AppButton { text: "In " + Printing.queueSummary.split("·").pop().trim(); kind: "primary"; enabled: !Printing.busy
             onClicked: {
                 var r = Printing.prepareQueuePrint()
                 if (!r.ok) { err.text = r.errors.join("  "); return }

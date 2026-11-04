@@ -113,7 +113,7 @@
       "h": 3.6,
       "font": "Arial",
       "font_size": 4.6,
-      "align": true,
+      "align": "left",
       "wrap": false,
       "auto_fit": true,
       "min_font_size": 3.8
@@ -286,7 +286,7 @@
       "h": 2.8,
       "font": "Arial",
       "font_size": 3.8,
-      "align": true,
+      "align": "left",
       "wrap": false,
       "auto_fit": true,
       "min_font_size": 3.4

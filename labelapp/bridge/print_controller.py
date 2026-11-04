@@ -147,12 +147,12 @@ class PrintController(QObject):
                     self._printer = pref
                     self.printerChanged.emit()
             self.printersChanged.emit()
-            self.message.emit(f"Printers found: {len(printers)}" if printers else "No printers found by Windows.")
+            self.message.emit(f"Tìm thấy {len(printers)} máy in" if printers else "Windows không tìm thấy máy in nào.")
 
         def failed(msg):
             self._printers_loading = False
             self.printersChanged.emit()
-            self.message.emit(f'Printer discovery failed: {msg}')
+            self.message.emit(f'Không dò được máy in: {msg}')
 
         run_async(enum_printers, done, failed)
 
@@ -216,7 +216,7 @@ class PrintController(QObject):
             row = self.data.current_row_dict()
             self.service.print_cfg(cfg, printer, row)
             self.service.record_history(cfg, printer, row, "Print Current", self.document.templateName)
-            self.message.emit(f"Printed current label to {printer}")
+            self.message.emit(f"Đã in tem hiện tại ra {printer}")
         except Exception as e:
             self.error.emit('Print error', str(e))
 
@@ -228,7 +228,7 @@ class PrintController(QObject):
             row = self.data.current_row_dict()
             self.service.print_via_driver(cfg, printer, row)
             self.service.record_history(cfg, printer, row, "Print via Driver/Virtual", self.document.templateName)
-            self.message.emit(f"Vector PDF sent via Windows driver to {printer}")
+            self.message.emit(f"Đã gửi PDF vector qua driver Windows tới {printer}")
         except Exception as e:
             self.error.emit('Driver / virtual print error', str(e))
 
@@ -241,7 +241,7 @@ class PrintController(QObject):
                 raise RuntimeError('\n'.join(errors))
             path, report = self.service.make_proof(cfg, self.data.current_row_dict())
             QDesktopServices.openUrl(QUrl.fromLocalFile(path))
-            self.message.emit(f'PDF proof created: {os.path.basename(path)}')
+            self.message.emit(f'Đã tạo PDF kiểm tra: {os.path.basename(path)}')
             self.error.emit('PDF proof created',
                             f"Vector 1:1 proof saved:\n{path}\n\n{report}\n\nNothing was printed.")
         except Exception as e:
@@ -295,9 +295,9 @@ class PrintController(QObject):
                     "scale_x": float(cfg.get("scale_x_pct", 100.0)), "scale_y": float(cfg.get("scale_y_pct", 100.0)),
                     "off_x": float(cfg.get("offset_x_mm", 0.0)), "off_y": float(cfg.get("offset_y_mm", 0.0)),
                     "geometry": compare_sheet_geometry(cfg)})
-                self.message.emit("Compare sheet sent. Measure it with a ruler, then use Measure & apply compensation.")
+                self.message.emit("Đã gửi tờ so sánh. Đo bằng thước rồi dùng Đo & áp dụng bù sai số.")
             else:
-                self.message.emit(f"{title} sent to {printer}")
+                self.message.emit(f"Đã gửi {title} tới {printer}")
         except Exception as e:
             self.error.emit('Test print error', str(e))
 
@@ -385,7 +385,7 @@ class PrintController(QObject):
             self.service.export_jobs_pdf(self.document.cfg, self.data.ds.rows, [(i['row'], i['qty']) for i in items], path)
         except Exception as e:
             return str(e)
-        self.message.emit(f'PDF exported: {path}')
+        self.message.emit(f'Đã xuất PDF: {path}')
         return ''
 
     @Slot(result='QVariantMap')

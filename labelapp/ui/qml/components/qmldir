@@ -15,3 +15,5 @@ AppMenu 1.0 AppMenu.qml
 AppMenuItem 1.0 AppMenuItem.qml
 AppMenuSeparator 1.0 AppMenuSeparator.qml
 BusyIndicator2 1.0 BusyIndicator2.qml
+PaletteTile 1.0 PaletteTile.qml
+RailButton 1.0 RailButton.qml

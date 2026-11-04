@@ -30,12 +30,13 @@ C.ApplicationWindow {
     // ------------------------------------------------------------------ layout
     header: TopBar {
         id: top
-        onSaveAs: textPrompt.openFor("Save template as", Doc.templateName.replace(/\.json$/i, "") || "Label", function(n) {
-            var e = Doc.saveTemplateAs(n); if (e.length) msg.show("Save template", e); else Lib.refresh() }, "Save", "Saved into the template library.")
+        onSaveAs: textPrompt.openFor("Lưu mẫu thành", Doc.templateName.replace(/\.json$/i, "") || "Tem", function(n) {
+            var e = Doc.saveTemplateAs(n); if (e.length) msg.show("Lưu mẫu", e); else Lib.refresh() }, "Lưu", "Mẫu được lưu vào thư viện mẫu.")
         onOpenLibrary: library.open()
         onOpenExcel: excelDialog.open()
         onOpenGoogle: googleDlg.open()
         onAddField: fieldPicker.open()
+        onNewTemplate: newTpl.open()
     }
     footer: BottomBar {
         onPrintRequested: win.doPrint("current")
@@ -47,7 +48,7 @@ C.ApplicationWindow {
         onTestRequested: (kind) => win.doPrint("test:" + kind)
         onCompensationRequested: compDlg.open()
         onProfilesRequested: profilesDlg.open()
-        onPrinterInfoRequested: msg.show("Printer information", Printing.printerSummary())
+        onPrinterInfoRequested: msg.show("Thông tin máy in", Printing.printerSummary())
     }
 
     C.SplitView {
@@ -58,8 +59,8 @@ C.ApplicationWindow {
         LeftPanel {
             id: left
             objectName: "left"
-            C.SplitView.preferredWidth: 310
-            C.SplitView.minimumWidth: 250
+            C.SplitView.preferredWidth: 340
+            C.SplitView.minimumWidth: 300
             C.SplitView.maximumWidth: 560
             onOpenExcel: excelDialog.open()
             onOpenGoogle: googleDlg.open()
@@ -67,6 +68,9 @@ C.ApplicationWindow {
             onAddImageRequested: { imageDialog.forProperty = false; imageDialog.open() }
             onPrintQueue: (scope) => win.openQueue(scope)
             onOpenBatchScan: batchScan.open()
+            onOpenTemplateRequested: (n) => top.switchTo(n)
+            onNewTemplateRequested: newTpl.open()
+            onOpenLibraryRequested: library.open()
         }
         CanvasView {
             id: canvas
@@ -74,7 +78,7 @@ C.ApplicationWindow {
             C.SplitView.fillWidth: true
             C.SplitView.minimumWidth: 360
             focus: true
-            onEditTextRequested: (i) => textPrompt.openFor("Edit text", Doc.elementText(i), function(t) { Doc.setProp("text", t) }, "Apply", "Use {{Column}} to insert data.")
+            onEditTextRequested: (i) => textPrompt.openFor("Sửa chữ", Doc.elementText(i), function(t) { Doc.setElementText(i, t) }, "Áp dụng", "Dùng {{TênCột}} để chèn dữ liệu.")
         }
         InspectorPanel {
             C.SplitView.preferredWidth: 330
@@ -105,12 +109,14 @@ C.ApplicationWindow {
     Shortcut { sequences: ["Ctrl+V"]; enabled: !win.typing; onActivated: Doc.paste() }
     Shortcut { sequences: ["Ctrl+A"]; enabled: !win.typing; onActivated: Doc.selectAll() }
     Shortcut { sequences: ["Ctrl+D"]; enabled: !win.typing; onActivated: Doc.duplicateSelected() }
+    Shortcut { sequences: ["Ctrl+G"]; enabled: !win.typing; onActivated: Doc.groupSelected() }
+    Shortcut { sequences: ["Ctrl+Shift+G"]; enabled: !win.typing; onActivated: Doc.ungroupSelected() }
     Shortcut { sequences: ["Delete"]; enabled: !win.typing; onActivated: Doc.deleteSelected() }
     Shortcut { sequences: ["Escape"]; enabled: !win.typing; onActivated: Doc.clearSelection() }
     Shortcut { sequences: ["Left"]; enabled: !win.typing; onActivated: Doc.nudge(-1, 0, false) }
     Shortcut { sequences: ["Right"]; enabled: !win.typing; onActivated: Doc.nudge(1, 0, false) }
-    Shortcut { sequences: ["Up"]; enabled: !win.typing && left.tab === 0; onActivated: Doc.nudge(0, -1, false) }
-    Shortcut { sequences: ["Down"]; enabled: !win.typing && left.tab === 0; onActivated: Doc.nudge(0, 1, false) }
+    Shortcut { sequences: ["Up"]; enabled: !win.typing && left.tab !== left.tabData; onActivated: Doc.nudge(0, -1, false) }
+    Shortcut { sequences: ["Down"]; enabled: !win.typing && left.tab !== left.tabData; onActivated: Doc.nudge(0, 1, false) }
     Shortcut { sequences: ["Shift+Left"]; enabled: !win.typing; onActivated: Doc.nudge(-1, 0, true) }
     Shortcut { sequences: ["Shift+Right"]; enabled: !win.typing; onActivated: Doc.nudge(1, 0, true) }
     Shortcut { sequences: ["Shift+Up"]; enabled: !win.typing; onActivated: Doc.nudge(0, -1, true) }
@@ -133,6 +139,7 @@ C.ApplicationWindow {
     BatchDialog { id: batch; objectName: "batch" }
     GoogleSheetDialog { id: googleDlg; objectName: "googleDlg" }
     FieldPickerDialog { id: fieldPicker; objectName: "fieldPicker" }
+    NewTemplateDialog { id: newTpl; objectName: "newTpl"; onCreated: left.tab = 1 }
     TemplateLibraryDialog {
         id: library
         objectName: "library"
@@ -145,55 +152,55 @@ C.ApplicationWindow {
     AppDialog {
         id: existsDlg
         property string srcUrl: ""
-        title: "Template already exists"
-        body: [ Text { text: "A template with this name is already in your library."; Layout.preferredWidth: 380; wrapMode: Text.Wrap
+        title: "Mẫu đã tồn tại"
+        body: [ Text { text: "Thư viện đã có một mẫu trùng tên."; Layout.preferredWidth: 380; wrapMode: Text.Wrap
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; color: Theme.text } ]
         buttons: [
-            AppButton { text: "Cancel"; kind: "ghost"; onClicked: existsDlg.close() },
-            AppButton { text: "Save under another name…"; onClicked: { existsDlg.close(); textPrompt.openFor("Import as", "Imported_label", function(n) {
-                var e = Lib.importTemplate(existsDlg.srcUrl, n, false); if (e.length && e.indexOf("exists:") !== 0) msg.show("Import template", e) }, "Import") } },
-            AppButton { text: "Replace"; kind: "danger"; onClicked: { existsDlg.close(); var e = Lib.importTemplate(existsDlg.srcUrl, "", true); if (e.length) msg.show("Import template", e) } }
+            AppButton { text: "Huỷ"; kind: "ghost"; onClicked: existsDlg.close() },
+            AppButton { text: "Lưu với tên khác…"; onClicked: { existsDlg.close(); textPrompt.openFor("Nhập với tên", "Mau_nhap", function(n) {
+                var e = Lib.importTemplate(existsDlg.srcUrl, n, false); if (e.length && e.indexOf("exists:") !== 0) msg.show("Nhập mẫu", e) }, "Nhập") } },
+            AppButton { text: "Thay thế"; kind: "danger"; onClicked: { existsDlg.close(); var e = Lib.importTemplate(existsDlg.srcUrl, "", true); if (e.length) msg.show("Nhập mẫu", e) } }
         ]
     }
 
     FileDialog {
         id: excelDialog
-        title: "Open Excel file"
-        nameFilters: ["Excel files (*.xlsx *.xlsm)", "All files (*)"]
+        title: "Mở tệp Excel"
+        nameFilters: ["Tệp Excel (*.xlsx *.xlsm)", "Tất cả tệp (*)"]
         onAccepted: Data.loadExcel(App.toLocalPath(selectedFile))
     }
     FileDialog {
         id: importDialog
-        title: "Load template"
-        nameFilters: ["JSON template (*.json)", "All files (*)"]
+        title: "Mở mẫu từ tệp"
+        nameFilters: ["Mẫu JSON (*.json)", "Tất cả tệp (*)"]
         onAccepted: { var e = Lib.importTemplate(selectedFile, "", false)
             if (e.indexOf("exists:") === 0) { existsDlg.srcUrl = selectedFile; existsDlg.open() }
-            else if (e.length) { msg.show("Load template", e) }
+            else if (e.length) { msg.show("Mở mẫu", e) }
             else { library.close() } }
     }
     FileDialog {
         id: exportDialog
         property string templateName: ""
-        title: "Export template"
+        title: "Xuất mẫu"
         fileMode: FileDialog.SaveFile
         defaultSuffix: "json"
-        nameFilters: ["JSON template (*.json)"]
-        onAccepted: { var e = Lib.exportTemplate(templateName, selectedFile); if (e.length) msg.show("Export template", e) }
+        nameFilters: ["Mẫu JSON (*.json)"]
+        onAccepted: { var e = Lib.exportTemplate(templateName, selectedFile); if (e.length) msg.show("Xuất mẫu", e) }
     }
     FileDialog {
         id: imageDialog
         property bool forProperty: false
-        title: "Choose image / logo"
-        nameFilters: ["Images (*.png *.jpg *.jpeg *.bmp *.gif)", "All files (*)"]
+        title: "Chọn ảnh / logo"
+        nameFilters: ["Ảnh (*.png *.jpg *.jpeg *.bmp *.gif)", "Tất cả tệp (*)"]
         onAccepted: { var p = App.toLocalPath(selectedFile); if (forProperty) Doc.setProp("path", p); else Doc.addImage(p) }
     }
     FileDialog {
         id: pdfDialog
-        title: "Export labels as PDF"
+        title: "Xuất tem ra PDF"
         fileMode: FileDialog.SaveFile
         defaultSuffix: "pdf"
         nameFilters: ["PDF (*.pdf)"]
-        onAccepted: { var e = Printing.exportQueuePdf(selectedFile); msg.show("Export PDF", e.length ? e : "Saved " + Printing.queueSummary.split("·").pop().trim() + " as PDF pages.") }
+        onAccepted: { var e = Printing.exportQueuePdf(selectedFile); msg.show("Xuất PDF", e.length ? e : "Đã lưu " + Printing.queueSummary.split("·").pop().trim() + " thành các trang PDF.") }
     }
 
     Connections { target: App; function onErrorRaised(t, m) { msg.show(t, m) } }

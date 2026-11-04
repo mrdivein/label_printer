@@ -56,7 +56,7 @@ def test_document_commands_emit_state_and_render(app, qapp):
     assert d.wait_for_render()
     assert d.previewSource.startswith("image://preview/workspace") and d.workspaceRect["w"] > 50
     d.selectIndex(1, False)
-    assert d.selectionCount == 1 and d.selectionTitle.startswith("Text")
+    assert d.selectionCount == 1 and d.selectionTitle.startswith("Chữ")
     d.setProp("font_size", 9.5)
     assert d.dirty and seen and d.canUndo
     assert d.wait_for_render()
@@ -380,9 +380,35 @@ def test_preview_renders_off_the_ui_thread_and_coalesces_bursts(app, qapp, monke
     assert d.wait_for_render() and d.previewSource != v and d.previewError == ""
 
 
+def test_palette_text_presets_and_vietnamese_status(app):
+    d = app.document
+    msgs = []
+    d.message.connect(msgs.append)
+    n = len(d.cfg["elements"])
+    d.addTextStyled("Tiêu đề", 10, True, 40, 6)
+    e = d.cfg["elements"][n]
+    assert (e["text"], e["font_size"], e["bold"], e["w"], e["h"]) == ("Tiêu đề", 10.0, True, 40.0, 6.0)
+    assert d.selection == [n] and d.selectionTitle == "Chữ" and d.elementBold(n)
+    assert msgs[-1].startswith("Đã thêm chữ")
+    d.setProp("bold", False)
+    assert not d.elementBold(n) and msgs[-1].startswith("Đã đổi in đậm")
+    fields = {f["key"]: f for f in d.editor.inspector_fields()}
+    assert fields["align"]["choice_labels"] == ["Trái", "Giữa", "Phải"]
+
+
+def test_new_fold_tag_template_gets_a_saved_fold_region(app):
+    assert app.library.createTemplate("Tem_gap_test", 50, 68, 300) == ""
+    d = app.document
+    assert d.templateName == "Tem_gap_test.json" and not d.cfg["fold_regions"]
+    d.ensureFoldLine()
+    assert d.saveTemplate() == "" and not d.dirty
+    saved = app.library.templates.load("Tem_gap_test.json")
+    assert saved["fold_regions"][0]["angle"] == 180 and saved["fold_regions"][0]["y"] == 34
+
+
 def test_element_list_describes_shapes_by_geometry():
     from labelapp.bridge.models import ElementListModel as M
-    assert M.describe({"type": "box", "x": 0, "y": 1.25, "w": 50, "h": 25}) == "50 × 25 mm  at 0, 1.25"
-    assert M.describe({"type": "line", "x": 1, "y": 20, "x2": 49, "y2": 20}) == "— 48 mm  at y 20"
-    assert M.describe({"type": "line", "x": 30, "y": 2, "x2": 30, "y2": 20}) == "| 18 mm  at x 30"
+    assert M.describe({"type": "box", "x": 0, "y": 1.25, "w": 50, "h": 25}) == "50 × 25 mm  tại 0, 1.25"
+    assert M.describe({"type": "line", "x": 1, "y": 20, "x2": 49, "y2": 20}) == "— 48 mm  tại y 20"
+    assert M.describe({"type": "line", "x": 30, "y": 2, "x2": 30, "y2": 20}) == "| 18 mm  tại x 30"
     assert M.describe({"type": "text", "text": "{{Brand}}"}) == "{{Brand}}"

@@ -69,12 +69,12 @@ class LibraryController(QObject):
             cfg, img = self.templates.preview_image(name, self.data.current_row_dict())
             self.provider.set_image('thumb', img, transparent=((242, 242, 242),))
             self._preview_version += 1
-            self._info = (f"{name}   ·   {cfg['width_mm']:g} × {cfg['height_mm']:g} mm   ·   {len(cfg['elements'])} elements"
-                          + ("   ·   preview uses the selected data row" if self.data.current_row_dict() else ""))
+            self._info = (f"{name}   ·   {cfg['width_mm']:g} × {cfg['height_mm']:g} mm   ·   {len(cfg['elements'])} phần tử"
+                          + ("   ·   xem trước theo dòng dữ liệu đang chọn" if self.data.current_row_dict() else ""))
         except Exception as e:
             self.provider.drop('thumb')
             self._preview_version += 1
-            self._info = f'Cannot preview: {e}'
+            self._info = f'Không xem trước được: {e}'
         self.previewChanged.emit()
 
     @Slot(str, float, float, int, result=str)

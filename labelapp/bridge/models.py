@@ -34,7 +34,8 @@ class ElementListModel(QAbstractListModel):
             ang = 0.0
         if not txt.strip():
             txt = ElementListModel._geometry(e)
-        return txt + (f"  ↻{ang:g}°" if abs(ang) > 1e-4 else "")
+        group = f"[{e['group_id']}] " if e.get('group_id') else ""
+        return group + txt + (f"  ↻{ang:g}°" if abs(ang) > 1e-4 else "")
 
     @staticmethod
     def _geometry(e):
@@ -49,12 +50,12 @@ class ElementListModel(QAbstractListModel):
                 x, y = num('x'), num('y')
                 dx, dy = num('x2', x + num('w')) - x, num('y2', y) - y
                 if abs(dy) < 1e-6:
-                    return f"— {abs(dx):g} mm  at y {y:g}"
+                    return f"— {abs(dx):g} mm  tại y {y:g}"
                 if abs(dx) < 1e-6:
-                    return f"| {abs(dy):g} mm  at x {x:g}"
-                return f"{round((dx * dx + dy * dy) ** 0.5, 2):g} mm  from {x:g}, {y:g}"
+                    return f"| {abs(dy):g} mm  tại x {x:g}"
+                return f"{round((dx * dx + dy * dy) ** 0.5, 2):g} mm  từ {x:g}, {y:g}"
             if 'w' in e or 'h' in e:
-                return f"{num('w'):g} × {num('h'):g} mm  at {num('x'):g}, {num('y'):g}"
+                return f"{num('w'):g} × {num('h'):g} mm  tại {num('x'):g}, {num('y'):g}"
         except Exception:
             pass
         return ''
@@ -182,7 +183,7 @@ class ScanQueueModel(QAbstractListModel):
 class InspectorModel(QAbstractListModel):
     """Property rows for the current selection. Updated in place while the field set is unchanged, so editors
     keep keyboard focus while values commit."""
-    KEYS = ("key", "label", "kind", "group", "unit", "choices", "value", "mixed")
+    KEYS = ("key", "label", "kind", "group", "unit", "choices", "choice_labels", "value", "mixed")
     ROLES = {Qt.ItemDataRole.UserRole + 1 + i: k.encode() for i, k in enumerate(KEYS)}
 
     def __init__(self, parent=None):

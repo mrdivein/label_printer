@@ -47,7 +47,7 @@ class AppBridge(QObject):
         self.scan = ScanController(self.workspace, self.data, self.printing, self)
         self.profiles = ProfileController(ProfileService(), self.document, self.printing, self)
         self.updates = UpdateController(self)
-        self._status = 'Ready'
+        self._status = 'Sẵn sàng'
         self._dark = bool(self.workspace.get('qt_dark', False))
 
         for src in (self.document, self.library, self.data, self.printing, self.profiles, self.scan):
@@ -129,7 +129,7 @@ class AppBridge(QObject):
         try:
             subprocess.Popen([sys.executable, os.path.join(app_root(), 'app.py')], cwd=app_root())
         except Exception as e:
-            self.errorRaised.emit('Legacy app', str(e))
+            self.errorRaised.emit('Ứng dụng cũ', str(e))
 
     @Slot()
     def shutdown(self):
