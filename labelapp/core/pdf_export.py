@@ -37,6 +37,12 @@ def _pdf_font_name(name="Arial", bold=False):
 
     return "Helvetica-Bold" if bold else "Helvetica"
 
+def _text_leading(name, size, bold, dpi):
+    """Line spacing in points: the raster preview's, or a plain 1.08 em when the font is missing on this machine."""
+    if not find_font(name, bold):
+        return size * 1.08
+    return text_line_pitch_px(load_font(name, size, bold, dpi)) * 72.0 / dpi
+
 def _pdf_wrap_text(text, font_name, font_size, max_width_pt):
     from reportlab.pdfbase import pdfmetrics
     lines = []
@@ -227,9 +233,7 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
 
             while True:
                 lines = _pdf_wrap_text(text, font_name, chosen, max_w_pt) if wrap else text.split("\n")
-                # Same line spacing as the raster preview.
-                pitch_font = load_font(e.get("font", "Arial"), chosen, bool(e.get("bold", False)), dpi)
-                leading = text_line_pitch_px(pitch_font) * 72.0 / dpi
+                leading = _text_leading(e.get("font", "Arial"), chosen, bool(e.get("bold", False)), dpi)
                 max_line_w = max(
                     [pdfmetrics.stringWidth(line, font_name, chosen) for line in lines] or [0]
                 )
