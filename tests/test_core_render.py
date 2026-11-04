@@ -4,7 +4,7 @@ import copy
 import pytest
 
 from labelapp.core.binding import bind_row_to_template
-from labelapp.core.label_engine import render_label, render_preview_with_guides
+from labelapp.core.label_engine import clean_text, render_label, render_preview_with_guides
 from labelapp.core.models import normalize_cfg
 from labelapp.core.pdf_export import render_print_hq, save_exact_print_pdf, rasterize_exact_print_pdf
 from labelapp.core.preflight import preflight_checks
@@ -99,3 +99,56 @@ def test_cached_auto_fit_matches_direct_measurement():
             f1, t1 = fit_font(draw, text, w, h, "Arial", 14, 4, False, wrap, 300)
             f2, t2 = _fit_font(draw, text, w, h, "Arial", 14, 4, False, wrap, 300)
             assert t1 == t2 and f1.size == f2.size
+
+
+MULTILINE_TEXT = "AB-1\t2\nCD-2\t3\r\nEF-3\t4\n"
+
+
+def _text_cfg(**over):
+    e = {"type": "text", "text": MULTILINE_TEXT, "x": 2, "y": 2, "w": 50, "h": 30, "font": "Arial", "bold": True,
+         "font_size": 12, "wrap": False, "auto_fit": False, "min_font_size": 4, "align": "left"}
+    e.update(over)
+    return normalize_cfg({"width_mm": 60, "height_mm": 40, "dpi": 300, "elements": [e]})
+
+
+def _ink_rows(img):
+    """(first, last) y of each run of rows that contain ink: one run per printed line of text."""
+    gray = img.convert("L")
+    rows = [gray.crop((0, y, gray.width, y + 1)).getextrema()[0] < 128 for y in range(gray.height)]
+    runs, start = [], None
+    for y, ink in enumerate(rows + [False]):
+        if ink and start is None:
+            start = y
+        elif not ink and start is not None:
+            runs.append((start, y - 1))
+            start = None
+    return runs
+
+
+def test_clean_text_normalises_breaks_and_tabs():
+    assert clean_text("a\t1\r\nb\x0b\u2028c\x01\n\n") == "a    1\nb\n\nc"
+
+
+@pytest.mark.parametrize("over", [{}, {"wrap": True}, {"auto_fit": True}])
+def test_print_keeps_line_breaks_and_line_spacing_of_preview(over):
+    cfg = _text_cfg(**over)
+    preview, printed = _ink_rows(render_label(cfg)), _ink_rows(render_print_hq(cfg))
+    assert len(preview) == len(printed) == 3
+    assert abs((preview[-1][0] - preview[0][0]) - (printed[-1][0] - printed[0][0])) <= 4
+
+
+def test_tabs_are_drawn_as_spaces_in_preview_and_print():
+    with_tab, with_spaces = _text_cfg(text="AB\tC"), _text_cfg(text="AB    C")
+    assert render_print_hq(with_tab).tobytes() == render_print_hq(with_spaces).tobytes()
+    assert render_label(with_tab).tobytes() == render_label(with_spaces).tobytes()
+
+
+def test_wrap_keeps_hard_line_breaks():
+    cfg = _text_cfg(text="AAA\nBBB", wrap=True)
+    assert len(_ink_rows(render_label(cfg))) == len(_ink_rows(render_print_hq(cfg))) == 2
+
+
+def test_auto_fit_print_stops_at_min_font_size_like_preview():
+    cfg = _text_cfg(text="LUXURY SUNGLASSES ITALY", auto_fit=True, font_size=8.2, min_font_size=7.6, w=10, h=8)
+    width = lambda img: img.convert("L").point(lambda p: 255 if p < 128 else 0).getbbox()[2]
+    assert abs(width(render_label(cfg)) - width(render_print_hq(cfg))) <= 12

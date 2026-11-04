@@ -9,7 +9,8 @@ from PIL import Image
 from ..services.image_service import load_element_image
 from .geometry import (_element_angle, element_center_mm, element_rotation_center, in_fold_band,
                        rotate_point_cw)
-from .label_engine import barcode_full_code, barcode_text_height_mm, code128_layout, barcode_text_size, find_font, make_barcode, qr_matrix, render_label
+from .label_engine import (barcode_full_code, barcode_text_height_mm, clean_text, code128_layout, barcode_text_size,
+                           find_font, load_font, make_barcode, qr_matrix, render_label, text_line_pitch_px)
 from .models import normalize_cfg, scale_layout_cfg
 from .units import DEFAULT_DPI, mm_to_px
 
@@ -38,20 +39,21 @@ def _pdf_font_name(name="Arial", bold=False):
 
 def _pdf_wrap_text(text, font_name, font_size, max_width_pt):
     from reportlab.pdfbase import pdfmetrics
-    words = str(text).split()
-    if not words:
-        return [""]
-
     lines = []
-    cur = words[0]
-    for word in words[1:]:
-        test = cur + " " + word
-        if pdfmetrics.stringWidth(test, font_name, font_size) <= max_width_pt:
-            cur = test
-        else:
-            lines.append(cur)
-            cur = word
-    lines.append(cur)
+    for para in str(text).split("\n"):
+        words = para.split()
+        if not words:
+            lines.append("")
+            continue
+        cur = words[0]
+        for word in words[1:]:
+            test = cur + " " + word
+            if pdfmetrics.stringWidth(test, font_name, font_size) <= max_width_pt:
+                cur = test
+            else:
+                lines.append(cur)
+                cur = word
+        lines.append(cur)
     return lines
 
 def _element_fold_region(cfg, e):
@@ -162,6 +164,7 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
         pageCompression=1
     )
 
+    dpi = int(cfg.get("dpi", DEFAULT_DPI))
     clip_active = False  # v18: no hard clipping; virtual area is guide-only
 
     for e in cfg.get("elements", []):
@@ -210,7 +213,7 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
             c.rect(left, bottom, w * RL_MM, h * RL_MM, fill=1, stroke=0)
 
         elif t == "text":
-            text = str(e.get("text", ""))
+            text = clean_text(e.get("text", ""))
             font_name = _pdf_font_name(e.get("font", "Arial"), bool(e.get("bold", False)))
             size = float(e.get("font_size", 8))
             min_size = float(e.get("min_font_size", 4))
@@ -223,19 +226,21 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
             chosen = size
 
             while True:
-                lines = _pdf_wrap_text(text, font_name, chosen, max_w_pt) if wrap else [text]
-                leading = chosen * 1.08
+                lines = _pdf_wrap_text(text, font_name, chosen, max_w_pt) if wrap else text.split("\n")
+                # Same line spacing as the raster preview.
+                pitch_font = load_font(e.get("font", "Arial"), chosen, bool(e.get("bold", False)), dpi)
+                leading = text_line_pitch_px(pitch_font) * 72.0 / dpi
                 max_line_w = max(
                     [pdfmetrics.stringWidth(line, font_name, chosen) for line in lines] or [0]
                 )
-                total_h = len(lines) * leading
+                total_h = (len(lines) - 1) * leading + chosen
                 if (
                     not auto_fit
                     or (max_line_w <= max_w_pt and total_h <= max_h_pt)
                     or chosen <= min_size
                 ):
                     break
-                chosen -= 0.5
+                chosen = max(min_size, chosen - 0.5)   # never below the minimum, like the raster
 
             c.setFont(font_name, chosen)
 

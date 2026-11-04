@@ -6,6 +6,7 @@ import functools
 import io
 import math
 import os
+import re
 import threading
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
@@ -16,6 +17,9 @@ from ..services.image_service import load_element_image
 from .geometry import _element_angle, element_center_mm, element_rotation_center, in_fold_band
 from .models import normalize_cfg, scale_layout_cfg
 from .units import DEFAULT_DPI, mm_to_px
+
+TEXT_LINE_SPACING_PX = 1
+TAB_SPACES = 4
 
 @functools.lru_cache(maxsize=64)
 def find_font(name="Arial", bold=False):
@@ -50,23 +54,46 @@ def load_font(name, size_pt, bold=False, dpi=DEFAULT_DPI):
     path = find_font(name, bold)
     return ImageFont.truetype(path, px) if path else ImageFont.load_default()
 
+_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def clean_text(text):
+    """Printable form of an element's text, shared by the raster and the PDF so both show the same characters.
+
+    Any line separator becomes a newline, a tab (cells pasted from Excel) becomes spaces, and other control characters,
+    which fonts draw as an empty box, are dropped. Trailing line breaks are removed."""
+    text = "\n".join(str(text).splitlines()).replace("\t", " " * TAB_SPACES)
+    return "\n".join(_CONTROL_CHARS.sub("", line) for line in text.split("\n")).rstrip("\n")
+
+
 def wrap_text(draw, text, font, max_width):
-    words = str(text).split()
-    if not words:
-        return ""
-    lines, cur = [], words[0]
-    for word in words[1:]:
-        test = cur + " " + word
-        bb = draw.textbbox((0, 0), test, font=font)
-        if bb[2] - bb[0] <= max_width:
-            cur = test
-        else:
-            lines.append(cur)
-            cur = word
-    lines.append(cur)
-    return "\n".join(lines)
+    """Word-wrap each line of `text` to max_width; existing line breaks are kept."""
+    out = []
+    for para in str(text).split("\n"):
+        words = para.split()
+        if not words:
+            out.append("")
+            continue
+        cur = words[0]
+        for word in words[1:]:
+            test = cur + " " + word
+            bb = draw.textbbox((0, 0), test, font=font)
+            if bb[2] - bb[0] <= max_width:
+                cur = test
+            else:
+                out.append(cur)
+                cur = word
+        out.append(cur)
+    return "\n".join(out)
 
 _MEASURE_DRAW = ImageDraw.Draw(Image.new("L", (1, 1)))   # text metrics only; same mode as the label raster
+
+
+def text_line_pitch_px(font):
+    """Distance between baselines of consecutive lines in the raster, so the PDF can use the same line spacing."""
+    one = _MEASURE_DRAW.multiline_textbbox((0, 0), "A", font=font, spacing=TEXT_LINE_SPACING_PX)
+    two = _MEASURE_DRAW.multiline_textbbox((0, 0), "A\nA", font=font, spacing=TEXT_LINE_SPACING_PX)
+    return two[3] - one[3]
 
 
 def fit_font(draw, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, dpi):
@@ -93,7 +120,7 @@ def _fit_font(draw, text, box_w, box_h, font_name, max_pt, min_pt, bold, wrap, d
     while pt >= float(min_pt):
         f = load_font(font_name, pt, bold, dpi)
         txt = wrap_text(draw, text, f, box_w) if wrap else text
-        bb = draw.multiline_textbbox((0, 0), txt, font=f, spacing=1)
+        bb = draw.multiline_textbbox((0, 0), txt, font=f, spacing=TEXT_LINE_SPACING_PX)
         if (bb[2]-bb[0]) <= box_w and (bb[3]-bb[1]) <= box_h:
             return f, txt
         pt -= 0.5
@@ -230,7 +257,7 @@ def _draw_element(img, draw, e, cfg, dpi):
     h = mm_to_px(e.get("h", cfg["height_mm"] - e.get("y", 0)), dpi)
 
     if t == "text":
-        text = str(e.get("text", ""))
+        text = clean_text(e.get("text", ""))
         font_name = e.get("font", "Arial")
         bold = bool(e.get("bold", False))
         size = float(e.get("font_size", 8))
@@ -242,14 +269,14 @@ def _draw_element(img, draw, e, cfg, dpi):
             f = load_font(font_name, size, bold, dpi)
             final_text = wrap_text(draw, text, f, w) if wrap else text
 
-        bb = draw.multiline_textbbox((0, 0), final_text, font=f, spacing=1)
+        bb = draw.multiline_textbbox((0, 0), final_text, font=f, spacing=TEXT_LINE_SPACING_PX)
         tw = bb[2] - bb[0]
         tx = x
         if align == "center":
             tx = x + max(0, (w - tw) // 2)
         elif align == "right":
             tx = x + max(0, w - tw)
-        draw.multiline_text((tx, y), final_text, font=f, fill=0, spacing=1, align=align)
+        draw.multiline_text((tx, y), final_text, font=f, fill=0, spacing=TEXT_LINE_SPACING_PX, align=align)
 
     elif t == "line":
         x2 = mm_to_px(e.get("x2", e.get("x", 0)+e.get("w", 0)), dpi)
