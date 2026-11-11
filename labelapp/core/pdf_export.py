@@ -7,6 +7,7 @@ import tempfile
 from PIL import Image
 
 from ..services.image_service import load_element_image
+from .models import image_dither, is_printed
 from .geometry import (_element_angle, element_center_mm, element_rotation_center, in_fold_band,
                        rotate_point_cw)
 from .label_engine import (barcode_full_code, barcode_text_height_mm, clean_text, code128_layout, barcode_text_size,
@@ -174,6 +175,8 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
     clip_active = False  # v18: no hard clipping; virtual area is guide-only
 
     for e in cfg.get("elements", []):
+        if not is_printed(e):
+            continue
         t = str(e.get("type", "")).lower()
         fr = _element_fold_region(cfg, e)
         angle = _element_total_angle(cfg, e, fr)
@@ -337,7 +340,7 @@ def save_exact_print_pdf(cfg, path, return_raster=False):
             im = load_element_image(e.get("path", ""))
             if im is not None:
                 from reportlab.lib.utils import ImageReader
-                if e.get("dither", False):
+                if image_dither(e):
                     im = im.convert("1").convert("L")
                 c.drawImage(ImageReader(im), left, bottom, width=w * RL_MM, height=h * RL_MM,
                             preserveAspectRatio=(e.get("fit", "contain") != "stretch"), anchor="c", mask="auto")

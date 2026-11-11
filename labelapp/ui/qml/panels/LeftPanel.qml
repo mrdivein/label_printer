@@ -216,6 +216,7 @@ Panel {
                         required property string summary
                         required property bool locked
                         required property bool selected
+                        required property bool printed
                         width: ListView.view.width; height: 34
                         Rectangle {
                             anchors.fill: parent; anchors.leftMargin: Theme.s2; anchors.rightMargin: Theme.s2; anchors.topMargin: 1; anchors.bottomMargin: 1
@@ -231,14 +232,31 @@ Panel {
                             Text { text: row.summary; anchors.left: tcol.right; anchors.right: lockText.left; anchors.rightMargin: Theme.s1
                                 anchors.verticalCenter: parent.verticalCenter; elide: Text.ElideRight; textFormat: Text.PlainText
                                 font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase
+                                font.strikeout: !row.printed; opacity: row.printed ? 1 : 0.55
                                 // shapes are described by their size: muted so the content-bearing rows stand out
                                 color: ["box", "fill_box", "line", "ellipse"].indexOf(row.etype) >= 0 ? Theme.textMuted : Theme.text }
-                            Text { id: lockText; visible: row.locked; text: "đã khoá"; anchors.right: parent.right; anchors.rightMargin: Theme.s2
+                            Text { id: lockText; visible: row.locked; text: "đã khoá"; anchors.right: printSw.left; anchors.rightMargin: Theme.s1
                                 anchors.verticalCenter: parent.verticalCenter; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.italic: true; color: Theme.textFaint
                                 width: visible ? implicitWidth : 0 }
                             MouseArea {
                                 id: ma; anchors.fill: parent; hoverEnabled: true
                                 onClicked: (m) => Doc.selectIndex(row.index_, (m.modifiers & (Qt.ControlModifier | Qt.ShiftModifier)) !== 0)
+                            }
+                            // Print switch: the element stays on the label either way, "Không in" only keeps it off the paper.
+                            Rectangle {
+                                id: printSw
+                                anchors.right: parent.right; anchors.rightMargin: Theme.s2; anchors.verticalCenter: parent.verticalCenter
+                                width: swText.implicitWidth + 12; height: 20; radius: 10
+                                color: swMa.containsMouse ? Theme.hover : "transparent"
+                                border.width: 1; border.color: row.printed ? Theme.border : Theme.danger
+                                Text { id: swText; anchors.centerIn: parent; text: row.printed ? "In" : "Không in"
+                                    font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold
+                                    color: row.printed ? Theme.textMuted : Theme.danger }
+                                MouseArea { id: swMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: Doc.togglePrint(row.index_) }
+                                C.ToolTip.visible: swMa.containsMouse
+                                C.ToolTip.text: row.printed ? "Đang in phần này — bấm để KHÔNG in (vẫn giữ trên tem)" : "Phần này không in — bấm để in lại"
+                                C.ToolTip.delay: 400
                             }
                         }
                     }

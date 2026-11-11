@@ -8,6 +8,20 @@ from .units import DEFAULT_DPI
 
 PLACEHOLDER_RE = re.compile(r"\{\{([^{}]+)\}\}")
 
+# Designer-only cfg flag: draw elements switched to "do not print" so they stay visible while designing.
+SHOW_UNPRINTED_KEY = "_show_unprinted"
+
+
+def is_printed(e):
+    """An element prints unless it was switched off with "print": false (it stays on the template either way)."""
+    return e.get("print", True) is not False
+
+
+def image_dither(e):
+    """Image elements are dithered by default: a thermal printer has only black dots, so a plain threshold turns a
+    light or coloured logo white (invisible) and a dark photo into a black block."""
+    return e.get("dither", True) is not False
+
 
 def normalize_cfg(cfg):
     cfg = dict(cfg or {})

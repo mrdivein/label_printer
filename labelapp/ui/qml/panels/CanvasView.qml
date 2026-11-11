@@ -159,6 +159,18 @@ Item {
             function P(p) { return view.rotPt(view.panX + p[0] * s, view.panY + p[1] * s) }
             function poly(pts) { g.beginPath(); for (var k = 0; k < pts.length; k++) { var q = P(pts[k]); if (k === 0) g.moveTo(q[0], q[1]); else g.lineTo(q[0], q[1]) } g.closePath() }
             var acc = Theme.accent
+            // elements switched off for printing: veil them and tag "KHÔNG IN" (they are still drawn in the preview)
+            for (var u = 0; u < o.elements.length; u++) {
+                var ue = o.elements[u]
+                if (ue.printed !== false) continue
+                poly(ue.poly)
+                g.fillStyle = Qt.alpha(Theme.canvas, 0.55); g.fill()
+                g.lineWidth = 1; g.strokeStyle = Theme.danger; g.setLineDash([4, 3]); g.stroke(); g.setLineDash([])
+                if (!ue.selected) {
+                    var up = P(ue.poly[0]); g.fillStyle = Theme.danger; g.font = "600 9px sans-serif"
+                    g.fillText("KHÔNG IN", up[0] + 1, up[1] - 3)
+                }
+            }
             // paper outline-less: bounds
             for (var i = 0; i < o.elements.length; i++) {
                 var e = o.elements[i]
@@ -206,7 +218,7 @@ Item {
                 if (nSel <= 3) {
                     var lp = P(se.poly[0]); g.fillStyle = se.locked ? Theme.textMuted : acc
                     g.font = "600 10px sans-serif"
-                    g.fillText((j + 1) + " " + Doc.typeLabel(se.type) + (se.locked ? "  (đã khoá)" : ""), lp[0] + 1, lp[1] - 6)
+                    g.fillText((j + 1) + " " + Doc.typeLabel(se.type) + (se.locked ? "  (đã khoá)" : "") + (se.printed === false ? "  (không in)" : ""), lp[0] + 1, lp[1] - 6)
                 }
             }
             // handles
@@ -457,6 +469,10 @@ Item {
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
             IconButton { text: Doc.selectionLocked ? "🔒" : "🔓"; active: Doc.selectionLocked; tip: Doc.selectionLocked ? "Mở khoá" : "Khoá vị trí"
                 onClicked: Doc.setLocked(!Doc.selectionLocked) }
+            AppButton { text: Doc.selectionPrinted ? "In" : "Không in"; compact: true; anchors.verticalCenter: parent.verticalCenter
+                onClicked: Doc.setPrinted(!Doc.selectionPrinted)
+                C.ToolTip.visible: hovered; C.ToolTip.delay: 500
+                C.ToolTip.text: Doc.selectionPrinted ? "Đang in — bấm để không in phần đã chọn (vẫn giữ trên tem)" : "Không in — bấm để in lại phần đã chọn" }
             IconButton { text: "✕"; tip: "Xoá (Del)"; enabled: !Doc.selectionLocked; onClicked: Doc.deleteSelected() }
         }
     }

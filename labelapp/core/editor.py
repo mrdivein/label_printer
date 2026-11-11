@@ -14,7 +14,7 @@ from .designer_geometry import (display_box_mm, display_to_source_box, element_i
                                 line_display_endpoints, outline_bbox, point_near_poly, source_box, virtual_area,
                                 visual_frame, element_in_fold_region)
 from .geometry import _element_angle, element_rotation_center, rotate_point_cw
-from .models import normalize_cfg
+from .models import is_printed, normalize_cfg
 from .profiles import apply_profile
 
 FONT_CHOICES = ('Arial', 'Arial Narrow', 'Segoe UI', 'Segoe UI Light', 'Tahoma', 'Verdana')
@@ -57,12 +57,14 @@ INSPECTOR_FIELDS = [
      'choice_labels': ['L · 7%', 'M · 15%', 'Q · 25%', 'H · 30%']},
     {'key': 'fit', 'label': 'Co giãn', 'kind': 'choice', 'group': 'Ảnh', 'types': {'image'}, 'choices': ['contain', 'stretch'],
      'choice_labels': ['Giữ tỉ lệ', 'Kéo giãn']},
+    {'key': 'dither', 'label': 'Chấm mịn (ảnh màu / xám)', 'kind': 'bool', 'group': 'Ảnh', 'types': {'image'}},
     {'key': 'thickness', 'label': 'Độ dày nét', 'kind': 'number', 'group': 'Nét', 'types': {'line', 'box', 'ellipse'}, 'unit': 'mm'},
     {'key': 'transform', 'label': 'Kiểu chữ', 'kind': 'choice', 'group': 'Dữ liệu', 'types': {'text'}, 'choices': ['', 'upper', 'lower', 'title'],
      'choice_labels': ['Giữ nguyên', 'IN HOA', 'in thường', 'Hoa Đầu Từ']},
     {'key': 'prefix', 'label': 'Thêm trước', 'kind': 'text', 'group': 'Dữ liệu', 'types': {'text'}},
     {'key': 'suffix', 'label': 'Thêm sau', 'kind': 'text', 'group': 'Dữ liệu', 'types': {'text'}},
     {'key': 'show_if', 'label': 'Chỉ in khi có', 'kind': 'text', 'group': 'Dữ liệu', 'types': ALL},
+    {'key': 'print', 'label': 'In phần này', 'kind': 'bool', 'group': 'In', 'types': ALL},
 ]
 # Vietnamese names of element types (lists, titles, canvas tags)
 TYPE_LABELS = {'text': 'Chữ', 'barcode': 'Mã vạch', 'qr': 'QR', 'image': 'Ảnh', 'line': 'Đường kẻ', 'box': 'Khung',
@@ -72,7 +74,8 @@ FIELD_BY_KEY = {f['key']: f for f in INSPECTOR_FIELDS}
 GROUP_HIDDEN_KEYS = {'x', 'y', 'w', 'h', 'x2', 'y2', 'angle', 'text', 'value', 'path'}
 DEFAULTS = {'font': 'Arial', 'bold': False, 'align': 'left', 'auto_fit': False, 'wrap': False, 'transform': '',
             'prefix': '', 'suffix': '', 'show_if': '', 'thickness': 0.2, 'symbology': 'code128', 'show_text': False,
-            'ecc': 'M', 'path': '', 'fit': 'contain', 'min_font_size': 4, 'font_size': 8, 'angle': 0.0}
+            'ecc': 'M', 'path': '', 'fit': 'contain', 'min_font_size': 4, 'font_size': 8, 'angle': 0.0,
+            'print': True, 'dither': True}
 
 DOC_NUMBER_KEYS = ('width_mm', 'height_mm', 'dpi', 'offset_x_mm', 'offset_y_mm', 'rotation_deg', 'scale_x_pct',
                    'scale_y_pct', 'threshold', 'oversample', 'copies')
@@ -301,6 +304,8 @@ class LabelEditor:
         f = FIELD_BY_KEY.get(key)
         if f is None:
             return None
+        if key == 'print':
+            return self.set_print(sorted(self.selected), bool(value))
         ids = [i for i in self._unlocked() if _etype(self.elements[i]) in f['types']]
         if not ids:
             return None
@@ -625,6 +630,25 @@ class LabelEditor:
             self.elements[i]['locked'] = bool(value)
         return 'Locked' if value else 'Unlocked'
 
+    def set_print(self, ids, value):
+        """Switch elements on/off for printing. They stay on the template (and in the designer) either way; locking
+        only fixes the position, so locked elements can be switched too. "print" is stored only when off."""
+        ids = [i for i in ids if 0 <= i < len(self.elements) and is_printed(self.elements[i]) != bool(value)]
+        if not ids:
+            return None
+        self.push_undo()
+        for i in ids:
+            if value:
+                self.elements[i].pop('print', None)
+            else:
+                self.elements[i]['print'] = False
+        return 'Print on' if value else 'Print off'
+
+    def toggle_print(self, index):
+        if not 0 <= index < len(self.elements):
+            return None
+        return self.set_print([index], not is_printed(self.elements[index]))
+
     def unlock_all(self):
         if not any(e.get('locked') for e in self.elements):
             return None
@@ -664,7 +688,7 @@ class LabelEditor:
                     pts = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
                 except Exception:
                     continue
-            els.append({'index': i, 'type': _etype(e), 'locked': bool(e.get('locked')),
+            els.append({'index': i, 'type': _etype(e), 'locked': bool(e.get('locked')), 'printed': is_printed(e),
                         'selected': i in self.selected, 'rotated': element_is_rotated(e),
                         'poly': [[p[0], p[1]] for p in pts]})
         a = virtual_area(cfg)
