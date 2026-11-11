@@ -4,6 +4,8 @@ import os
 
 from PIL import Image
 
+from ..paths import to_local_path
+
 @functools.lru_cache(maxsize=32)
 def _load_image_file(path, mtime):
     im = Image.open(path)
@@ -14,7 +16,7 @@ def _load_image_file(path, mtime):
     return im.convert("L")
 
 def load_element_image(path):
-    path = os.path.expanduser(str(path or "").strip())
+    path = os.path.expanduser(to_local_path(path or ""))
     if not path or not os.path.isfile(path):
         return None
     try:

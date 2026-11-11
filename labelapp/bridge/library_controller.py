@@ -4,15 +4,13 @@ import os
 from PySide6.QtCore import Property, QObject, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 
+from ..paths import to_local_path
 from ..services.template_service import LABEL_PRESETS, TemplateError, TemplateService
 
 
 def _local(path_or_url):
-    """QML file dialogs hand out file:// URLs."""
-    s = str(path_or_url)
-    if s.startswith('file:'):
-        return QUrl(s).toLocalFile()
-    return s
+    """QML file dialogs hand out file:// URLs (as QUrl objects)."""
+    return to_local_path(path_or_url)
 
 
 class LibraryController(QObject):

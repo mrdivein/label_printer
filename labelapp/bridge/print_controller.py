@@ -7,6 +7,7 @@ import os
 from PySide6.QtCore import Property, QObject, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 
+from ..paths import to_local_path
 from ..core.binding import bind_row_to_template
 from ..core.compensation import compensation_from_measurements
 from ..core.test_patterns import (compare_sheet_geometry, make_barcode_quality_test_cfg, make_calibration_test_cfg,
@@ -18,8 +19,7 @@ from .tasks import run_async
 
 
 def _local(path_or_url):
-    s = str(path_or_url)
-    return QUrl(s).toLocalFile() if s.startswith('file:') else s
+    return to_local_path(path_or_url)
 
 
 class PrintController(QObject):

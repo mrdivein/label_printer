@@ -14,6 +14,7 @@ from .designer_geometry import (display_box_mm, display_to_source_box, element_i
                                 line_display_endpoints, outline_bbox, point_near_poly, source_box, virtual_area,
                                 visual_frame, element_in_fold_region)
 from .geometry import _element_angle, element_rotation_center, rotate_point_cw
+from ..paths import to_local_path
 from .models import is_printed, normalize_cfg
 from .profiles import apply_profile
 
@@ -102,9 +103,20 @@ def _shift(e, dx, dy, nd=3):
             e[k] = round(float(e[k]) + dy, nd)
 
 
+def _repair_image_paths(cfg):
+    """Templates saved by 22.3.x/22.4.0 can hold "PySide6.QtCore.QUrl('file:///...')" instead of a path: fix in place."""
+    for e in cfg.get('elements', []):
+        p = e.get('path')
+        if isinstance(p, str) and p and '{{' not in p:
+            fixed = to_local_path(p)
+            if fixed != p:
+                e['path'] = fixed
+
+
 class LabelEditor:
     def __init__(self, cfg=None):
         self.cfg = normalize_cfg(cfg)
+        _repair_image_paths(self.cfg)
         self.selected = set()
         self.primary = None
         self.undo_stack = []
@@ -118,6 +130,7 @@ class LabelEditor:
     # ------------------------------------------------------------------ document
     def load(self, cfg):
         self.cfg = normalize_cfg(cfg)
+        _repair_image_paths(self.cfg)
         self.selected = set()
         self.primary = None
         self.undo_stack.clear()
@@ -319,6 +332,8 @@ class LabelEditor:
                 new = bool(value)
             else:
                 new = str(value) if value is not None else ''
+                if kind == 'path':
+                    new = to_local_path(value)
                 if key not in ('prefix', 'suffix'):
                     new = new.strip() if key != 'text' else new
         except (TypeError, ValueError):
@@ -436,6 +451,7 @@ class LabelEditor:
             e = {'type': 'barcode', 'value': '{{Barcode}}', 'x': x, 'y': y, 'w': 30.0, 'h': 9.0, 'symbology': 'code128',
                  'barcode_height_mm': 6.5, 'module_width': 0.25, 'quiet_zone': 1.0, 'show_text': True, 'text_size': 6.0}
         elif kind == 'image':
+            path = to_local_path(path)
             if not path:
                 return None
             e = {'type': 'image', 'path': path, 'x': x, 'y': y, 'w': 16.0, 'h': 8.0, 'fit': 'contain'}
