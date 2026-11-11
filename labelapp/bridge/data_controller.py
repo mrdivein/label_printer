@@ -3,6 +3,7 @@ import os
 
 from PySide6.QtCore import Property, QObject, QTimer, QUrl, Signal, Slot
 
+from ..paths import to_local_path
 from ..core.binding import format_binding_value, resolve_row_value
 from ..services.datasource_service import DataSet, fetch_google_sheet_rows
 from ..services.settings_service import (load_sources, remember_excel_source, remember_google_source, save_sources)
@@ -12,8 +13,7 @@ from .tasks import run_async
 
 
 def _local(path_or_url):
-    s = str(path_or_url)
-    return QUrl(s).toLocalFile() if s.startswith('file:') else s
+    return to_local_path(path_or_url)
 
 
 class DataController(QObject):

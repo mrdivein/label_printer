@@ -9,6 +9,7 @@ import sys
 
 from PySide6.QtCore import Property, QObject, QThreadPool, QUrl, Signal, Slot
 
+from ..paths import to_local_path
 from ..paths import app_root
 from ..services.print_service import PrintService
 from ..services.template_service import TemplateService
@@ -103,8 +104,7 @@ class AppBridge(QObject):
     @Slot('QVariant', result=str)
     def toLocalPath(self, url):
         """QML file dialogs return file:// URLs; Python code wants a native path."""
-        s = str(url)
-        return QUrl(s).toLocalFile() if s.startswith('file:') else s
+        return to_local_path(url)
 
     @Slot(int, int, int, int, bool)
     def saveWindow(self, x, y, w, h, maximized):
