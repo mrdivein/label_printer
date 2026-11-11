@@ -1,5 +1,5 @@
 """Conservative template validation before printing."""
-from .models import normalize_cfg
+from .models import is_printed, normalize_cfg
 
 def preflight_checks(cfg):
     """
@@ -7,6 +7,8 @@ def preflight_checks(cfg):
     Returns (errors, warnings).
     """
     cfg = normalize_cfg(cfg)
+    # Elements switched off for printing are not checked: they never reach the paper.
+    cfg["elements"] = [e for e in cfg.get("elements", []) if is_printed(e)]
     errors = []
     warnings = []
 

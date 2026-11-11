@@ -14,6 +14,7 @@ import barcode
 from barcode.writer import ImageWriter
 
 from ..services.image_service import load_element_image
+from .models import SHOW_UNPRINTED_KEY, image_dither, is_printed
 from .geometry import _element_angle, element_center_mm, element_rotation_center, in_fold_band
 from .models import normalize_cfg, scale_layout_cfg
 from .units import DEFAULT_DPI, mm_to_px
@@ -380,7 +381,7 @@ def _draw_element(img, draw, e, cfg, dpi):
             else:
                 nw, nh = max(1, int(im.width * ratio)), max(1, int(im.height * ratio))
             pic = im.resize((nw, nh), Image.Resampling.LANCZOS)
-            if e.get("dither", False):
+            if image_dither(e):
                 pic = pic.convert("1").convert("L")
             img.paste(pic, (x + (w - nw) // 2, y + (h - nh) // 2))
 
@@ -458,8 +459,9 @@ def _render_label(cfg):
                 return i
         return None
 
+    show_unprinted = bool(cfg.get(SHOW_UNPRINTED_KEY))
     for e in cfg["elements"]:
-        if e.get("physical"):
+        if e.get("physical") or not (show_unprinted or is_printed(e)):
             continue
         fi = _fold_of(e) if folds else None
         if fi is None:
@@ -485,7 +487,7 @@ def _render_label(cfg):
 
     threshold = int(cfg.get("threshold", 180))
     out = img.point(lambda p: 0 if p < threshold else 255, mode="1")
-    physical = [e for e in cfg["elements"] if e.get("physical")]
+    physical = [e for e in cfg["elements"] if e.get("physical") and (show_unprinted or is_printed(e))]
     if physical:
         # "Physical" elements (rulers/test marks) are placed on the paper AFTER folding,
         # so they never get flipped with a fold region.

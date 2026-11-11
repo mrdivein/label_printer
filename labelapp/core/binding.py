@@ -1,7 +1,7 @@
 """Data binding: {{Column}} placeholders, per-element text options, and row -> template resolution."""
 import copy
 
-from .models import PLACEHOLDER_RE, normalize_cfg
+from .models import PLACEHOLDER_RE, is_printed, normalize_cfg
 
 def format_binding_value(key, v):
     if v is None:
@@ -89,6 +89,8 @@ def missing_fields(template_cfg, row):
     bindings = dict(cfg.get("data_bindings", {}))
     missing = []
     for e in cfg["elements"]:
+        if not is_printed(e):
+            continue                     # switched off for printing: its fields are not needed
         if e.get("show_if") and not replace_placeholders(str(e["show_if"]), row, bindings).strip():
             continue
         for prop in ("text", "value", "path"):

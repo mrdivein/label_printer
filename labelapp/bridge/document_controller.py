@@ -12,7 +12,7 @@ from ..core.binding import bind_row_to_template
 from ..core.designer_geometry import render_workspace
 from ..core.editor import DOC_CHOICE_KEYS, DOC_NUMBER_KEYS, TYPE_LABELS, LabelEditor
 from ..core.designer_geometry import virtual_area
-from ..core.models import normalize_cfg
+from ..core.models import is_printed, normalize_cfg
 from ..services.template_service import TemplateService
 from ..services.workspace_service import Workspace
 from .models import ElementListModel, InspectorModel
@@ -33,6 +33,7 @@ NOTES_VI = {
     'All elements unlocked': 'Đã mở khoá tất cả', 'Virtual area visible': 'Đã hiện vùng in', 'Fold region added': 'Đã thêm vùng gập',
     'Fold moved': 'Đã dời đường gập', 'Resized': 'Đã đổi kích thước', 'Print area resized': 'Đã đổi vùng in',
     'Changed': 'Đã thay đổi', 'Grouped': 'Đã nhóm', 'Ungrouped': 'Đã bỏ nhóm',
+    'Print on': 'Đã bật in phần tử', 'Print off': 'Đã tắt in phần tử (vẫn giữ trên tem)',
 }
 
 
@@ -166,7 +167,8 @@ class DocumentController(QObject):
         if n > 1:
             return f'Nhóm · {n} phần tử' if self.editor.selection_is_group else f'{n} phần tử'
         e = self.cfg['elements'][next(iter(self.editor.selected))]
-        return self.typeLabel(str(e.get('type', ''))) + (' — đã khoá' if e.get('locked') else '')
+        return (self.typeLabel(str(e.get('type', ''))) + (' — đã khoá' if e.get('locked') else '')
+                + ('' if is_printed(e) else ' — không in'))
 
     selectionTitle = Property(str, _get_selection_title, notify=selectionChanged)
 
@@ -184,6 +186,12 @@ class DocumentController(QObject):
         return bool(self.editor.selected) and all(self.cfg['elements'][i].get('locked') for i in self.editor.selected)
 
     selectionLocked = Property(bool, _get_sel_locked, notify=selectionChanged)
+
+    def _get_sel_printed(self):
+        """False only when every selected element is switched off for printing."""
+        return not self.editor.selected or any(is_printed(self.cfg['elements'][i]) for i in self.editor.selected)
+
+    selectionPrinted = Property(bool, _get_sel_printed, notify=selectionChanged)
 
     def _get_can_group(self):
         return self.editor.can_group
@@ -567,6 +575,16 @@ class DocumentController(QObject):
     @Slot(bool)
     def setLocked(self, value):
         self._commit(self.editor.set_lock_selected(value))
+
+    @Slot(bool)
+    def setPrinted(self, value):
+        """Print / do not print the selected elements (they stay on the template)."""
+        self._commit(self.editor.set_print(sorted(self.editor.selected), bool(value)))
+
+    @Slot(int)
+    def togglePrint(self, index):
+        """Element-list switch: print / do not print one element without changing the selection."""
+        self._commit(self.editor.toggle_print(index))
 
     @Slot()
     def unlockAll(self):

@@ -5,7 +5,7 @@ from PySide6.QtCore import QAbstractListModel, QAbstractTableModel, QModelIndex,
 
 
 class ElementListModel(QAbstractListModel):
-    IndexRole, TypeRole, SummaryRole, LockedRole, SelectedRole = (Qt.ItemDataRole.UserRole + i for i in range(1, 6))
+    IndexRole, TypeRole, SummaryRole, LockedRole, SelectedRole, PrintedRole = (Qt.ItemDataRole.UserRole + i for i in range(1, 7))
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -13,7 +13,7 @@ class ElementListModel(QAbstractListModel):
 
     def roleNames(self):
         return {self.IndexRole: b"index_", self.TypeRole: b"etype", self.SummaryRole: b"summary",
-                self.LockedRole: b"locked", self.SelectedRole: b"selected"}
+                self.LockedRole: b"locked", self.SelectedRole: b"selected", self.PrintedRole: b"printed"}
 
     def rowCount(self, parent=QModelIndex()):
         return 0 if parent.isValid() else len(self._rows)
@@ -23,7 +23,7 @@ class ElementListModel(QAbstractListModel):
             return None
         r = self._rows[index.row()]
         return {self.IndexRole: r['index'], self.TypeRole: r['type'], self.SummaryRole: r['summary'],
-                self.LockedRole: r['locked'], self.SelectedRole: r['selected']}.get(role)
+                self.LockedRole: r['locked'], self.SelectedRole: r['selected'], self.PrintedRole: r['printed']}.get(role)
 
     @staticmethod
     def describe(e):
@@ -63,7 +63,8 @@ class ElementListModel(QAbstractListModel):
     def sync(self, elements, selected):
         """Cheap incremental update: full reset only if the element count changes."""
         rows = [{'index': i, 'type': str(e.get('type', '?')), 'summary': self.describe(e),
-                 'locked': bool(e.get('locked')), 'selected': i in selected} for i, e in enumerate(elements)]
+                 'locked': bool(e.get('locked')), 'selected': i in selected,
+                 'printed': e.get('print', True) is not False} for i, e in enumerate(elements)]
         if len(rows) != len(self._rows):
             self.beginResetModel()
             self._rows = rows

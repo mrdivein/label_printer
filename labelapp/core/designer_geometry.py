@@ -9,6 +9,7 @@ import math
 
 from .geometry import _element_angle, rotate_point_cw
 from .label_engine import render_preview_with_guides
+from .models import SHOW_UNPRINTED_KEY
 
 PREVIEW_MARGIN_PX = 36      # grey margin render_preview_with_guides() adds around the page
 WORKSPACE_PAD_MM = 8.0
@@ -211,6 +212,7 @@ def workspace_preview_cfg(cfg, bound_cfg=None):
         shifted.append({'name': 'Virtual print area', 'type': 'box', 'x': float(a.get('x', 0)) + sx, 'y': float(a.get('y', 0)) + sy,
                         'w': float(a.get('w', pw)), 'h': float(a.get('h', ph)), 'color': 'green', 'show': True})
     wc['preview_guides'] = shifted
+    wc[SHOW_UNPRINTED_KEY] = True     # the canvas overlay marks them as "không in"
     return wc, min_x, min_y
 
 
