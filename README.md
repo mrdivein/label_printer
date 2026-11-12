@@ -112,10 +112,10 @@ and uninstall. Templates are plain JSON.*
 ## Ngôn ngữ, kho mẫu, chia sẻ an toàn · Language, gallery, safe sharing
 
 - **Tiếng Việt / English** — nút `VI / EN` trên thanh công cụ đổi ngôn ngữ ngay, không cần khởi động lại.
-  *The `VI / EN` button switches the interface language live.* Bản dịch: `labelapp/i18n_en.py`.
+  *The `VI / EN` button switches the interface language live.*
 - **Kho mẫu tem · Template gallery** — 48 mẫu dựng sẵn theo 14 nhóm (sản phẩm, giá, mã vạch, QR, vận chuyển,
   kính mắt, thời trang, mỹ phẩm, thực phẩm, trang sức, kho, điện tử, niêm phong, văn phòng). Xem với dữ liệu mẫu
-  hoặc **mẫu gốc**, rồi “Dùng mẫu” để chép vào thư viện. Tạo lại bằng `python tools/make_gallery.py`.
+  hoặc **mẫu gốc**, rồi “Dùng mẫu” để chép vào thư viện.
 - **Kiểm tra & chia sẻ · Check & share** — trong Thư viện mẫu: xem mẫu gốc (không ghép dữ liệu), tìm tên công ty,
   điện thoại, email, website, MST, logo từ máy, phần tử ẩn, bù lệch máy in; chọn cách xử lý từng mục và xuất bản
   đã làm sạch. *Shows the original template, flags company/personal details and exports a cleaned copy.*
@@ -151,19 +151,4 @@ pip install -r requirements.txt
 python -m labelapp
 ```
 
-Trên Windows có thể chạy `RUN.bat`. Kiểm thử · Tests:
-
-```bash
-pip install -r requirements-dev.txt
-python -m pytest tests
-```
-
-Kiến trúc · Architecture: QML (`labelapp/ui/qml`) → bridge (`labelapp/bridge`) → services / core (`labelapp/services`, `labelapp/core`).
-Logo và biểu tượng được vẽ trong · Logo and symbols are drawn in [`tools/make_icons.py`](tools/make_icons.py).
-
-## Phát hành · Release
-
-1. Tăng `__version__` trong `labelapp/version.py`. *Raise `__version__` in `labelapp/version.py`.*
-2. Merge vào nhánh mặc định: GitHub Actions chạy kiểm thử, đóng gói exe và bộ cài, rồi phát hành `v<version>`
-   cùng `latest.json`. *Merge to the default branch: GitHub Actions tests, builds the exe and installer and
-   publishes release `v<version>` with `latest.json`.*
+Muốn đóng góp? Xem [CONTRIBUTING.md](CONTRIBUTING.md). *Want to contribute? See CONTRIBUTING.md.*
