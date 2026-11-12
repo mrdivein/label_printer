@@ -128,7 +128,7 @@ pip install -r requirements-dev.txt
 python -m pytest tests
 ```
 
-Kiến trúc · Architecture: [`MIGRATION_QT.md`](MIGRATION_QT.md).
+Kiến trúc · Architecture: QML (`labelapp/ui/qml`) → bridge (`labelapp/bridge`) → services / core (`labelapp/services`, `labelapp/core`).
 Logo và biểu tượng được vẽ trong · Logo and symbols are drawn in [`tools/make_icons.py`](tools/make_icons.py).
 
 ## Phát hành · Release
