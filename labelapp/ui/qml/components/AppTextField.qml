@@ -20,7 +20,7 @@ C.TextField {
         radius: Theme.radiusMd
         color: f.enabled ? Theme.surface : Theme.surfaceAlt
         border.width: 1
-        border.color: f.activeFocus ? Theme.accent : f.hovered ? Theme.borderStrong : Theme.border
+        border.color: f.activeFocus ? Theme.accent : f.hovered ? Theme.textFaint : Theme.borderStrong
         Behavior on border.color { ColorAnimation { duration: Theme.dFast } }
         Rectangle { visible: f.activeFocus; anchors.fill: parent; anchors.margins: -1; radius: parent.radius + 1
             color: "transparent"; border.width: 1; border.color: Theme.accent; opacity: 0.55 }

@@ -10,9 +10,9 @@ Item {
     Text {
         text: h.text.toUpperCase()
         anchors.verticalCenter: parent.verticalCenter
-        font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold
-        font.letterSpacing: 0.6
-        color: Theme.textMuted
+        font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.Bold
+        font.letterSpacing: 0.8
+        color: Theme.text
     }
     Row { id: slot; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; spacing: Theme.s1 }
 }

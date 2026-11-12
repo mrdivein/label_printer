@@ -14,7 +14,7 @@ RowLayout {
         text: r.label
         Layout.preferredWidth: r.labelWidth
         Layout.alignment: Qt.AlignVCenter
-        font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm
+        font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase
         color: Theme.textMuted
         elide: Text.ElideRight
     }

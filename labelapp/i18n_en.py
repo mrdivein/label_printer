@@ -9,6 +9,7 @@ EN = {
     "Lưu mẫu thành": "Save template as",
     "Lưu mẫu": "Save template",
     "Lưu": "Save",
+    "Chưa lưu": "Unsaved",
     "Mẫu được lưu vào thư viện mẫu.": "The template is saved to the template library.",
     "Thông tin máy in": "Printer info",
     "Sửa chữ": "Edit text",

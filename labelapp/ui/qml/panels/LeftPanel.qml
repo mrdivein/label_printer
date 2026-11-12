@@ -40,7 +40,7 @@ Panel {
 
         // ---------------- tool rail ----------------
         Rectangle {
-            Layout.fillHeight: true; Layout.preferredWidth: 64
+            Layout.fillHeight: true; Layout.preferredWidth: 72
             color: Theme.surfaceAlt
             Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Theme.border }
             Column {
@@ -48,13 +48,14 @@ Panel {
                 width: parent.width
                 RailButton { width: parent.width; glyph: "▦"; text: qsTr("Mẫu"); active: p.tab === 0; onClicked: p.tab = 0 }
                 RailButton { width: parent.width; glyph: "＋"; text: qsTr("Chèn"); active: p.tab === 1; onClicked: p.tab = 1 }
-                RailButton { width: parent.width; glyph: "☷"; text: qsTr("Dữ liệu"); active: p.tab === 2; badge: Data.rowCount; onClicked: p.tab = 2 }
+                RailButton { width: parent.width; glyph: "☷"; text: qsTr("Dữ liệu"); active: p.tab === 2; badge: Data.rowCount; badgeColor: Theme.data; onClicked: p.tab = 2 }
                 RailButton { width: parent.width; glyph: "≡"; text: qsTr("Lớp"); active: p.tab === 3; badge: list.count; onClicked: p.tab = 3 }
             }
         }
 
         StackLayout {
             Layout.fillWidth: true; Layout.fillHeight: true
+            Layout.preferredWidth: 0          // take exactly the space left of the rail (never the pages' implicit width)
             currentIndex: p.tab
 
             // ---------------- Mẫu (templates) ----------------
@@ -133,7 +134,7 @@ Panel {
                     SectionHeader { text: qsTr("Ký hiệu nhanh"); Layout.fillWidth: true; Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; Layout.topMargin: Theme.s2 }
                     Text { text: qsTr("Đang chọn một khối chữ thì ký hiệu được nối vào cuối chữ đó."); Layout.fillWidth: true
                         Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; wrapMode: Text.Wrap
-                        font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; color: Theme.textFaint }
+                        font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
                     Flow {
                         Layout.fillWidth: true; Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; spacing: Theme.s1
                         Repeater {
@@ -143,7 +144,7 @@ Panel {
                                 required property string modelData
                                 width: Math.floor((ins.availableWidth - Theme.s3 * 2 - Theme.s1 * 7) / 8); height: 32
                                 hoverEnabled: true
-                                background: Rectangle { radius: Theme.radiusSm; color: sb.down ? Theme.pressed : sb.hovered ? Theme.accentSoft : Theme.surface
+                                background: Rectangle { radius: Theme.radiusSm; color: sb.down ? Theme.selected : sb.hovered ? Theme.accentSoft : Theme.surfaceAlt
                                     border.width: 1; border.color: sb.hovered ? Theme.accent : Theme.border }
                                 contentItem: Text { text: sb.modelData; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                                     font.family: Theme.fontFamily; font.pixelSize: Theme.fsMd; color: Theme.text }
@@ -155,7 +156,7 @@ Panel {
                     SectionHeader { text: qsTr("Biểu tượng"); Layout.fillWidth: true; Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; Layout.topMargin: Theme.s2 }
                     Text { text: qsTr("Hàng dễ vỡ, tem niêm phong, QC… In đen trắng sắc nét, kéo góc để đổi cỡ."); Layout.fillWidth: true
                         Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; wrapMode: Text.Wrap
-                        font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; color: Theme.textFaint }
+                        font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
                     Repeater {
                         // t = name shown in the app (its UI language, Vietnamese); e = English name, used only by the
                         // README symbol gallery (tools/make_symbol_sheet.py).
@@ -173,7 +174,7 @@ Panel {
                             required property var modelData
                             Layout.fillWidth: true; Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3
                             spacing: Theme.s1
-                            Text { text: modelData.title; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs
+                            Text { text: modelData.title; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm
                                 font.weight: Font.DemiBold; color: Theme.textMuted }
                             Flow {
                                 Layout.fillWidth: true; spacing: Theme.s2
@@ -240,7 +241,7 @@ Panel {
                     IconButton { text: "↑"; tip: qsTr("Đưa lớp lên trên"); enabled: Doc.selectionCount === 1; onClicked: Doc.reorder(-1) }
                     IconButton { text: "↓"; tip: qsTr("Đưa lớp xuống dưới"); enabled: Doc.selectionCount === 1; onClicked: Doc.reorder(1) }
                     IconButton { text: "⧉"; tip: qsTr("Nhân bản (Ctrl+D)"); enabled: Doc.selectionCount > 0; onClicked: Doc.duplicateSelected() }
-                    IconButton { text: "✕"; tip: qsTr("Xoá (Del)"); enabled: Doc.selectionCount > 0; onClicked: Doc.deleteSelected() }
+                    IconButton { text: "✕"; danger: true; tip: qsTr("Xoá (Del)"); enabled: Doc.selectionCount > 0; onClicked: Doc.deleteSelected() }
                 }
                 Separator { Layout.fillWidth: true }
                 ListView {
@@ -288,8 +289,8 @@ Panel {
                                 id: printSw
                                 anchors.right: parent.right; anchors.rightMargin: Theme.s2; anchors.verticalCenter: parent.verticalCenter
                                 width: swText.implicitWidth + 12; height: 20; radius: 10
-                                color: swMa.containsMouse ? Theme.hover : "transparent"
-                                border.width: 1; border.color: row.printed ? Theme.border : Theme.danger
+                                color: row.printed ? (swMa.containsMouse ? Theme.hover : "transparent") : Theme.dangerSoft
+                                border.width: 1; border.color: row.printed ? Theme.borderStrong : Theme.danger
                                 Text { id: swText; anchors.centerIn: parent; text: row.printed ? "In" : qsTr("Không in")
                                     font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold
                                     color: row.printed ? Theme.textMuted : Theme.danger }

@@ -17,8 +17,9 @@ C.AbstractButton {
 
     background: Rectangle {
         radius: Theme.radiusMd
-        color: b.down ? Theme.pressed : b.hovered ? Theme.accentSoft : Theme.surface
-        border.width: 1; border.color: b.hovered || b.visualFocus ? Theme.accent : Theme.border
+        color: !b.enabled ? Theme.surface : b.down ? Theme.selected : b.hovered ? Theme.accentSoft : Theme.surfaceAlt
+        border.width: b.visualFocus ? 2 : 1
+        border.color: !b.enabled ? Theme.border : b.hovered || b.visualFocus ? Theme.accent : Theme.border
         Behavior on color { ColorAnimation { duration: Theme.dFast } }
     }
     contentItem: Item {
@@ -52,7 +53,9 @@ C.AbstractButton {
                 anchors.fill: parent
                 property color ink: b.enabled ? Theme.text : Theme.disabledFg
                 property color acc: Theme.guideFold
+                property color dataInk: b.enabled ? Theme.data : Theme.disabledFg
                 onInkChanged: requestPaint()
+                onDataInkChanged: requestPaint()
                 Component.onCompleted: requestPaint()
                 onPaint: {
                     var g = getContext("2d"); g.reset()
@@ -89,7 +92,7 @@ C.AbstractButton {
                     case "area":
                         g.setLineDash([3, 2]); g.strokeStyle = Theme.guideArea; g.strokeRect(5, 2, w - 10, h - 4); break
                     case "field":
-                        g.font = "600 15px sans-serif"; g.fillText("{ }", 8, h / 2 + 5); break
+                        g.fillStyle = dataInk; g.font = "700 16px sans-serif"; g.fillText("{ }", 8, h / 2 + 6); break
                     case "body":
                         for (var r = 0; r < 4; r++) g.fillRect(4, 3 + r * 6, r === 3 ? w * 0.5 : w - 8, 2.2)
                         break
@@ -102,8 +105,8 @@ C.AbstractButton {
             anchors.left: parent.left; anchors.right: parent.right; anchors.leftMargin: 4; anchors.rightMargin: 4
             text: b.text
             horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
-            font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.Medium
-            color: b.enabled ? Theme.textMuted : Theme.disabledFg
+            font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; font.weight: Font.Medium
+            color: b.enabled ? Theme.text : Theme.disabledFg
         }
     }
     C.ToolTip.visible: hovered && tip.length > 0

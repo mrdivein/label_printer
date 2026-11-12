@@ -57,7 +57,10 @@ Panel {
                 section.property: "group"
                 section.delegate: Item {
                     required property string section
-                    width: props.width; height: 36
+                    width: props.width; height: 46
+                    // divider between groups so "Vị trí / Nội dung / Chữ / Dữ liệu" read as separate blocks
+                    Rectangle { anchors.top: parent.top; anchors.topMargin: 6; anchors.left: parent.left; anchors.right: parent.right
+                        anchors.leftMargin: Theme.s4; anchors.rightMargin: Theme.s4; height: 1; color: Theme.border }
                     SectionHeader { text: parent.section; anchors.left: parent.left; anchors.right: parent.right
                         anchors.leftMargin: Theme.s4; anchors.rightMargin: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: 0 }
                 }
@@ -74,7 +77,7 @@ Panel {
                     readonly property var val: (value === undefined || value === null) ? null : value     // Python None arrives as undefined
                     // what the combo shows: Vietnamese labels when the schema has them, else the stored values
                     readonly property var shown: (choice_labels && choice_labels.length === (choices ? choices.length : -1)) ? choice_labels : choices
-                    width: props.width; height: 36
+                    width: props.width; height: 40
                     PropertyRow {
                         anchors.left: parent.left; anchors.right: parent.right; anchors.leftMargin: Theme.s4; anchors.rightMargin: Theme.s4
                         anchors.verticalCenter: parent.verticalCenter
@@ -217,9 +220,9 @@ Panel {
             spacing: Theme.s2
             leftPadding: 2
             Text { text: dc.open ? "▾" : "▸"; anchors.verticalCenter: parent.verticalCenter
-                font.pixelSize: Theme.fsBase; color: Theme.textMuted }
+                font.pixelSize: Theme.fsBase; color: Theme.text }
             Text { text: dc.text.toUpperCase(); anchors.verticalCenter: parent.verticalCenter
-                font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; font.letterSpacing: 0.6; color: Theme.textMuted }
+                font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.Bold; font.letterSpacing: 0.8; color: Theme.text }
         }
     }
 }
