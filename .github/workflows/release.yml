@@ -64,16 +64,16 @@ jobs:
         run: |
           ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
           if [ ! -f "$ISCC" ]; then choco install innosetup -y --no-progress; fi
-          MSYS_NO_PATHCONV=1 "$ISCC" "/DAppVersion=${{ steps.ver.outputs.version }}" installer/label_printer.iss
+          MSYS_NO_PATHCONV=1 "$ISCC" "/DAppVersion=${{ steps.ver.outputs.version }}" installer/temly.iss
       - name: Publish the release
         if: steps.ver.outputs.skip == 'false'
         run: |
           VER=${{ steps.ver.outputs.version }}
-          FILE="Label-Printer-Setup-$VER.exe"
+          FILE="Temly-Setup-$VER.exe"
           cd dist
           SHA=$(sha256sum "$FILE" | cut -d' ' -f1)
           SIZE=$(stat -c %s "$FILE")
           printf '{"version":"%s","file":"%s","sha256":"%s","size":%s}\n' "$VER" "$FILE" "$SHA" "$SIZE" > latest.json
           cat latest.json
           gh release create "v$VER" "$FILE" latest.json --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Label Printer $VER" --generate-notes
+            --title "Temly $VER" --generate-notes

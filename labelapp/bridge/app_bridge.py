@@ -27,7 +27,7 @@ from ..services.profile_service import ProfileService
 from ..version import __version__
 from .update_controller import UpdateController
 
-APP_NAME = "Label Printer"
+APP_NAME = "Temly"
 APP_VERSION = __version__
 
 

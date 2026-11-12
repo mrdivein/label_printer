@@ -1,4 +1,4 @@
-"""Persistent per-user data (%APPDATA%\\LabelPrinter): template library, profiles, workspace, saved sources.
+"""Persistent per-user data (%APPDATA%\\Temly): template library, profiles, workspace, saved sources.
 
 File formats are unchanged from earlier versions; an earlier data folder is copied over on first start.
 """
@@ -23,7 +23,7 @@ def safe_filename(s):
     return s[:80] or "label"
 
 
-DATA_DIR_NAME = "LabelPrinter"
+DATA_DIR_NAME = "Temly"
 
 
 def _looks_like_data_dir(path):
@@ -50,7 +50,7 @@ def _migrate_previous_data_dir(base, path):
 
 def app_data_dir():
     """Persistent user data that survives replacing/updating the application folder."""
-    base = os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), ".label_printer")
+    base = os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), ".temly")
     path = os.path.join(base, DATA_DIR_NAME)
     if not os.path.isdir(path):
         _migrate_previous_data_dir(base, path)

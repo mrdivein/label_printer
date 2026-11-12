@@ -14,7 +14,7 @@ PAYLOAD = b"MZ fake installer " * 5000
 
 
 def _manifest(version="99.0.0", payload=PAYLOAD, **over):
-    m = {"version": version, "file": "Label-Printer-Setup-%s.exe" % version,
+    m = {"version": version, "file": "Temly-Setup-%s.exe" % version,
          "sha256": hashlib.sha256(payload).hexdigest(), "size": len(payload)}
     m.update(over)
     return m
@@ -50,8 +50,8 @@ def server(tmp_path):
 @pytest.fixture
 def env(server, tmp_path, monkeypatch):
     base, publish = server
-    monkeypatch.setenv("LABEL_PRINTER_UPDATE_MANIFEST", base + "/latest.json")
-    monkeypatch.setenv("LABEL_PRINTER_UPDATE_BASE", base)
+    monkeypatch.setenv("TEMLY_UPDATE_MANIFEST", base + "/latest.json")
+    monkeypatch.setenv("TEMLY_UPDATE_BASE", base)
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
     return publish
 
@@ -76,7 +76,7 @@ def test_manifest_validation_rejects_bad_names_and_digests():
 def test_download_verifies_checksum_and_keeps_only_new_installer(env, tmp_path):
     env(_manifest())
     m = us.fetch_manifest()
-    old = os.path.join(us.updates_dir(), "Label-Printer-Setup-1.0.0.exe")
+    old = os.path.join(us.updates_dir(), "Temly-Setup-1.0.0.exe")
     open(old, "wb").write(b"old")
     seen = []
     p = us.download(m, progress=seen.append)
@@ -96,7 +96,7 @@ def test_tampered_installer_is_rejected_and_deleted(env):
 
 def test_missing_manifest_is_a_clean_error(monkeypatch, server):
     base, _ = server
-    monkeypatch.setenv("LABEL_PRINTER_UPDATE_MANIFEST", base + "/nothing.json")
+    monkeypatch.setenv("TEMLY_UPDATE_MANIFEST", base + "/nothing.json")
     with pytest.raises(us.UpdateError):
         us.fetch_manifest()
 

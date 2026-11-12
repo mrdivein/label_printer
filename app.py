@@ -2134,7 +2134,7 @@ class App:
     def __init__(self, root):
         self.root = root
         apply_modern_theme(root)
-        self.root.title("Label Printer (legacy)")
+        self.root.title("Temly (legacy)")
         self.workspace_state = load_workspace_state()
         try:
             self.root.geometry(self.workspace_state.get("window_geometry") or "1600x920")
@@ -2167,7 +2167,7 @@ class App:
         header = ttk.Frame(root, style="Header.TFrame", padding=(16, 10))
         header.pack(fill="x")
         titlebox = ttk.Frame(header, style="Header.TFrame"); titlebox.pack(side="left")
-        ttk.Label(titlebox, text="Label Printer", style="Header.TLabel").pack(anchor="w")
+        ttk.Label(titlebox, text="Temly", style="Header.TLabel").pack(anchor="w")
         ttk.Label(titlebox, text="v21 · design, rotate, compare with the real printer", style="HeaderSub.TLabel").pack(anchor="w")
         self.source_chip_var = tk.StringVar(value="No data loaded")
         ttk.Label(header, textvariable=self.source_chip_var, style="HeaderChip.TLabel").pack(side="right")

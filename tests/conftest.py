@@ -12,7 +12,7 @@ sys.path.insert(0, ROOT)
 
 @pytest.fixture(autouse=True)
 def isolated_appdata(tmp_path, monkeypatch):
-    """Never touch the real %APPDATA%\\LabelPrinter during tests."""
+    """Never touch the real %APPDATA%\\Temly during tests."""
     monkeypatch.setenv("APPDATA", str(tmp_path / "appdata"))
     return tmp_path / "appdata"
 

@@ -19,7 +19,7 @@ def main(argv=None):
     QQuickStyle.setStyle("Basic")                         # fully themed by our own components
     app = QGuiApplication(argv)
     app.setApplicationName(APP_NAME)
-    app.setOrganizationName("LabelPrinter")
+    app.setOrganizationName("Temly")
     icon = os.path.join(qml_dir(), "..", "resources", "app.ico" if sys.platform == "win32" else "app.svg")
     if os.path.exists(icon):
         app.setWindowIcon(QIcon(icon))

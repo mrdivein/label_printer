@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Label Printer - Auto Setup
+title Temly - Auto Setup
 
 echo ==========================================
-echo LABEL PRINTER - AUTO SETUP
+echo TEMLY - AUTO SETUP
 echo ==========================================
 echo.
 
@@ -98,7 +98,7 @@ REM --------------------------------------------------
 REM 5. Create isolated environment
 REM --------------------------------------------------
 if not exist ".venv\Scripts\python.exe" (
-    echo Dang tao moi truong cho Label Printer...
+    echo Dang tao moi truong cho Temly...
     %PY% -m venv ".venv"
     if errorlevel 1 (
         echo.
@@ -120,7 +120,7 @@ if errorlevel 1 goto :PIP_ERROR
 
 echo.
 echo ==========================================
-echo SETUP HOAN TAT - DANG MO LABEL PRINTER
+echo SETUP HOAN TAT - DANG MO TEMLY
 echo ==========================================
 echo.
 
