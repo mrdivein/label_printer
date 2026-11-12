@@ -1,0 +1,80 @@
+{
+ "width_mm": 50,
+ "height_mm": 25,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2,
+   "y": 1.2,
+   "w": 46,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "barcode",
+   "value": "{{SKU}}",
+   "x": 3,
+   "y": 6,
+   "w": 44,
+   "h": 13,
+   "symbology": "code128",
+   "barcode_height_mm": 12.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{SKU}}",
+   "x": 2,
+   "y": 19.5,
+   "w": 46,
+   "h": 4,
+   "font": "Consolas",
+   "font_size": 8,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  }
+ ],
+ "gallery": {
+  "id": "barcode_50x25",
+  "category": "barcode",
+  "popular": true,
+  "name": {
+   "vi": "Tem mã vạch 50×25",
+   "en": "Barcode label 50×25"
+  },
+  "description": {
+   "vi": "Tên hàng phía trên, mã vạch phía dưới.",
+   "en": "Item name on top, barcode below."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h"
+  }
+ }
+}

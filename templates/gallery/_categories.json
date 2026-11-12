@@ -1,0 +1,114 @@
+[
+ {
+  "id": "product",
+  "name": {
+   "vi": "Tem sản phẩm",
+   "en": "Product labels"
+  },
+  "icon": "▣"
+ },
+ {
+  "id": "price",
+  "name": {
+   "vi": "Tem giá",
+   "en": "Price tags"
+  },
+  "icon": "₫"
+ },
+ {
+  "id": "barcode",
+  "name": {
+   "vi": "Tem mã vạch",
+   "en": "Barcode labels"
+  },
+  "icon": "▥"
+ },
+ {
+  "id": "qr",
+  "name": {
+   "vi": "Tem mã QR",
+   "en": "QR code labels"
+  },
+  "icon": "▦"
+ },
+ {
+  "id": "shipping",
+  "name": {
+   "vi": "Tem vận chuyển",
+   "en": "Shipping"
+  },
+  "icon": "⛟"
+ },
+ {
+  "id": "eyewear",
+  "name": {
+   "vi": "Tem kính mắt",
+   "en": "Eyewear"
+  },
+  "icon": "◎"
+ },
+ {
+  "id": "apparel",
+  "name": {
+   "vi": "Thời trang & hang tag",
+   "en": "Apparel & hang tags"
+  },
+  "icon": "◇"
+ },
+ {
+  "id": "cosmetics",
+  "name": {
+   "vi": "Mỹ phẩm",
+   "en": "Cosmetics"
+  },
+  "icon": "✿"
+ },
+ {
+  "id": "food",
+  "name": {
+   "vi": "Thực phẩm & đồ uống",
+   "en": "Food & drink"
+  },
+  "icon": "☕"
+ },
+ {
+  "id": "jewelry",
+  "name": {
+   "vi": "Trang sức",
+   "en": "Jewelry"
+  },
+  "icon": "◆"
+ },
+ {
+  "id": "warehouse",
+  "name": {
+   "vi": "Kho & tài sản",
+   "en": "Warehouse & assets"
+  },
+  "icon": "▤"
+ },
+ {
+  "id": "electronics",
+  "name": {
+   "vi": "Điện tử & bảo hành",
+   "en": "Electronics & warranty"
+  },
+  "icon": "⚡"
+ },
+ {
+  "id": "seal",
+  "name": {
+   "vi": "Niêm phong & QC",
+   "en": "Seal & QC"
+  },
+  "icon": "✓"
+ },
+ {
+  "id": "office",
+  "name": {
+   "vi": "Địa chỉ & văn phòng",
+   "en": "Address & office"
+  },
+  "icon": "✉"
+ }
+]

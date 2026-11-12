@@ -1,0 +1,148 @@
+{
+ "width_mm": 60,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 59.0,
+   "h": 39.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2,
+   "y": 1.5,
+   "w": 56,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7.5,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.5
+  },
+  {
+   "type": "text",
+   "text": "Thành phần: {{Ingredients}}",
+   "x": 2,
+   "y": 6,
+   "w": 56,
+   "h": 9,
+   "font": "Arial",
+   "font_size": 4.8,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "Công dụng: {{Usage}}",
+   "x": 2,
+   "y": 15.5,
+   "w": 56,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 4.8,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "Số CB: {{Notification}} · NSX: {{MFG}} · HSD: {{Expiry}}",
+   "x": 2,
+   "y": 21,
+   "w": 56,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 4.8,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "Nhập khẩu & phân phối: {{Importer}}",
+   "x": 2,
+   "y": 24.5,
+   "w": 56,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 4.8,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 2,
+   "y": 28.5,
+   "w": 34,
+   "h": 10,
+   "symbology": "ean13",
+   "barcode_height_mm": 7,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": true,
+   "text_size": 4.5
+  },
+  {
+   "type": "text",
+   "text": "{{Size}}",
+   "x": 38,
+   "y": 30,
+   "w": 20,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "right",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  }
+ ],
+ "gallery": {
+  "id": "cosmetic_ingredients_60x40",
+  "category": "cosmetics",
+  "popular": false,
+  "name": {
+   "vi": "Nhãn phụ mỹ phẩm 60×40",
+   "en": "Cosmetic sub-label 60×40"
+  },
+  "description": {
+   "vi": "Nhãn phụ tiếng Việt cho hàng nhập: thành phần, công dụng, số công bố, nhà nhập khẩu.",
+   "en": "Vietnamese sub-label for imports: ingredients, use, notification no., importer."
+  },
+  "sample": {
+   "Product": "Serum dưỡng ẩm B5",
+   "Ingredients": "Aqua, Glycerin, Panthenol, Niacinamide, Sodium Hyaluronate…",
+   "Usage": "Dưỡng ẩm, làm dịu da.",
+   "Notification": "000123/26/CBMP-HCM",
+   "MFG": "11/2026",
+   "Expiry": "11/2029",
+   "Importer": "Công ty Mẫu",
+   "Barcode": "8935001234598",
+   "Size": "30ml"
+  }
+ }
+}

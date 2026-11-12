@@ -1,0 +1,104 @@
+{
+ "width_mm": 50,
+ "height_mm": 25,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.6,
+   "y": 0.6,
+   "w": 48.8,
+   "h": 23.8,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "TÀI SẢN · {{Owner}}",
+   "x": 2,
+   "y": 1.5,
+   "w": 46,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "line",
+   "x": 2,
+   "y": 5.5,
+   "x2": 48,
+   "y2": 5.5,
+   "thickness": 0.15
+  },
+  {
+   "type": "barcode",
+   "value": "{{AssetCode}}",
+   "x": 3,
+   "y": 6.5,
+   "w": 44,
+   "h": 10,
+   "symbology": "code128",
+   "barcode_height_mm": 9.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{AssetCode}}",
+   "x": 2,
+   "y": 17,
+   "w": 46,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "Kiểm kê: {{Date}}",
+   "x": 2,
+   "y": 20.6,
+   "w": 46,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "wh_asset_50x25",
+  "category": "warehouse",
+  "popular": false,
+  "name": {
+   "vi": "Tem tài sản cố định 50×25",
+   "en": "Fixed asset tag 50×25"
+  },
+  "description": {
+   "vi": "Tem dán thiết bị văn phòng: đơn vị quản lý, mã tài sản, mã vạch, ngày kiểm kê.",
+   "en": "Office equipment tag: owner, asset code, barcode, audit date."
+  },
+  "sample": {
+   "Owner": "PHÒNG HÀNH CHÍNH",
+   "AssetCode": "TS-2026-0042",
+   "Date": "12/11/2026"
+  }
+ }
+}

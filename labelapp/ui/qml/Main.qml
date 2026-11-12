@@ -30,13 +30,14 @@ C.ApplicationWindow {
     // ------------------------------------------------------------------ layout
     header: TopBar {
         id: top
-        onSaveAs: textPrompt.openFor("Lưu mẫu thành", Doc.templateName.replace(/\.json$/i, "") || "Tem", function(n) {
-            var e = Doc.saveTemplateAs(n); if (e.length) msg.show("Lưu mẫu", e); else Lib.refresh() }, "Lưu", "Mẫu được lưu vào thư viện mẫu.")
+        onSaveAs: textPrompt.openFor(qsTr("Lưu mẫu thành"), Doc.templateName.replace(/\.json$/i, "") || "Tem", function(n) {
+            var e = Doc.saveTemplateAs(n); if (e.length) msg.show(qsTr("Lưu mẫu"), e); else Lib.refresh() }, qsTr("Lưu"), qsTr("Mẫu được lưu vào thư viện mẫu."))
         onOpenLibrary: library.open()
         onOpenExcel: excelDialog.open()
         onOpenGoogle: googleDlg.open()
         onAddField: fieldPicker.open()
         onNewTemplate: newTpl.open()
+        onOpenGallery: gallery.open()
     }
     footer: BottomBar {
         onPrintRequested: win.doPrint("current")
@@ -48,7 +49,7 @@ C.ApplicationWindow {
         onTestRequested: (kind) => win.doPrint("test:" + kind)
         onCompensationRequested: compDlg.open()
         onProfilesRequested: profilesDlg.open()
-        onPrinterInfoRequested: msg.show("Thông tin máy in", Printing.printerSummary())
+        onPrinterInfoRequested: msg.show(qsTr("Thông tin máy in"), Printing.printerSummary())
     }
 
     C.SplitView {
@@ -71,6 +72,7 @@ C.ApplicationWindow {
             onOpenTemplateRequested: (n) => top.switchTo(n)
             onNewTemplateRequested: newTpl.open()
             onOpenLibraryRequested: library.open()
+            onOpenGalleryRequested: gallery.open()
         }
         CanvasView {
             id: canvas
@@ -78,7 +80,7 @@ C.ApplicationWindow {
             C.SplitView.fillWidth: true
             C.SplitView.minimumWidth: 360
             focus: true
-            onEditTextRequested: (i) => textPrompt.openFor("Sửa chữ", Doc.elementText(i), function(t) { Doc.setElementText(i, t) }, "Áp dụng", "Dùng {{TênCột}} để chèn dữ liệu.")
+            onEditTextRequested: (i) => textPrompt.openFor(qsTr("Sửa chữ"), Doc.elementText(i), function(t) { Doc.setElementText(i, t) }, qsTr("Áp dụng"), qsTr("Dùng {{TênCột}} để chèn dữ liệu."))
         }
         InspectorPanel {
             C.SplitView.preferredWidth: 330
@@ -144,63 +146,78 @@ C.ApplicationWindow {
         id: library
         objectName: "library"
         onImportRequested: importDialog.open()
+        onShareRequested: (name) => shareDlg.openFor(name)
+        onGalleryRequested: { library.close(); gallery.open() }
         onExportRequested: (name) => { exportDialog.templateName = name; exportDialog.currentFile = "file:///" + name; exportDialog.open() }
         onPromptRequested: (ttl, initial, action, name) => textPrompt.openFor(ttl, initial, function(n) {
             var e = action === "rename" ? Lib.rename(name, n) : Lib.duplicate(name, n)
             library.finish(e); if (!e.length) library.select(n.toLowerCase().endsWith(".json") ? n : n + ".json") }, "OK")
     }
+    GalleryDialog { id: gallery; objectName: "gallery" }
+    ShareCheckDialog {
+        id: shareDlg; objectName: "shareDlg"
+        onExportRequested: { shareExport.currentFile = "file:///" + Lib.shareName.replace(/\.json$/i, "") + "_share.json"; shareExport.open() }
+    }
+    FileDialog {
+        id: shareExport
+        title: qsTr("Xuất bản chia sẻ")
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "json"
+        nameFilters: [qsTr("Mẫu JSON (*.json)")]
+        onAccepted: { var e = Lib.exportShared(selectedFile); if (e.length) msg.show(qsTr("Xuất bản chia sẻ"), e); else shareDlg.close() }
+    }
     AppDialog {
         id: existsDlg
         property string srcUrl: ""
-        title: "Mẫu đã tồn tại"
-        body: [ Text { text: "Thư viện đã có một mẫu trùng tên."; Layout.preferredWidth: 380; wrapMode: Text.Wrap
+        title: qsTr("Mẫu đã tồn tại")
+        body: [ Text { text: qsTr("Thư viện đã có một mẫu trùng tên."); Layout.preferredWidth: 380; wrapMode: Text.Wrap
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; color: Theme.text } ]
         buttons: [
-            AppButton { text: "Huỷ"; kind: "ghost"; onClicked: existsDlg.close() },
-            AppButton { text: "Lưu với tên khác…"; onClicked: { existsDlg.close(); textPrompt.openFor("Nhập với tên", "Mau_nhap", function(n) {
-                var e = Lib.importTemplate(existsDlg.srcUrl, n, false); if (e.length && e.indexOf("exists:") !== 0) msg.show("Nhập mẫu", e) }, "Nhập") } },
-            AppButton { text: "Thay thế"; kind: "danger"; onClicked: { existsDlg.close(); var e = Lib.importTemplate(existsDlg.srcUrl, "", true); if (e.length) msg.show("Nhập mẫu", e) } }
+            AppButton { text: qsTr("Huỷ"); kind: "ghost"; onClicked: existsDlg.close() },
+            AppButton { text: qsTr("Lưu với tên khác…"); onClicked: { existsDlg.close(); textPrompt.openFor(qsTr("Nhập với tên"), "Mau_nhap", function(n) {
+                var e = Lib.importTemplate(existsDlg.srcUrl, n, false); if (e.length && e.indexOf("exists:") !== 0) msg.show(qsTr("Nhập mẫu"), e) }, qsTr("Nhập")) } },
+            AppButton { text: qsTr("Thay thế"); kind: "danger"; onClicked: { existsDlg.close(); var e = Lib.importTemplate(existsDlg.srcUrl, "", true); if (e.length) msg.show(qsTr("Nhập mẫu"), e) } }
         ]
     }
 
     FileDialog {
         id: excelDialog
-        title: "Mở tệp Excel"
-        nameFilters: ["Tệp Excel (*.xlsx *.xlsm)", "Tất cả tệp (*)"]
+        title: qsTr("Mở tệp Excel")
+        nameFilters: [qsTr("Tệp Excel (*.xlsx *.xlsm)"), qsTr("Tất cả tệp (*)")]
         onAccepted: Data.loadExcel(App.toLocalPath(selectedFile))
     }
     FileDialog {
         id: importDialog
-        title: "Mở mẫu từ tệp"
-        nameFilters: ["Mẫu JSON (*.json)", "Tất cả tệp (*)"]
+        title: qsTr("Mở mẫu từ tệp")
+        nameFilters: [qsTr("Mẫu JSON (*.json)"), qsTr("Tất cả tệp (*)")]
         onAccepted: { var e = Lib.importTemplate(selectedFile, "", false)
             if (e.indexOf("exists:") === 0) { existsDlg.srcUrl = selectedFile; existsDlg.open() }
-            else if (e.length) { msg.show("Mở mẫu", e) }
+            else if (e.length) { msg.show(qsTr("Mở mẫu"), e) }
             else { library.close() } }
     }
     FileDialog {
         id: exportDialog
         property string templateName: ""
-        title: "Xuất mẫu"
+        title: qsTr("Xuất mẫu")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "json"
-        nameFilters: ["Mẫu JSON (*.json)"]
-        onAccepted: { var e = Lib.exportTemplate(templateName, selectedFile); if (e.length) msg.show("Xuất mẫu", e) }
+        nameFilters: [qsTr("Mẫu JSON (*.json)")]
+        onAccepted: { var e = Lib.exportTemplate(templateName, selectedFile); if (e.length) msg.show(qsTr("Xuất mẫu"), e) }
     }
     FileDialog {
         id: imageDialog
         property bool forProperty: false
-        title: "Chọn ảnh / logo"
-        nameFilters: ["Ảnh (*.png *.jpg *.jpeg *.bmp *.gif)", "Tất cả tệp (*)"]
+        title: qsTr("Chọn ảnh / logo")
+        nameFilters: [qsTr("Ảnh (*.png *.jpg *.jpeg *.bmp *.gif)"), qsTr("Tất cả tệp (*)")]
         onAccepted: { var p = App.toLocalPath(selectedFile); if (forProperty) Doc.setProp("path", p); else Doc.addImage(p) }
     }
     FileDialog {
         id: pdfDialog
-        title: "Xuất tem ra PDF"
+        title: qsTr("Xuất tem ra PDF")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "pdf"
         nameFilters: ["PDF (*.pdf)"]
-        onAccepted: { var e = Printing.exportQueuePdf(selectedFile); msg.show("Xuất PDF", e.length ? e : "Đã lưu " + Printing.queueSummary.split("·").pop().trim() + " thành các trang PDF.") }
+        onAccepted: { var e = Printing.exportQueuePdf(selectedFile); msg.show(qsTr("Xuất PDF"), e.length ? e : qsTr("Đã lưu ") + Printing.queueSummary.split("·").pop().trim() + qsTr(" thành các trang PDF.")) }
     }
 
     Connections { target: App; function onErrorRaised(t, m) { msg.show(t, m) } }

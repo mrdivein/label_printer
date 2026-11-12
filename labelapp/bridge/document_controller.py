@@ -18,6 +18,8 @@ from ..services.workspace_service import Workspace
 from .models import ElementListModel, InspectorModel
 from .preview_provider import PREVIEW_TRANSPARENT, pil_to_qimage
 from .tasks import run_async
+from ..i18n import tr, trf
+from ..i18n_en import EN
 
 RENDER_SCALE = 2                # preview supersampling relative to printer DPI (same as the Tk designer)
 DOC_KEYS = DOC_NUMBER_KEYS + tuple(DOC_CHOICE_KEYS)
@@ -35,6 +37,11 @@ NOTES_VI = {
     'Changed': 'Đã thay đổi', 'Grouped': 'Đã nhóm', 'Ungrouped': 'Đã bỏ nhóm',
     'Print on': 'Đã bật in phần tử', 'Print off': 'Đã tắt in phần tử (vẫn giữ trên tem)',
 }
+
+# English UI: the Vietnamese notes translate back to the editor's own English text (status is translated on display).
+EN.update({vi: en for en, vi in NOTES_VI.items()})
+EN.setdefault('Đã đổi {}', 'Changed {}')
+EN.setdefault('Đã sao chép {}', 'Copied {}')
 
 
 def note_vi(note):
@@ -165,10 +172,10 @@ class DocumentController(QObject):
         if n == 0:
             return ''
         if n > 1:
-            return f'Nhóm · {n} phần tử' if self.editor.selection_is_group else f'{n} phần tử'
+            return trf('Nhóm · {} phần tử', n) if self.editor.selection_is_group else trf('{} phần tử', n)
         e = self.cfg['elements'][next(iter(self.editor.selected))]
-        return (self.typeLabel(str(e.get('type', ''))) + (' — đã khoá' if e.get('locked') else '')
-                + ('' if is_printed(e) else ' — không in'))
+        return (self.typeLabel(str(e.get('type', ''))) + (tr(' — đã khoá') if e.get('locked') else '')
+                + ('' if is_printed(e) else tr(' — không in')))
 
     selectionTitle = Property(str, _get_selection_title, notify=selectionChanged)
 
@@ -266,6 +273,13 @@ class DocumentController(QObject):
     paperRect = Property('QVariant', _get_paper_rect, notify=docChanged)
 
     # ------------------------------------------------------------------ refresh plumbing
+    def retranslate(self):
+        """Language switched: rebuild the element list / inspector rows so their Python-made labels follow."""
+        self._elements_model.retranslate(self.cfg['elements'], self.editor.selected)
+        self._inspector_model.retranslate()
+        self.selectionChanged.emit()
+        self.overlayChanged.emit()
+
     def _refresh_all(self):
         self._refresh_selection()
         self._refresh_overlay()
@@ -450,7 +464,7 @@ class DocumentController(QObject):
 
     @Slot(str, result=str)
     def typeLabel(self, etype):
-        return TYPE_LABELS.get(etype, etype.replace('_', ' ').capitalize())
+        return tr(TYPE_LABELS.get(etype, etype.replace('_', ' ').capitalize()))
 
     @Slot(int, result=bool)
     def elementBold(self, i):
@@ -490,12 +504,12 @@ class DocumentController(QObject):
 
     @Slot(str)
     def addText(self, text):
-        self._commit(self.editor.add_text(text or 'Chữ mới'))
+        self._commit(self.editor.add_text(text or tr('Chữ mới')))
 
     @Slot(str, float, bool, float, float)
     def addTextStyled(self, text, font_size, bold, w, h):
         """Palette presets (title / subtitle / body): same text element, different starting style and box."""
-        self._commit(self.editor.add_text(text or 'Chữ mới', font_size, bold, w, h))
+        self._commit(self.editor.add_text(text or tr('Chữ mới'), font_size, bold, w, h))
 
     @Slot('QStringList', bool)
     def addFields(self, fields, as_barcode):
@@ -637,7 +651,7 @@ class DocumentController(QObject):
     @Slot(str, result=str)
     def saveTemplateAs(self, name):
         if not (name or '').strip():
-            return 'Hãy nhập tên mẫu.'
+            return tr('Hãy nhập tên mẫu.')
         try:
             saved = self.templates.save_as(name, self.cfg)
         except Exception as e:

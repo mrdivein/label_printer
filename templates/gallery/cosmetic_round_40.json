@@ -1,0 +1,91 @@
+{
+ "width_mm": 40,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "ellipse",
+   "x": 0.8,
+   "y": 0.8,
+   "w": 38.4,
+   "h": 38.4,
+   "thickness": 0.3
+  },
+  {
+   "type": "ellipse",
+   "x": 3,
+   "y": 3,
+   "w": 34,
+   "h": 34,
+   "thickness": 0.15
+  },
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 6,
+   "y": 9,
+   "w": 28,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 6,
+   "y": 15,
+   "w": 28,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": false,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "{{Size}}",
+   "x": 6,
+   "y": 25,
+   "w": 28,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  }
+ ],
+ "gallery": {
+  "id": "cosmetic_round_40",
+  "category": "cosmetics",
+  "popular": false,
+  "name": {
+   "vi": "Tem tròn nắp hũ 40×40",
+   "en": "Jar lid round label 40×40"
+  },
+  "description": {
+   "vi": "Tem tròn cho nắp hũ kem: thương hiệu, tên, khối lượng.",
+   "en": "Round lid label for cream jars: brand, name, weight."
+  },
+  "sample": {
+   "Brand": "LUNA SKIN",
+   "Product": "Kem dưỡng ban đêm",
+   "Size": "50g"
+  }
+ }
+}

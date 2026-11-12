@@ -1,0 +1,95 @@
+{
+ "width_mm": 40,
+ "height_mm": 30,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 1.5,
+   "y": 1.2,
+   "w": 37,
+   "h": 3.6,
+   "font": "Arial",
+   "font_size": 6.5,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.9
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 1.5,
+   "y": 5.5,
+   "w": 37,
+   "h": 10,
+   "font": "Arial",
+   "font_size": 22,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 13.2
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 4,
+   "y": 17,
+   "w": 32,
+   "h": 9.5,
+   "symbology": "code128",
+   "barcode_height_mm": 9.0,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{Barcode}}",
+   "x": 1.5,
+   "y": 26.6,
+   "w": 37,
+   "h": 2.5,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "price_40x30_big",
+  "category": "price",
+  "popular": true,
+  "name": {
+   "vi": "Tem giá to 40×30",
+   "en": "Big price tag 40×30"
+  },
+  "description": {
+   "vi": "Giá chữ lớn nhìn rõ từ xa, kèm tên hàng và mã vạch.",
+   "en": "Large price readable from afar, with item name and barcode."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h"
+  }
+ }
+}

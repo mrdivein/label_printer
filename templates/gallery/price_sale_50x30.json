@@ -1,0 +1,132 @@
+{
+ "width_mm": 50,
+ "height_mm": 30,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "line",
+   "x": 0,
+   "y": 6.5,
+   "x2": 50,
+   "y2": 6.5,
+   "thickness": 0.4
+  },
+  {
+   "type": "image",
+   "path": "symbol:sale",
+   "x": 1.5,
+   "y": 7.5,
+   "w": 10,
+   "h": 10,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2,
+   "y": 0.8,
+   "w": 46,
+   "h": 4.5,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "Giá cũ: {{OldPrice}}",
+   "x": 13,
+   "y": 8,
+   "w": 35,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 13,
+   "y": 12,
+   "w": 35,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 16,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 9.6
+  },
+  {
+   "type": "text",
+   "text": "Giảm {{Discount}}",
+   "x": 2,
+   "y": 21,
+   "w": 46,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "{{Barcode}}",
+   "x": 2,
+   "y": 25.5,
+   "w": 46,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "price_sale_50x30",
+  "category": "price",
+  "popular": false,
+  "name": {
+   "vi": "Tem giảm giá 50×30",
+   "en": "Sale price tag 50×30"
+  },
+  "description": {
+   "vi": "Giá cũ, giá mới và % giảm nổi bật — dùng cho đợt khuyến mãi.",
+   "en": "Old price, new price and the discount — for promotions."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h",
+   "OldPrice": "359.000 ₫",
+   "Discount": "20%"
+  }
+ }
+}

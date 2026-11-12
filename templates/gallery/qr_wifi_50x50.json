@@ -1,0 +1,91 @@
+{
+ "width_mm": 50,
+ "height_mm": 50,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.6,
+   "y": 0.6,
+   "w": 48.8,
+   "h": 48.8,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "Wi-Fi miễn phí",
+   "x": 2,
+   "y": 2.5,
+   "w": 46,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "qr",
+   "value": "WIFI:T:WPA;S:{{Wifi}};P:{{Password}};;",
+   "x": 10,
+   "y": 9,
+   "w": 30,
+   "h": 30,
+   "ecc": "Q"
+  },
+  {
+   "type": "text",
+   "text": "Mạng: {{Wifi}}",
+   "x": 2,
+   "y": 40.5,
+   "w": 46,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "Mật khẩu: {{Password}}",
+   "x": 2,
+   "y": 44.5,
+   "w": 46,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.9
+  }
+ ],
+ "gallery": {
+  "id": "qr_wifi_50x50",
+  "category": "qr",
+  "popular": false,
+  "name": {
+   "vi": "Tem QR Wi-Fi 50×50",
+   "en": "Wi-Fi QR sticker 50×50"
+  },
+  "description": {
+   "vi": "Quét để kết nối Wi-Fi — giá trị QR theo chuẩn WIFI:T:WPA;S:…;P:…;;",
+   "en": "Scan to join Wi-Fi — QR value in the WIFI:T:WPA;S:…;P:…;; format."
+  },
+  "sample": {
+   "Wifi": "Mau_Guest",
+   "Password": "12345678"
+  }
+ }
+}

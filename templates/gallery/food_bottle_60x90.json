@@ -1,0 +1,131 @@
+{
+ "width_mm": 60,
+ "height_mm": 90,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 3,
+   "y": 6,
+   "w": 54,
+   "h": 10,
+   "font": "Arial",
+   "font_size": 18,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 10.8
+  },
+  {
+   "type": "line",
+   "x": 15,
+   "y": 18,
+   "x2": 45,
+   "y2": 18,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 3,
+   "y": 21,
+   "w": 54,
+   "h": 12,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "{{Size}}",
+   "x": 3,
+   "y": 35,
+   "w": 54,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 12,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.2
+  },
+  {
+   "type": "text",
+   "text": "Thành phần: {{Ingredients}}",
+   "x": 4,
+   "y": 46,
+   "w": 52,
+   "h": 12,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "NSX: {{MFG}} · HSD: {{Expiry}}",
+   "x": 3,
+   "y": 60,
+   "w": 54,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 10,
+   "y": 66,
+   "w": 40,
+   "h": 18,
+   "symbology": "ean13",
+   "barcode_height_mm": 15,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": true,
+   "text_size": 6.5
+  }
+ ],
+ "gallery": {
+  "id": "food_bottle_60x90",
+  "category": "food",
+  "popular": false,
+  "name": {
+   "vi": "Tem chai nước 60×90",
+   "en": "Bottle label 60×90"
+  },
+  "description": {
+   "vi": "Nhãn thân chai dọc: thương hiệu, tên, dung tích, thành phần và mã vạch.",
+   "en": "Vertical bottle body label: brand, name, volume, ingredients and barcode."
+  },
+  "sample": {
+   "Brand": "SUỐI MẪU",
+   "Product": "Nước khoáng thiên nhiên",
+   "Size": "500ml",
+   "Ingredients": "Nước khoáng thiên nhiên, khoáng chất tự nhiên.",
+   "MFG": "11/2026",
+   "Expiry": "11/2028",
+   "Barcode": "8935001234611"
+  }
+ }
+}

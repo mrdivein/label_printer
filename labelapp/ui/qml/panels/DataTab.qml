@@ -20,12 +20,12 @@ ColumnLayout {
         Layout.fillWidth: true; Layout.fillHeight: true
         ColumnLayout {
             anchors.centerIn: parent; width: parent.width - Theme.s6 * 2; spacing: Theme.s3
-            Text { text: Data.loading ? "Đang tải dữ liệu…" : "Chưa có dữ liệu"; Layout.alignment: Qt.AlignHCenter
+            Text { text: Data.loading ? qsTr("Đang tải dữ liệu…") : qsTr("Chưa có dữ liệu"); Layout.alignment: Qt.AlignHCenter
                 font.family: Theme.fontFamily; font.pixelSize: Theme.fsLg; font.weight: Font.DemiBold; color: Theme.text }
-            Text { text: "Mở tệp Excel hoặc Google Sheet để xem trước và in mỗi dòng một tem."
+            Text { text: qsTr("Mở tệp Excel hoặc Google Sheet để xem trước và in mỗi dòng một tem.")
                 Layout.fillWidth: true; wrapMode: Text.Wrap; horizontalAlignment: Text.AlignHCenter
                 font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; color: Theme.textMuted }
-            AppButton { text: "Mở tệp Excel…"; kind: "primary"; Layout.alignment: Qt.AlignHCenter; onClicked: t.openExcel(); enabled: !Data.loading }
+            AppButton { text: qsTr("Mở tệp Excel…"); kind: "primary"; Layout.alignment: Qt.AlignHCenter; onClicked: t.openExcel(); enabled: !Data.loading }
             AppButton { text: "Google Sheet…"; Layout.alignment: Qt.AlignHCenter; onClicked: t.openGoogle(); enabled: !Data.loading }
         }
     }
@@ -59,7 +59,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     property var hits: []
                     property int hi: -1
-                    placeholderText: Scan.instantPrint ? "Quét mã vạch…" : "Quét / tìm UPC, SKU, tên, thương hiệu…"
+                    placeholderText: Scan.instantPrint ? qsTr("Quét mã vạch…") : qsTr("Quét / tìm UPC, SKU, tên, thương hiệu…")
                     function refresh() {
                         hits = (Scan.instantPrint || text.trim().length === 0) ? [] : Scan.suggest(text)
                         hi = hits.length > 0 ? 0 : -1
@@ -133,17 +133,17 @@ ColumnLayout {
                         }
                     }
                 }
-                AppButton { text: "Quét loạt…"; compact: true; onClicked: t.openBatchScan()
-                    C.ToolTip.visible: hovered; C.ToolTip.text: "Hàng đợi quét mã (F8)"; C.ToolTip.delay: 600 }
+                AppButton { text: qsTr("Quét loạt…"); compact: true; onClicked: t.openBatchScan()
+                    C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Hàng đợi quét mã (F8)"); C.ToolTip.delay: 600 }
             }
             RowLayout {
                 spacing: Theme.s2
-                CheckField { text: "In ngay khi quét"; checked: Scan.instantPrint; onToggled: Scan.instantPrint = checked
-                    C.ToolTip.visible: hovered; C.ToolTip.text: "Bật: in ngay khi quét đủ mã UPC (khớp chính xác). Tắt: gợi ý theo UPC, SKU, tên, thương hiệu"; C.ToolTip.delay: 600 }
+                CheckField { text: qsTr("In ngay khi quét"); checked: Scan.instantPrint; onToggled: Scan.instantPrint = checked
+                    C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Bật: in ngay khi quét đủ mã UPC (khớp chính xác). Tắt: gợi ý theo UPC, SKU, tên, thương hiệu"); C.ToolTip.delay: 600 }
                 Item { Layout.fillWidth: true }
-                Text { text: "SL"; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
+                Text { text: qsTr("SL"); font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
                 NumberField { Layout.preferredWidth: 56; implicitHeight: 26; value: Scan.qty; step: 1; decimals: 0; from: 1; to: 999; onEdited: (v) => Scan.qty = v }
-                AppButton { text: "In lại"; compact: true; enabled: Scan.hasLast && !Printing.busy; onClicked: Scan.printLast() }
+                AppButton { text: qsTr("In lại"); compact: true; enabled: Scan.hasLast && !Printing.busy; onClicked: Scan.printLast() }
             }
             Text {
                 visible: Scan.status.length > 0
@@ -154,7 +154,7 @@ ColumnLayout {
             AppTextField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: "Tìm mã vạch, mẫu mã, thương hiệu…"
+                placeholderText: qsTr("Tìm mã vạch, mẫu mã, thương hiệu…")
                 onTextChanged: searchDebounce.restart()
                 onAccepted: Data.searchEnter(text)
                 Timer { id: searchDebounce; interval: 160; onTriggered: Data.search(search.text) }
@@ -163,10 +163,10 @@ ColumnLayout {
             }
             RowLayout {
                 spacing: Theme.s1
-                Text { text: Data.rowLabel + (Data.filteredCount !== Data.rowCount ? "  ·  " + Data.filteredCount + " kết quả" : "")
+                Text { text: Data.rowLabel + (Data.filteredCount !== Data.rowCount ? "  ·  " + Data.filteredCount + qsTr(" kết quả") : "")
                     Layout.fillWidth: true; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted; elide: Text.ElideRight }
-                IconButton { text: "‹"; tip: "Dòng trước"; width: 26; height: 26; implicitWidth: 26; implicitHeight: 26; onClicked: Data.step(-1) }
-                IconButton { text: "›"; tip: "Dòng sau"; width: 26; height: 26; implicitWidth: 26; implicitHeight: 26; onClicked: Data.step(1) }
+                IconButton { text: "‹"; tip: qsTr("Dòng trước"); width: 26; height: 26; implicitWidth: 26; implicitHeight: 26; onClicked: Data.step(-1) }
+                IconButton { text: "›"; tip: qsTr("Dòng sau"); width: 26; height: 26; implicitWidth: 26; implicitHeight: 26; onClicked: Data.step(1) }
             }
         }
 
@@ -250,8 +250,8 @@ ColumnLayout {
         Separator { Layout.fillWidth: true }
         RowLayout {
             Layout.fillWidth: true; Layout.margins: Theme.s3; spacing: Theme.s2
-            AppButton { text: "In dòng đã chọn…"; compact: true; Layout.fillWidth: true; onClicked: t.printQueue("selected") }
-            AppButton { text: "In tất cả…"; compact: true; Layout.fillWidth: true; onClicked: t.printQueue("all") }
+            AppButton { text: qsTr("In dòng đã chọn…"); compact: true; Layout.fillWidth: true; onClicked: t.printQueue("selected") }
+            AppButton { text: qsTr("In tất cả…"); compact: true; Layout.fillWidth: true; onClicked: t.printQueue("all") }
         }
     }
 }

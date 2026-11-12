@@ -37,6 +37,9 @@ def main(argv=None):
     ctx.setContextProperty("Scan", bridge.scan)
     ctx.setContextProperty("Profiles", bridge.profiles)
     ctx.setContextProperty("Updates", bridge.updates)
+    ctx.setContextProperty("Gallery", bridge.gallery)
+    ctx.setContextProperty("I18n", bridge.i18n)
+    bridge.i18n.attach(app, engine)                      # before load: the first qsTr() pass already uses it
     engine.load(QUrl.fromLocalFile(os.path.join(qml_dir(), "Main.qml")))
     if not engine.rootObjects():
         return 1

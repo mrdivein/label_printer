@@ -1,0 +1,138 @@
+{
+ "width_mm": 60,
+ "height_mm": 30,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 2,
+   "y": 1.5,
+   "w": 36,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 10,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.0
+  },
+  {
+   "type": "text",
+   "text": "{{Model}}",
+   "x": 2,
+   "y": 7,
+   "w": 36,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "Màu: {{Color}}",
+   "x": 2,
+   "y": 11.5,
+   "w": 36,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Cỡ: {{Size}}",
+   "x": 2,
+   "y": 15,
+   "w": 36,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 2,
+   "y": 19,
+   "w": 36,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 39,
+   "y": 2,
+   "w": 19.5,
+   "h": 20,
+   "symbology": "ean13",
+   "barcode_height_mm": 17,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": true,
+   "text_size": 5
+  },
+  {
+   "type": "text",
+   "text": "{{Origin}}",
+   "x": 39,
+   "y": 24,
+   "w": 19.5,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "eyewear_box_60x30",
+  "category": "eyewear",
+  "popular": false,
+  "name": {
+   "vi": "Tem hộp kính 60×30",
+   "en": "Eyewear box label 60×30"
+  },
+  "description": {
+   "vi": "Dán hộp kính: thương hiệu, mã mẫu, màu, cỡ mắt-cầu-càng và mã vạch.",
+   "en": "Glasses box label: brand, model, colour, eye-bridge-temple size and barcode."
+  },
+  "sample": {
+   "Brand": "LUMEN",
+   "Model": "LM-1203",
+   "Color": "C02 Đen",
+   "Size": "52□18-145",
+   "Price": "2.450.000 ₫",
+   "Barcode": "8935001234567",
+   "Origin": "Made in Italy"
+  }
+ }
+}

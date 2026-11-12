@@ -1,0 +1,90 @@
+{
+ "width_mm": 40,
+ "height_mm": 20,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 1.5,
+   "y": 1,
+   "w": 37,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "{{Purity}} · {{Weight}}",
+   "x": 1.5,
+   "y": 5.3,
+   "w": 37,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "barcode",
+   "value": "{{SKU}}",
+   "x": 3,
+   "y": 9,
+   "w": 22,
+   "h": 9,
+   "symbology": "code128",
+   "barcode_height_mm": 8.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 26,
+   "y": 10,
+   "w": 12.5,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  }
+ ],
+ "gallery": {
+  "id": "jewelry_box_40x20",
+  "category": "jewelry",
+  "popular": false,
+  "name": {
+   "vi": "Tem hộp trang sức 40×20",
+   "en": "Jewelry box label 40×20"
+  },
+  "description": {
+   "vi": "Dán đáy hộp trang sức: tên, chất liệu, mã và giá.",
+   "en": "Under-box label: name, material, code and price."
+  },
+  "sample": {
+   "Product": "Nhẫn đính đá",
+   "Purity": "Vàng 18K",
+   "Weight": "1.25 chỉ",
+   "SKU": "TS0217",
+   "Price": "8.800.000 ₫"
+  }
+ }
+}

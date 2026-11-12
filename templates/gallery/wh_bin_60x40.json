@@ -1,0 +1,129 @@
+{
+ "width_mm": 60,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 59.0,
+   "h": 39.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{SKU}}",
+   "x": 2.5,
+   "y": 2,
+   "w": 36,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 14,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 8.4
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2.5,
+   "y": 10,
+   "w": 36,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "Tồn tối thiểu: {{MinQty}}",
+   "x": 2.5,
+   "y": 19,
+   "w": 36,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Vị trí: {{Location}}",
+   "x": 2.5,
+   "y": 23,
+   "w": 36,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "qr",
+   "value": "{{SKU}}",
+   "x": 40,
+   "y": 2.5,
+   "w": 17.5,
+   "h": 17.5,
+   "ecc": "M"
+  },
+  {
+   "type": "barcode",
+   "value": "{{SKU}}",
+   "x": 2.5,
+   "y": 28,
+   "w": 55,
+   "h": 10,
+   "symbology": "code128",
+   "barcode_height_mm": 9.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  }
+ ],
+ "gallery": {
+  "id": "wh_bin_60x40",
+  "category": "warehouse",
+  "popular": false,
+  "name": {
+   "vi": "Tem ô hàng / thùng nhựa 60×40",
+   "en": "Bin label 60×40"
+  },
+  "description": {
+   "vi": "Mã SKU, tên hàng, số lượng tối thiểu và QR cho ô kệ hoặc thùng nhựa.",
+   "en": "SKU, item name, minimum stock and QR for a shelf bin or tote."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h",
+   "MinQty": "20",
+   "Location": "A-03-2-05"
+  }
+ }
+}
