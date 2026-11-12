@@ -11,9 +11,7 @@ C.AbstractButton {
     property int glyphSize: 20
     property bool glyphBold: false
     property string tip: ""
-    property string subtext: ""       // optional second line (English name of a symbol)
-    implicitWidth: 84; implicitHeight: subtext.length > 0 ? 82 : 70
-    height: implicitHeight
+    implicitWidth: 84; implicitHeight: 70
     hoverEnabled: true
     focusPolicy: Qt.TabFocus
 
@@ -106,15 +104,6 @@ C.AbstractButton {
             horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.Medium
             color: b.enabled ? Theme.textMuted : Theme.disabledFg
-            Text {
-                visible: b.subtext.length > 0
-                anchors.top: parent.bottom; anchors.topMargin: 1
-                width: parent.width
-                text: b.subtext
-                horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
-                font.family: Theme.fontFamily; font.pixelSize: 10; font.italic: true
-                color: Theme.textFaint
-            }
         }
     }
     C.ToolTip.visible: hovered && tip.length > 0
