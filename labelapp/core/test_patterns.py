@@ -44,7 +44,7 @@ def make_text_quality_test_cfg(base_cfg):
     samples=[("Verdana",3.0,False),("Verdana",3.5,False),("Verdana",4.0,False),("Tahoma",4.0,False),("Tahoma",4.5,True),("Tahoma",5.5,True)]
     for font,size,bold in samples:
         if y+3.2 > oy+h-1: break
-        cfg["elements"].append({"type":"text","text":f"{font} {size:g}pt  Tiếng Việt: NHÀ NHẬP KHẨU  8,800,000 VNĐ","x":left,"y":y,"w":max(8,w-3),"h":3.0,"font":font,"font_size":size,"bold":bold,"align":"left","wrap":False,"auto_fit":True,"min_font_size":max(2.8,size-0.8)})
+        cfg["elements"].append({"type":"text","text":f"{font} {size:g}pt  Tiếng Việt: HÀNG CHÍNH HÃNG  8,800,000 VNĐ","x":left,"y":y,"w":max(8,w-3),"h":3.0,"font":font,"font_size":size,"bold":bold,"align":"left","wrap":False,"auto_fit":True,"min_font_size":max(2.8,size-0.8)})
         y += 3.4
     return cfg
 
