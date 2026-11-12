@@ -19,21 +19,23 @@ def font(size, bold=False):
 
 
 def main():
-    items = re.findall(r'\{ k: "([a-z_]+)", t: "([^"]+)" \}', open(QML, encoding="utf-8").read())
-    cols, cw, ch, gap, pad = 8, 150, 150, 14, 20
+    items = re.findall(r'\{ k: "([a-z_]+)", t: "([^"]+)", e: "([^"]+)" \}', open(QML, encoding="utf-8").read())
+    cols, cw, ch, gap, pad = 8, 150, 166, 14, 20
     rows = (len(items) + cols - 1) // cols
     W, H = pad * 2 + cols * cw + (cols - 1) * gap, pad * 2 + rows * ch + (rows - 1) * gap
     sheet = Image.new("RGBA", (W * 2, H * 2), (0, 0, 0, 0))     # 2x for sharp text, scaled down at the end
     d = ImageDraw.Draw(sheet)
-    f = font(30)
-    for i, (key, label) in enumerate(items):
+    f, fe = font(30), font(25)
+    for i, (key, label, en) in enumerate(items):
         x = (pad + (i % cols) * (cw + gap)) * 2
         y = (pad + (i // cols) * (ch + gap)) * 2
         d.rounded_rectangle((x, y, x + cw * 2, y + ch * 2), radius=28, fill="#ffffff", outline="#d9dee8", width=3)
         icon = Image.open(os.path.join(SYM, key + ".png")).convert("RGBA").resize((150, 150), Image.Resampling.LANCZOS)
         sheet.alpha_composite(icon, (x + (cw * 2 - 150) // 2, y + 36))
         tw = d.textlength(label, font=f)
-        d.text((x + (cw * 2 - tw) / 2, y + 214), label, font=f, fill="#3a4354")
+        d.text((x + (cw * 2 - tw) / 2, y + 208), label, font=f, fill="#3a4354")
+        tw = d.textlength(en, font=fe)
+        d.text((x + (cw * 2 - tw) / 2, y + 252), en, font=fe, fill="#8b94a5")
     sheet = sheet.resize((W, H), Image.Resampling.LANCZOS)
     sheet.save(os.path.join(ROOT, "docs", "symbols.png"), optimize=True)
     print(f"docs/symbols.png: {len(items)} symbols")
