@@ -6,7 +6,8 @@ import "../components"
 
 Panel {
     id: bar
-    implicitHeight: 52
+    implicitHeight: 60
+    color: Theme.bg
     borderTop: true
     signal printRequested()
     signal printSelected()
@@ -35,31 +36,46 @@ Panel {
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted
         }
         BusyIndicator2 { visible: Data.loading || Printing.printersLoading || Printing.busy }
-        Text { text: qsTr("Máy in"); font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
-        ComboField {
-            Layout.preferredWidth: 240
-            model: Printing.printers
-            currentIndex: Math.max(0, Printing.printers.indexOf(Printing.printer))
-            displayText: Printing.printer.length ? Printing.printer : (Printing.printersLoading ? qsTr("Đang tìm máy in…") : qsTr("Chưa có máy in"))
-            onActivated: (i) => Printing.printer = Printing.printers[i]
-            C.ToolTip.visible: hovered && !popup.visible; C.ToolTip.text: Printing.route.length ? qsTr("Đường in: ") + Printing.route : qsTr("Chưa chọn máy in"); C.ToolTip.delay: 600
-        }
-        IconButton { text: "⟳"; tip: qsTr("Tìm lại máy in"); onClicked: Printing.refreshPrinters() }
-        Text { text: qsTr("Số bản"); font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
-        NumberField {
-            Layout.preferredWidth: 64
-            value: Printing.copies; step: 1; decimals: 0; from: 1; to: 999
-            onEdited: (v) => Printing.copies = v
+        // print settings: one card, so "what / where / how many" read as one group next to the print button
+        Rectangle {
+            Layout.preferredHeight: Theme.controlHLg; Layout.preferredWidth: printCfg.implicitWidth + Theme.s3 * 2
+            radius: Theme.radiusMd; color: Theme.surface; border.width: 1; border.color: Theme.border
+            RowLayout {
+                id: printCfg
+                anchors.fill: parent; anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s3
+                spacing: Theme.s2
+                Text { text: qsTr("Máy in"); font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; font.weight: Font.DemiBold; color: Theme.textMuted }
+                Rectangle { width: 8; height: 8; radius: 4
+                    color: Printing.printer.length ? Theme.printColor : Theme.warning
+                    C.ToolTip.visible: pHover.hovered; C.ToolTip.text: Printing.route.length ? qsTr("Đường in: ") + Printing.route : qsTr("Chưa chọn máy in")
+                    HoverHandler { id: pHover } }
+                ComboField {
+                    Layout.preferredWidth: 230
+                    model: Printing.printers
+                    currentIndex: Math.max(0, Printing.printers.indexOf(Printing.printer))
+                    displayText: Printing.printer.length ? Printing.printer : (Printing.printersLoading ? qsTr("Đang tìm máy in…") : qsTr("Chưa có máy in"))
+                    onActivated: (i) => Printing.printer = Printing.printers[i]
+                    C.ToolTip.visible: hovered && !popup.visible; C.ToolTip.text: Printing.route.length ? qsTr("Đường in: ") + Printing.route : qsTr("Chưa chọn máy in"); C.ToolTip.delay: 600
+                }
+                IconButton { text: "⟳"; tip: qsTr("Tìm lại máy in"); onClicked: Printing.refreshPrinters() }
+                Separator { vertical: true }
+                Text { text: qsTr("Số bản"); font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; font.weight: Font.DemiBold; color: Theme.textMuted }
+                NumberField {
+                    Layout.preferredWidth: 68
+                    value: Printing.copies; step: 1; decimals: 0; from: 1; to: 999
+                    onEdited: (v) => Printing.copies = v
+                }
+            }
         }
         RowLayout {
             spacing: 1
             AppButton {
-                text: qsTr("In tem"); kind: "primary"; implicitWidth: 96
+                text: qsTr("In tem"); glyph: "⎙"; kind: "print"; large: true; implicitWidth: 120
                 enabled: !Printing.busy
                 onClicked: bar.printRequested()
             }
             AppButton {
-                text: "▾"; kind: "primary"; implicitWidth: 28; enabled: !Printing.busy
+                text: "▾"; kind: "print"; large: true; implicitWidth: 34; enabled: !Printing.busy
                 onClicked: printMenu.popup(width - printMenu.implicitWidth, -printMenu.implicitHeight - 6)
                 AppMenu {
                     id: printMenu

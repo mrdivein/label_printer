@@ -14,7 +14,7 @@ C.ComboBox {
         radius: Theme.radiusMd
         color: c.enabled ? Theme.surface : Theme.surfaceAlt
         border.width: 1
-        border.color: c.visualFocus || c.popup.visible ? Theme.accent : c.hovered ? Theme.borderStrong : Theme.border
+        border.color: c.visualFocus || c.popup.visible ? Theme.accent : c.hovered ? Theme.textFaint : Theme.borderStrong
         Behavior on border.color { ColorAnimation { duration: Theme.dFast } }
     }
     contentItem: Text {
@@ -43,7 +43,7 @@ C.ComboBox {
             font: c.font; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter
             color: Theme.text
         }
-        background: Rectangle { color: d.highlighted ? Theme.hover : "transparent"; radius: Theme.radiusSm
+        background: Rectangle { color: d.highlighted ? Theme.accentSoft : "transparent"; radius: Theme.radiusSm
             anchors.fill: parent; anchors.margins: 2 }
     }
     popup: C.Popup {

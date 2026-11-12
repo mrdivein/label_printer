@@ -115,9 +115,9 @@ Item {
 
     // ---- paper shadow + rendered label (physical position) ----
     Rectangle {
-        x: view.toScreenX(view.paper.x) - 1; y: view.toScreenY(view.paper.y) + 2
-        width: view.paper.w * view.pxPerMm + 2; height: view.paper.h * view.pxPerMm
-        color: Theme.shadow; radius: 1
+        x: view.toScreenX(view.paper.x) - 2; y: view.toScreenY(view.paper.y) + 3
+        width: view.paper.w * view.pxPerMm + 4; height: view.paper.h * view.pxPerMm + 1
+        color: Theme.shadow; radius: 2
     }
     Rectangle {                     // the physical paper; the render below is transparent where it is blank
         x: view.toScreenX(view.paper.x); y: view.toScreenY(view.paper.y)
@@ -179,8 +179,8 @@ Item {
                 if (!view.showBounds && !hov) continue
                 poly(e.poly)
                 g.lineWidth = 1
-                g.strokeStyle = hov ? Qt.alpha(acc, 0.9) : Qt.alpha(acc, 0.28)
-                if (e.locked) g.strokeStyle = hov ? Qt.alpha(Theme.textMuted, 0.9) : Qt.alpha(Theme.textMuted, 0.3)
+                g.strokeStyle = hov ? Qt.alpha(acc, 0.95) : Qt.alpha(acc, 0.45)
+                if (e.locked) g.strokeStyle = hov ? Qt.alpha(Theme.textMuted, 0.9) : Qt.alpha(Theme.textMuted, 0.4)
                 g.setLineDash(hov ? [] : [3, 3])
                 g.stroke()
             }
@@ -442,8 +442,8 @@ Item {
             if (above >= view.rulerSize + 4) return above
             return Math.min(view.height - height - viewControls.height - Theme.s5, view.selBox.y + view.selBox.h + 14)
         }
-        width: ctxRow.implicitWidth + Theme.s1 * 2; height: 38; radius: Theme.radiusLg
-        color: Theme.surface; border.width: 1; border.color: Theme.border
+        width: ctxRow.implicitWidth + Theme.s1 * 2; height: 40; radius: Theme.radiusLg
+        color: Theme.surface; border.width: 1; border.color: Theme.borderStrong
         Rectangle { z: -1; anchors.fill: parent; anchors.topMargin: 3; anchors.bottomMargin: -3; radius: parent.radius; color: Theme.shadow; opacity: 0.6 }
         Row {
             id: ctxRow
@@ -469,11 +469,11 @@ Item {
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
             IconButton { text: Doc.selectionLocked ? "🔒" : "🔓"; active: Doc.selectionLocked; tip: Doc.selectionLocked ? qsTr("Mở khoá") : qsTr("Khoá vị trí")
                 onClicked: Doc.setLocked(!Doc.selectionLocked) }
-            AppButton { text: Doc.selectionPrinted ? qsTr("In") : qsTr("Không in"); compact: true; anchors.verticalCenter: parent.verticalCenter
+            AppButton { text: Doc.selectionPrinted ? qsTr("In") : qsTr("Không in"); compact: true; kind: Doc.selectionPrinted ? "secondary" : "danger"; anchors.verticalCenter: parent.verticalCenter
                 onClicked: Doc.setPrinted(!Doc.selectionPrinted)
                 C.ToolTip.visible: hovered; C.ToolTip.delay: 500
                 C.ToolTip.text: Doc.selectionPrinted ? qsTr("Đang in — bấm để không in phần đã chọn (vẫn giữ trên tem)") : qsTr("Không in — bấm để in lại phần đã chọn") }
-            IconButton { text: "✕"; tip: qsTr("Xoá (Del)"); enabled: !Doc.selectionLocked; onClicked: Doc.deleteSelected() }
+            IconButton { text: "✕"; danger: true; tip: qsTr("Xoá (Del)"); enabled: !Doc.selectionLocked; onClicked: Doc.deleteSelected() }
         }
     }
 
@@ -501,8 +501,8 @@ Item {
     Rectangle {
         id: viewControls
         anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.margins: Theme.s4
-        width: zoomRow.implicitWidth + Theme.s2 * 2; height: 36; radius: Theme.radiusMd
-        color: Theme.surface; border.width: 1; border.color: Theme.border
+        width: zoomRow.implicitWidth + Theme.s2 * 2; height: 38; radius: Theme.radiusMd
+        color: Theme.surface; border.width: 1; border.color: Theme.borderStrong
         Row {
             id: zoomRow
             anchors.centerIn: parent; spacing: 2

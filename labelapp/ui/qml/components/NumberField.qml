@@ -62,7 +62,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: n.unit
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm
-            color: Theme.textFaint
+            color: Theme.textMuted
         }
     }
 

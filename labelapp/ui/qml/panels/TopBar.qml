@@ -44,26 +44,43 @@ Toolbar {
             if (Doc.dirty) confirmSwitch.openFor(n); else Doc.openTemplate(n) }
         C.ToolTip.visible: hovered && !popup.visible; C.ToolTip.text: qsTr("Mẫu đang mở"); C.ToolTip.delay: 700
     }
-    Rectangle { visible: Doc.dirty; width: 8; height: 8; radius: 4; color: Theme.warning
+    // unsaved-changes chip (amber): visible and readable, not just a dot
+    Rectangle {
+        visible: Doc.dirty
+        Layout.preferredHeight: 24; Layout.preferredWidth: dirtyText.implicitWidth + 22
+        radius: 12; color: Theme.warningSoft; border.width: 1; border.color: Qt.alpha(Theme.warning, 0.5)
+        Rectangle { width: 6; height: 6; radius: 3; color: Theme.warning; anchors.left: parent.left; anchors.leftMargin: 8; anchors.verticalCenter: parent.verticalCenter }
+        Text { id: dirtyText; text: qsTr("Chưa lưu"); anchors.left: parent.left; anchors.leftMargin: 18; anchors.verticalCenter: parent.verticalCenter
+            font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; font.weight: Font.DemiBold; color: Theme.warning }
         C.ToolTip.visible: dirtyHover.hovered; C.ToolTip.text: qsTr("Có thay đổi chưa lưu (vẫn được dùng khi in)")
-        HoverHandler { id: dirtyHover } }
-    AppButton { text: qsTr("Lưu"); compact: false; kind: Doc.dirty ? "primary" : "secondary"; onClicked: bar.save()
+        HoverHandler { id: dirtyHover }
+    }
+    AppButton { text: qsTr("Lưu"); kind: Doc.dirty ? "primary" : "secondary"; onClicked: bar.save()
         C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Lưu mẫu (Ctrl+S)"); C.ToolTip.delay: 600 }
-    AppButton { text: qsTr("Lưu thành…"); kind: "ghost"; onClicked: bar.saveAs() }
-    AppButton { text: qsTr("＋ Tạo mới"); kind: "ghost"; onClicked: bar.newTemplate() }
-    AppButton { text: qsTr("Thư viện"); kind: "ghost"; onClicked: bar.openLibrary() }
-    AppButton { text: qsTr("Mẫu có sẵn"); kind: "ghost"; onClicked: bar.openGallery()
-        C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Chọn từ kho mẫu tem dựng sẵn"); C.ToolTip.delay: 600 }
+    // everything else about templates lives in one menu (and in the "Mẫu" tab on the left)
+    AppButton {
+        text: qsTr("Mẫu") + "  ▾"; kind: "ghost"
+        onClicked: tplMenu.popup(0, height + 4)
+        AppMenu {
+            id: tplMenu
+            AppMenuItem { text: qsTr("＋ Tạo mới"); onTriggered: bar.newTemplate() }
+            AppMenuItem { text: qsTr("Mẫu có sẵn…"); onTriggered: bar.openGallery() }
+            AppMenuItem { text: qsTr("Quản lý thư viện mẫu…"); onTriggered: bar.openLibrary() }
+            AppMenuSeparator {}
+            AppMenuItem { text: qsTr("Lưu thành…"); hint: "Ctrl+Shift+S"; onTriggered: bar.saveAs() }
+        }
+    }
     Separator { vertical: true }
-    IconButton { text: "↶"; tip: qsTr("Hoàn tác (Ctrl+Z)"); enabled: Doc.canUndo; onClicked: Doc.undo() }
-    IconButton { text: "↷"; tip: qsTr("Làm lại (Ctrl+Y)"); enabled: Doc.canRedo; onClicked: Doc.redo() }
+    IconButton { text: "↶"; font.pixelSize: Theme.fsLg; tip: qsTr("Hoàn tác (Ctrl+Z)"); enabled: Doc.canUndo; onClicked: Doc.undo() }
+    IconButton { text: "↷"; font.pixelSize: Theme.fsLg; tip: qsTr("Làm lại (Ctrl+Y)"); enabled: Doc.canRedo; onClicked: Doc.redo() }
 
     Item { Layout.fillWidth: true }
 
     // data source
     AppButton {
         text: Data.hasData ? qsTr("Dữ liệu  ▾") : qsTr("Mở dữ liệu  ▾")
-        kind: Data.hasData ? "secondary" : "primary"
+        glyph: "☷"
+        kind: "data"
         onClicked: dataMenu.popup(0, height + 4)
         AppMenu {
             id: dataMenu
@@ -87,8 +104,19 @@ Toolbar {
         }
     }
     signal addField()
-    Text { text: Data.hasData ? Data.rowLabel : ""; visible: Data.hasData
-        font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
+    // row navigator: which data row the preview (and "In tem") uses
+    Rectangle {
+        visible: Data.hasData
+        Layout.preferredHeight: Theme.controlH; Layout.preferredWidth: navRow.implicitWidth + 4
+        radius: Theme.radiusMd; color: Theme.dataSoft
+        Row {
+            id: navRow; anchors.centerIn: parent; spacing: 0
+            IconButton { text: "‹"; font.pixelSize: Theme.fsLg; width: 28; height: 28; tip: qsTr("Dòng trước") + " (PgUp)"; onClicked: Data.step(-1) }
+            Text { text: Data.rowLabel; anchors.verticalCenter: parent.verticalCenter; leftPadding: 4; rightPadding: 4
+                font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; font.weight: Font.DemiBold; color: Theme.data }
+            IconButton { text: "›"; font.pixelSize: Theme.fsLg; width: 28; height: 28; tip: qsTr("Dòng sau") + " (PgDn)"; onClicked: Data.step(1) }
+        }
+    }
     Separator { vertical: true }
     // OTA update: progress while downloading, a "Restart to update" button once the new version is ready
     Text { visible: Updates.state === "downloading" || Updates.state === "error"; text: Updates.text

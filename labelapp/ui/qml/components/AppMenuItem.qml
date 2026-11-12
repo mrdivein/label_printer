@@ -5,7 +5,7 @@ import "../theme"
 C.MenuItem {
     id: mi
     property string hint: ""
-    implicitHeight: 30
+    implicitHeight: 32
     leftPadding: Theme.s3; rightPadding: Theme.s3; topPadding: 0; bottomPadding: 0
     font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase
     contentItem: Item {
@@ -15,5 +15,5 @@ C.MenuItem {
         Text { id: hintText; visible: mi.hint.length > 0; text: mi.hint; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textFaint }
     }
-    background: Rectangle { radius: Theme.radiusSm; color: mi.highlighted && mi.enabled ? Theme.hover : "transparent" }
+    background: Rectangle { radius: Theme.radiusSm; color: mi.highlighted && mi.enabled ? Theme.accentSoft : "transparent" }
 }
