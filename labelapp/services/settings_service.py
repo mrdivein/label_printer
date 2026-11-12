@@ -66,10 +66,14 @@ def bundled_template_dir():
     return os.path.join(app_root(), "templates")
 
 def ensure_persistent_library():
-    """Seed bundled templates/profile into persistent storage without overwriting user files."""
+    """Seed the bundled example templates into an empty library (first run), and migrate a legacy profile file.
+
+    Examples are copied only while the library holds no template at all, so one the user deleted does not come
+    back at the next start. User files are never overwritten.
+    """
     td = persistent_template_dir()
     src = bundled_template_dir()
-    if os.path.isdir(src):
+    if os.path.isdir(src) and not any(n.lower().endswith(".json") for n in os.listdir(td)):
         for name in os.listdir(src):
             if not name.lower().endswith(".json"):
                 continue

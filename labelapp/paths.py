@@ -49,5 +49,23 @@ def package_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
+SYMBOL_PREFIX = "symbol:"
+
+
+def symbols_dir():
+    return os.path.join(package_dir(), "ui", "resources", "symbols")
+
+
+def symbol_png(path):
+    """Bundled symbol file for an image path written as "symbol:<key>" (e.g. "symbol:fragile"), else None.
+
+    Templates store the key instead of a file path so they keep working on another PC and after an update."""
+    s = str(path or "").strip()
+    if not s.lower().startswith(SYMBOL_PREFIX):
+        return None
+    key = os.path.basename(s[len(SYMBOL_PREFIX):].strip())
+    return os.path.join(symbols_dir(), key + ".png") if key else None
+
+
 def qml_dir():
     return os.path.join(package_dir(), "ui", "qml")
