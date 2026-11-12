@@ -7,6 +7,7 @@ C.AbstractButton {
     id: b
     property string art: ""           // drawn icon key (barcode, qr, line, box, fill_box, ellipse, image, fold, area, field, body)
     property string glyph: ""         // or a text glyph instead of a drawn icon
+    property url source: ""           // or a picture (symbol SVG), shown on a small white "label" chip
     property int glyphSize: 20
     property bool glyphBold: false
     property string tip: ""
@@ -25,6 +26,19 @@ C.AbstractButton {
             id: artBox
             width: 40; height: 26
             anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.top; anchors.topMargin: 10
+            Rectangle {
+                visible: b.source != ""
+                anchors.centerIn: parent
+                width: 34; height: 30; radius: Theme.radiusSm
+                color: "#ffffff"; border.width: 1; border.color: Theme.border
+                Image {
+                    anchors.centerIn: parent
+                    source: b.source
+                    sourceSize: Qt.size(24, 24); width: 24; height: 24
+                    fillMode: Image.PreserveAspectFit; smooth: true; mipmap: true
+                    opacity: b.enabled ? 1 : 0.4
+                }
+            }
             Text {
                 visible: b.glyph.length > 0
                 anchors.centerIn: parent
@@ -34,7 +48,7 @@ C.AbstractButton {
             }
             Canvas {
                 id: cv
-                visible: b.glyph.length === 0
+                visible: b.glyph.length === 0 && b.source == ""
                 anchors.fill: parent
                 property color ink: b.enabled ? Theme.text : Theme.disabledFg
                 property color acc: Theme.guideFold

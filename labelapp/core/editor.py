@@ -459,6 +459,16 @@ class LabelEditor:
             return None
         return self._append([e], 'Element added')
 
+    def add_symbol(self, key, size_mm=10.0):
+        """A bundled symbol (fragile, this way up, seal...) as a square image element, crisp black (not dithered)."""
+        key = str(key or '').strip()
+        if not key:
+            return None
+        x, y = self._default_add_xy()
+        s = float(size_mm)
+        e = {'type': 'image', 'path': 'symbol:' + key, 'x': x, 'y': y, 'w': s, 'h': s, 'fit': 'contain', 'dither': False}
+        return self._append([e], 'Symbol added')
+
     def add_shape(self, kind):
         x, y = self._default_add_xy()
         if kind == 'line':

@@ -510,6 +510,10 @@ class DocumentController(QObject):
         self._commit(self.editor.add_special('image', path))
 
     @Slot(str)
+    def addSymbol(self, key):
+        self._commit(self.editor.add_symbol(key))
+
+    @Slot(str)
     def addShape(self, kind):
         self._commit(self.editor.add_shape(kind))
 

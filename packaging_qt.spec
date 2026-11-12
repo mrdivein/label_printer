@@ -18,5 +18,5 @@ hidden += collect_submodules("reportlab.graphics.barcode")
 a = Analysis(["labelapp/__main__.py"], pathex=["."], datas=datas, hiddenimports=hidden,
              excludes=["tkinter", "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.Qt3DCore"])
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="LabelPrinter", console=False, icon=None)
+exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="LabelPrinter", console=False, icon="labelapp/ui/resources/app.ico")
 coll = COLLECT(exe, a.binaries, a.datas, name="LabelPrinter")

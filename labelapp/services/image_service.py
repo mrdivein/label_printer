@@ -4,7 +4,7 @@ import os
 
 from PIL import Image
 
-from ..paths import to_local_path
+from ..paths import symbol_png, to_local_path
 
 @functools.lru_cache(maxsize=32)
 def _load_image_file(path, mtime):
@@ -16,7 +16,7 @@ def _load_image_file(path, mtime):
     return im.convert("L")
 
 def load_element_image(path):
-    path = os.path.expanduser(to_local_path(path or ""))
+    path = symbol_png(path) or os.path.expanduser(to_local_path(path or ""))
     if not path or not os.path.isfile(path):
         return None
     try:

@@ -20,6 +20,11 @@ Toolbar {
         if (Doc.dirty) confirmSwitch.openFor(n); else Doc.openTemplate(n)
     }
 
+    Image {
+        source: Qt.resolvedUrl("../../resources/app.svg")
+        sourceSize: Qt.size(26, 26); Layout.preferredWidth: 26; Layout.preferredHeight: 26
+        smooth: true; mipmap: true
+    }
     Text {
         text: App.appName
         font.family: Theme.fontFamily; font.pixelSize: Theme.fsMd; font.weight: Font.DemiBold; color: Theme.text

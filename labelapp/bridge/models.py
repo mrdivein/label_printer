@@ -27,7 +27,9 @@ class ElementListModel(QAbstractListModel):
 
     @staticmethod
     def describe(e):
-        txt = str(e.get('text', e.get('value', os.path.basename(str(e.get('path', '')))))).replace('\n', ' ')[:40]
+        path = str(e.get('path', ''))
+        shown = 'Biểu tượng ' + path.split(':', 1)[1] if path.lower().startswith('symbol:') else os.path.basename(path)
+        txt = str(e.get('text', e.get('value', shown))).replace('\n', ' ')[:40]
         try:
             ang = float(e.get('angle', 0) or 0)
         except (TypeError, ValueError):

@@ -27,6 +27,7 @@ SolidCompression=yes
 WizardStyle=modern
 CloseApplications=force
 RestartApplications=no
+SetupIconFile=..\labelapp\ui\resources\app.ico
 UninstallDisplayIcon={app}\LabelPrinter.exe
 ArchitecturesInstallIn64BitMode=x64compatible
 

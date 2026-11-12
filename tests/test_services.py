@@ -28,6 +28,15 @@ def test_storage_location_and_seeding_unchanged(isolated_appdata):
     assert open(p).read() == "{}"
 
 
+def test_deleted_example_templates_are_not_seeded_again(isolated_appdata):
+    lib = ss.ensure_persistent_library()
+    for n in os.listdir(lib):
+        if n != "Hang_Tag_50x68.json":
+            os.remove(os.path.join(lib, n))
+    ss.ensure_persistent_library()
+    assert os.listdir(lib) == ["Hang_Tag_50x68.json"]
+
+
 def test_previous_data_folder_is_copied_once_found_by_its_contents(isolated_appdata):
     old = os.path.join(str(isolated_appdata), "Old_Label_App")
     os.makedirs(os.path.join(old, "templates"))
