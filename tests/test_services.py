@@ -17,7 +17,7 @@ XLSX = os.path.join(ROOT, "Example_Label_Data.xlsx")
 
 def test_storage_location_and_seeding_unchanged(isolated_appdata):
     d = ss.app_data_dir()
-    assert d == os.path.join(str(isolated_appdata), "LabelPrinter")
+    assert d == os.path.join(str(isolated_appdata), "Temly")
     lib = ss.ensure_persistent_library()
     assert lib == os.path.join(d, "templates")
     assert sorted(os.listdir(lib)) == sorted(n for n in os.listdir(os.path.join(ROOT, "templates")) if n.endswith(".json"))
@@ -44,7 +44,7 @@ def test_previous_data_folder_is_copied_once_found_by_its_contents(isolated_appd
     json.dump({"last_printer": "Godex G530"}, open(os.path.join(old, "workspace_v20.json"), "w"))
     open(os.path.join(old, "templates", "Mine.json"), "w").write("{}")
     d = ss.app_data_dir()
-    assert os.path.basename(d) == "LabelPrinter"
+    assert os.path.basename(d) == "Temly"
     assert open(os.path.join(d, "templates", "Mine.json")).read() == "{}"
     assert json.load(open(os.path.join(d, "workspace_v20.json")))["last_printer"] == "Godex G530"
     assert os.path.isdir(old)                                                    # the old folder is left as it was
@@ -53,8 +53,20 @@ def test_previous_data_folder_is_copied_once_found_by_its_contents(isolated_appd
     assert not os.path.exists(os.path.join(d, "templates", "Mine.json"))
 
 
+def test_label_printer_data_folder_moves_to_temly(isolated_appdata):
+    """Users of the app under its former name keep their templates and settings."""
+    old = os.path.join(str(isolated_appdata), "LabelPrinter")
+    os.makedirs(os.path.join(old, "templates"))
+    json.dump({"last_printer": "Xprinter XP-365B"}, open(os.path.join(old, "workspace_v20.json"), "w"))
+    open(os.path.join(old, "templates", "Mine.json"), "w").write("{}")
+    d = ss.app_data_dir()
+    assert d == os.path.join(str(isolated_appdata), "Temly")
+    assert os.path.isfile(os.path.join(d, "templates", "Mine.json"))
+    assert json.load(open(os.path.join(d, "workspace_v20.json")))["last_printer"] == "Xprinter XP-365B"
+
+
 def test_existing_workspace_file_is_read_and_extended(isolated_appdata):
-    os.makedirs(os.path.join(str(isolated_appdata), "LabelPrinter"))
+    os.makedirs(os.path.join(str(isolated_appdata), "Temly"))
     old = {"last_template": "Hang_Tag_50x68.json", "last_printer": "Godex G530", "data_source": "excel", "window_geometry": "1600x920+0+0"}
     json.dump(old, open(ss.workspace_path(), "w"))
     ws = Workspace()

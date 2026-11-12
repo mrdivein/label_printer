@@ -1,7 +1,7 @@
 """OTA updates from the GitHub Releases of this (public) repository (no UI toolkit; used by bridge/update_controller).
 
 Each GitHub Release of ``UPDATE_REPO`` carries the installer and a ``latest.json`` manifest:
-    {"version": "22.1.0", "file": "Label-Printer-Setup-22.1.0.exe", "sha256": "<hex>", "size": 12345}
+    {"version": "22.1.0", "file": "Temly-Setup-22.1.0.exe", "sha256": "<hex>", "size": 12345}
 ``releases/latest/download/latest.json`` always points at the newest release and is not subject to the
 GitHub API rate limit. The installer is downloaded into %LOCALAPPDATA%, its size and SHA-256 are checked,
 and only then is it offered for install. Installing runs it silently; it closes and restarts the app.
@@ -17,7 +17,7 @@ import urllib.request
 
 from ..version import UPDATE_REPO, __version__
 
-USER_AGENT = "label-printer-updater/" + __version__
+USER_AGENT = "temly-updater/" + __version__
 _FILE_RE = re.compile(r"^[A-Za-z0-9._-]+\.exe$")
 
 
@@ -39,12 +39,12 @@ def is_newer(remote, local=__version__):
 
 
 def manifest_url(repo=UPDATE_REPO):
-    return os.environ.get("LABEL_PRINTER_UPDATE_MANIFEST") or \
+    return os.environ.get("TEMLY_UPDATE_MANIFEST") or \
         "https://github.com/%s/releases/latest/download/latest.json" % repo
 
 
 def installer_url(manifest, repo=UPDATE_REPO):
-    base = os.environ.get("LABEL_PRINTER_UPDATE_BASE") or "https://github.com/%s/releases/download" % repo
+    base = os.environ.get("TEMLY_UPDATE_BASE") or "https://github.com/%s/releases/download" % repo
     return "%s/v%s/%s" % (base.rstrip("/"), manifest["version"], manifest["file"])
 
 
@@ -55,7 +55,7 @@ def updates_supported():
 
 def updates_dir():
     base = os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()
-    path = os.path.join(base, "LabelPrinter", "updates")
+    path = os.path.join(base, "Temly", "updates")
     os.makedirs(path, exist_ok=True)
     return path
 

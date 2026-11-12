@@ -41,7 +41,7 @@ def make_unique_headers(raw_headers):
 def fetch_google_sheet_rows(url_or_id, sheet_name=None):
     req = urllib.request.Request(
         google_sheet_csv_url(url_or_id, sheet_name),
-        headers={"User-Agent": "Mozilla/5.0 Label-Printer"}
+        headers={"User-Agent": "Mozilla/5.0 Temly"}
     )
     try:
         with urllib.request.urlopen(req, timeout=20) as resp:
