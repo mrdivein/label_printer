@@ -149,20 +149,20 @@ Panel {
                         }
                     }
 
-                    SectionHeader { text: "Biểu tượng"; Layout.fillWidth: true; Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; Layout.topMargin: Theme.s2 }
+                    SectionHeader { text: "Biểu tượng · Symbols"; Layout.fillWidth: true; Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; Layout.topMargin: Theme.s2 }
                     Text { text: "Hàng dễ vỡ, tem niêm phong, QC… In đen trắng sắc nét, kéo góc để đổi cỡ."; Layout.fillWidth: true
                         Layout.leftMargin: Theme.s3; Layout.rightMargin: Theme.s3; wrapMode: Text.Wrap
                         font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; color: Theme.textFaint }
                     Repeater {
                         model: [
-                            { title: "Vận chuyển", items: [
-                                { k: "fragile", t: "Dễ vỡ" }, { k: "this_way_up", t: "Hướng lên" }, { k: "keep_dry", t: "Tránh ẩm" },
-                                { k: "keep_away_sun", t: "Tránh nắng" }, { k: "do_not_stack", t: "Không xếp chồng" },
-                                { k: "no_knife", t: "Không dùng dao" }, { k: "warning", t: "Chú ý" }, { k: "recycle", t: "Tái chế" } ] },
-                            { title: "Niêm phong & chất lượng", items: [
-                                { k: "seal", t: "Tem niêm phong" }, { k: "seal_lock", t: "Niêm phong khoá" }, { k: "genuine", t: "Chính hãng" },
-                                { k: "qc_pass", t: "QC đạt" }, { k: "tick", t: "Đã kiểm" }, { k: "scissors", t: "Cắt tại đây" } ] },
-                            { title: "Bán hàng", items: [ { k: "new_burst", t: "Hàng mới" }, { k: "sale", t: "Giảm giá" } ] }
+                            { title: "Vận chuyển · Shipping", items: [
+                                { k: "fragile", t: "Dễ vỡ", e: "Fragile" }, { k: "this_way_up", t: "Hướng lên", e: "This way up" }, { k: "keep_dry", t: "Tránh ẩm", e: "Keep dry" },
+                                { k: "keep_away_sun", t: "Tránh nắng", e: "Keep out of sun" }, { k: "do_not_stack", t: "Không xếp chồng", e: "Do not stack" },
+                                { k: "no_knife", t: "Không dùng dao", e: "No knives" }, { k: "warning", t: "Chú ý", e: "Caution" }, { k: "recycle", t: "Tái chế", e: "Recycle" } ] },
+                            { title: "Niêm phong & chất lượng · Seal & quality", items: [
+                                { k: "seal", t: "Tem niêm phong", e: "Seal" }, { k: "seal_lock", t: "Niêm phong khoá", e: "Sealed" }, { k: "genuine", t: "Chính hãng", e: "Genuine" },
+                                { k: "qc_pass", t: "QC đạt", e: "QC passed" }, { k: "tick", t: "Đã kiểm", e: "Checked" }, { k: "scissors", t: "Cắt tại đây", e: "Cut here" } ] },
+                            { title: "Bán hàng · Retail", items: [ { k: "new_burst", t: "Hàng mới", e: "New" }, { k: "sale", t: "Giảm giá", e: "Sale" } ] }
                         ]
                         delegate: ColumnLayout {
                             required property var modelData
@@ -177,7 +177,7 @@ Panel {
                                     delegate: PaletteTile {
                                         required property var modelData
                                         width: ins.tileW; source: Qt.resolvedUrl("../../resources/symbols/" + modelData.k + ".svg")
-                                        text: modelData.t; tip: modelData.t
+                                        text: modelData.t; subtext: modelData.e; tip: modelData.t + " — " + modelData.e
                                         onClicked: Doc.addSymbol(modelData.k)
                                     }
                                 }

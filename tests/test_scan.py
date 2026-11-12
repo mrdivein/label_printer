@@ -52,17 +52,17 @@ def test_resolve_duplicate_and_edits():
 def test_suggest_matches_upc_sku_name_brand_and_ranks():
     from labelapp.core.suggest import SuggestIndex
     headers = ["Brand Name", "SKU", "Product Name", "UPC", "Price"]
-    rows = [{"Brand Name": "Contoso", "SKU": "CT3025", "Product Name": "Aviator Large", "UPC": 405289026,"Price": "3.000"},
+    rows = [{"Brand Name": "Contoso", "SKU": "CT3025", "Product Name": "Classic Tee Large", "UPC": 405289026,"Price": "3.000"},
             {"Brand Name": "Fabrikam", "SKU": "FB9102", "Product Name": "Harbor", "UPC": "488392000111", "Price": "2.500"},
-            {"Brand Name": "Northwind", "SKU": "NW0237", "Product Name": "Aviator Round", "UPC": "012345678905", "Price": "9.000"}]
+            {"Brand Name": "Northwind", "SKU": "NW0237", "Product Name": "Classic Tee Round", "UPC": "012345678905", "Price": "9.000"}]
     sx = SuggestIndex(headers, rows)
     assert sx.search("0123") == [2]                      # UPC prefix
     assert sx.search("ct30") == [0]                      # SKU prefix
     assert sx.search("harb") == [1]                      # name
     assert sx.search("fabrikam") == [1]                    # brand
-    assert sx.search("aviator north") == [2]               # every word must match
-    assert sorted(sx.search("aviator")) == [0, 2]
+    assert sx.search("classic north") == [2]               # every word must match
+    assert sorted(sx.search("classic")) == [0, 2]
     assert sx.search("") == [] and sx.search("zzz") == []
     assert sx.search("CT3025")[0] == 0                   # case-insensitive
     d = sx.describe(2)
-    assert (d["upc"], d["sku"], d["brand"], d["name"]) == ("012345678905", "NW0237", "Northwind", "Aviator Round")
+    assert (d["upc"], d["sku"], d["brand"], d["name"]) == ("012345678905", "NW0237", "Northwind", "Classic Tee Round")

@@ -30,8 +30,8 @@ def templates():
 
 @pytest.fixture
 def sample_row():
-    return {"Brand": "NORTHWIND", "Model": "NW-1040", "Price": "1,290,000 VND", "Barcode": "012345678905",
-            "Manufacturer": "SAMPLE MANUFACTURING LTD.", "ManufacturerCountry": "JAPAN", "ProductType": "Sản phẩm mẫu", "Origin": "Nhật Bản", "Importer": "CÔNG TY TNHH MẪU ABC", "ImporterAddress": "123 Đường Mẫu, Quận 1, TP Hồ Chí Minh", "Material": "Nhựa / Kim loại", "Usage": "Bảo quản nơi khô ráo", "Copies": 2}
+    return {"Brand": "NORTHWIND", "Model": "NW-1040", "Product": "Áo thun cổ tròn", "Size": "M", "Color": "Trắng",
+            "Price": "290,000 VND", "Barcode": "012345678905", "Material": "100% Cotton", "Origin": "Việt Nam", "Copies": 2}
 
 
 @pytest.fixture(scope="session")

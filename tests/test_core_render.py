@@ -154,6 +154,6 @@ def test_wrap_keeps_hard_line_breaks():
 
 @pytest.mark.skipif(find_font("Arial", True) is None, reason="needs the same font in preview and PDF")
 def test_auto_fit_print_stops_at_min_font_size_like_preview():
-    cfg = _text_cfg(text="LUXURY SUNGLASSES ITALY", auto_fit=True, font_size=8.2, min_font_size=7.6, w=10, h=8)
+    cfg = _text_cfg(text="PREMIUM COTTON SHIRTS", auto_fit=True, font_size=8.2, min_font_size=7.6, w=10, h=8)
     width = lambda img: img.convert("L").point(lambda p: 255 if p < 128 else 0).getbbox()[2]
     assert abs(width(render_label(cfg)) - width(render_print_hq(cfg))) <= 12
