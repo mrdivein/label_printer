@@ -1,0 +1,149 @@
+{
+ "width_mm": 60,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Shop}}",
+   "x": 2,
+   "y": 1.5,
+   "w": 40,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "{{Item}}",
+   "x": 2,
+   "y": 6,
+   "w": 40,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 12,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.2
+  },
+  {
+   "type": "text",
+   "text": "{{Options}}",
+   "x": 2,
+   "y": 13.5,
+   "w": 40,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 2,
+   "y": 21,
+   "w": 40,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "Đơn {{Order}} · {{Time}}",
+   "x": 2,
+   "y": 29,
+   "w": 40,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Customer}}",
+   "x": 2,
+   "y": 33.5,
+   "w": 40,
+   "h": 4.5,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "qr",
+   "value": "{{MenuURL}}",
+   "x": 43,
+   "y": 3,
+   "w": 15,
+   "h": 15,
+   "ecc": "M"
+  },
+  {
+   "type": "text",
+   "text": "Menu",
+   "x": 43,
+   "y": 18.5,
+   "w": 15,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "food_coffee_cup_60x40",
+  "category": "food",
+  "popular": true,
+  "name": {
+   "vi": "Tem ly cà phê 60×40",
+   "en": "Coffee cup label 60×40"
+  },
+  "description": {
+   "vi": "Tên món, tuỳ chọn, giá và QR menu — dán nắp ly.",
+   "en": "Drink name, options, price and menu QR — for cup lids."
+  },
+  "sample": {
+   "Shop": "CÀ PHÊ MẪU",
+   "Item": "Bạc xỉu đá",
+   "Options": "Ít đường · Size L · Thêm shot",
+   "Price": "45.000 ₫",
+   "Order": "#0421",
+   "Time": "08:15",
+   "Customer": "Chị Lan",
+   "MenuURL": "https://example.com/menu"
+  }
+ }
+}

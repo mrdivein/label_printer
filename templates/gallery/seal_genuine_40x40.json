@@ -1,0 +1,91 @@
+{
+ "width_mm": 40,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "ellipse",
+   "x": 0.8,
+   "y": 0.8,
+   "w": 38.4,
+   "h": 38.4,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "CHÍNH HÃNG",
+   "x": 6,
+   "y": 4,
+   "w": 28,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7.5,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.5
+  },
+  {
+   "type": "qr",
+   "value": "{{VerifyURL}}",
+   "x": 11,
+   "y": 9,
+   "w": 18,
+   "h": 18,
+   "ecc": "Q"
+  },
+  {
+   "type": "text",
+   "text": "Mã: {{Code}}",
+   "x": 6,
+   "y": 28,
+   "w": 28,
+   "h": 3.5,
+   "font": "Consolas",
+   "font_size": 6,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Quét để xác thực",
+   "x": 8,
+   "y": 32,
+   "w": 24,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "seal_genuine_40x40",
+  "category": "seal",
+  "popular": false,
+  "name": {
+   "vi": "Tem chính hãng QR 40×40",
+   "en": "Genuine product QR 40×40"
+  },
+  "description": {
+   "vi": "Tem chống giả: QR xác thực + mã kiểm tra riêng cho từng sản phẩm.",
+   "en": "Anti-counterfeit tag: verification QR + unique check code per item."
+  },
+  "sample": {
+   "VerifyURL": "https://example.com/v/7F3K9Q",
+   "Code": "7F3K9Q"
+  }
+ }
+}

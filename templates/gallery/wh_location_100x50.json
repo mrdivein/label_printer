@@ -1,0 +1,83 @@
+{
+ "width_mm": 100,
+ "height_mm": 50,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.8,
+   "y": 0.8,
+   "w": 98.4,
+   "h": 48.4,
+   "thickness": 0.5
+  },
+  {
+   "type": "text",
+   "text": "{{Location}}",
+   "x": 3,
+   "y": 3,
+   "w": 94,
+   "h": 16,
+   "font": "Arial",
+   "font_size": 32,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 19.2
+  },
+  {
+   "type": "text",
+   "text": "Dãy {{Aisle}} · Kệ {{Rack}} · Tầng {{Level}} · Ô {{Bin}}",
+   "x": 3,
+   "y": 20,
+   "w": 94,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "barcode",
+   "value": "{{Location}}",
+   "x": 10,
+   "y": 27,
+   "w": 80,
+   "h": 20,
+   "symbology": "code128",
+   "barcode_height_mm": 19.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  }
+ ],
+ "gallery": {
+  "id": "wh_location_100x50",
+  "category": "warehouse",
+  "popular": true,
+  "name": {
+   "vi": "Tem vị trí kệ kho 100×50",
+   "en": "Warehouse location 100×50"
+  },
+  "description": {
+   "vi": "Mã vị trí chữ lớn (dãy-kệ-tầng-ô) + mã vạch để quét khi cất / lấy hàng.",
+   "en": "Large location code (aisle-rack-level-bin) + barcode for put-away / picking scans."
+  },
+  "sample": {
+   "Location": "A-03-2-05",
+   "Aisle": "A",
+   "Rack": "03",
+   "Level": "2",
+   "Bin": "05"
+  }
+ }
+}

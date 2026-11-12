@@ -1,0 +1,113 @@
+{
+ "width_mm": 72,
+ "height_mm": 10,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Model}}",
+   "x": 1,
+   "y": 0.8,
+   "w": 14,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Purity}}",
+   "x": 1,
+   "y": 5,
+   "w": 14,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "barcode",
+   "value": "{{SKU}}",
+   "x": 15.5,
+   "y": 1,
+   "w": 15,
+   "h": 8,
+   "symbology": "code128",
+   "barcode_height_mm": 7.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "TL: {{Weight}}",
+   "x": 32,
+   "y": 0.8,
+   "w": 18,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 32,
+   "y": 5,
+   "w": 18,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 6.5,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.9
+  },
+  {
+   "type": "line",
+   "x": 51,
+   "y": 0.5,
+   "x2": 51,
+   "y2": 9.5,
+   "thickness": 0.15
+  }
+ ],
+ "gallery": {
+  "id": "jewelry_rattail_72x10",
+  "category": "jewelry",
+  "popular": true,
+  "name": {
+   "vi": "Tem đuôi chuột trang sức 72×10",
+   "en": "Jewelry rat-tail tag 72×10"
+  },
+  "description": {
+   "vi": "Tem dài hẹp quấn quanh nhẫn / dây chuyền: mã, tuổi vàng, trọng lượng, giá — đuôi để dán.",
+   "en": "Long narrow tag that wraps a ring / chain: code, purity, weight, price — tail for sticking."
+  },
+  "sample": {
+   "Model": "N-0217",
+   "Purity": "Vàng 18K",
+   "SKU": "TS0217",
+   "Weight": "1.25 chỉ",
+   "Price": "8.800.000 ₫"
+  }
+ }
+}

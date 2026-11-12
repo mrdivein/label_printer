@@ -1,0 +1,148 @@
+{
+ "width_mm": 60,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 59.0,
+   "h": 39.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 2.5,
+   "y": 2,
+   "w": 34,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 37,
+   "y": 2.4,
+   "w": 20.5,
+   "h": 4.4,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "right",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2.5,
+   "y": 8,
+   "w": 55,
+   "h": 3.6,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "{{Model}} · {{Size}} · {{Color}}",
+   "x": 2.5,
+   "y": 12,
+   "w": 55,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 5,
+   "y": 16.5,
+   "w": 50,
+   "h": 14,
+   "symbology": "code128",
+   "barcode_height_mm": 13.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{Barcode}}",
+   "x": 2,
+   "y": 31.5,
+   "w": 56,
+   "h": 2.8,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Xuất xứ: {{Origin}}",
+   "x": 2,
+   "y": 35.2,
+   "w": 56,
+   "h": 2.6,
+   "font": "Arial",
+   "font_size": 4.8,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "product_60x40",
+  "category": "product",
+  "popular": true,
+  "name": {
+   "vi": "Tem sản phẩm 60×40",
+   "en": "Product label 60×40"
+  },
+  "description": {
+   "vi": "Thương hiệu, tên hàng, giá và mã vạch Code 128 — khổ tem cuộn phổ biến nhất.",
+   "en": "Brand, product name, price and a Code 128 barcode — the most common roll size."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h"
+  }
+ }
+}

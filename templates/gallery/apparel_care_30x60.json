@@ -1,0 +1,130 @@
+{
+ "width_mm": 30,
+ "height_mm": 60,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 1.5,
+   "y": 3,
+   "w": 27,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "Size {{Size}}",
+   "x": 1.5,
+   "y": 8,
+   "w": 27,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "{{Fabric}}",
+   "x": 1.5,
+   "y": 13,
+   "w": 27,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "line",
+   "x": 4,
+   "y": 22,
+   "x2": 26,
+   "y2": 22,
+   "thickness": 0.15
+  },
+  {
+   "type": "text",
+   "text": "Giặt tay hoặc giặt máy nhẹ ≤ 30°C\nKhông tẩy\nỦi nhiệt độ thấp\nKhông sấy khô",
+   "x": 1.5,
+   "y": 23.5,
+   "w": 27,
+   "h": 20,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "text",
+   "text": "Sản xuất tại {{Origin}}",
+   "x": 1.5,
+   "y": 50,
+   "w": 27,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "{{Model}}",
+   "x": 1.5,
+   "y": 54,
+   "w": 27,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "apparel_care_30x60",
+  "category": "apparel",
+  "popular": false,
+  "name": {
+   "vi": "Nhãn may hướng dẫn giặt 30×60",
+   "en": "Care label 30×60"
+  },
+  "description": {
+   "vi": "Nhãn may vào đường may: thành phần vải, hướng dẫn giặt ủi, xuất xứ.",
+   "en": "Sewn-in care label: fabric composition, washing instructions, origin."
+  },
+  "sample": {
+   "Brand": "MAU STUDIO",
+   "Size": "M",
+   "Fabric": "100% Linen",
+   "Origin": "Việt Nam",
+   "Model": "SM-LN-02"
+  }
+ }
+}

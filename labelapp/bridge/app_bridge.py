@@ -9,6 +9,7 @@ import sys
 
 from PySide6.QtCore import Property, QObject, QThreadPool, QUrl, Signal, Slot
 
+from ..i18n import I18nBridge, tr
 from ..paths import to_local_path
 from ..paths import app_root
 from ..services.print_service import PrintService
@@ -16,6 +17,7 @@ from ..services.template_service import TemplateService
 from ..services.workspace_service import Workspace
 from .data_controller import DataController
 from .document_controller import DocumentController
+from .gallery_controller import GalleryController
 from .library_controller import LibraryController
 from .preview_provider import PreviewProvider
 from .print_controller import PrintController
@@ -48,10 +50,13 @@ class AppBridge(QObject):
         self.scan = ScanController(self.workspace, self.data, self.printing, self)
         self.profiles = ProfileController(ProfileService(), self.document, self.printing, self)
         self.updates = UpdateController(self)
+        self.i18n = I18nBridge(self.workspace, self)
+        self.gallery = GalleryController(self.templates, self.library, self.provider, self)
+        self.i18n.languageChanged.connect(self._retranslate)
         self._status = 'Sẵn sàng'
         self._dark = bool(self.workspace.get('qt_dark', False))
 
-        for src in (self.document, self.library, self.data, self.printing, self.profiles, self.scan):
+        for src in (self.document, self.library, self.data, self.printing, self.profiles, self.scan, self.gallery):
             src.message.connect(self.setStatus)
         for src in (self.data, self.printing, self.scan):
             src.error.connect(self.errorRaised)
@@ -60,7 +65,7 @@ class AppBridge(QObject):
 
     # ------------------------------------------------------------------ properties
     def _get_status(self):
-        return self._status
+        return tr(self._status)
 
     status = Property(str, _get_status, notify=statusChanged)
 
@@ -94,6 +99,15 @@ class AppBridge(QObject):
         return self.workspace.get('qt_window', {}) or {}
 
     windowState = Property('QVariant', _get_window, constant=True)
+
+    def _retranslate(self):
+        """After a language switch: Python-made texts (status, element list, inspector rows) re-describe themselves."""
+        self.statusChanged.emit()
+        self.document.retranslate()
+        if self.library._preview_name:
+            self.library.showPreview(self.library._preview_name)
+        if self.library._share['cfg'] is not None:
+            self.library._render_share()
 
     # ------------------------------------------------------------------ slots
     @Slot(str)

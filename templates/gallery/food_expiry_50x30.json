@@ -1,0 +1,144 @@
+{
+ "width_mm": 50,
+ "height_mm": 30,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 49.0,
+   "h": 29.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2,
+   "y": 1.5,
+   "w": 46,
+   "h": 4.5,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "NSX: {{MFG}}",
+   "x": 2,
+   "y": 7,
+   "w": 23,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "HSD: {{Expiry}}",
+   "x": 25,
+   "y": 7,
+   "w": 23,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "Lô: {{Lot}}",
+   "x": 2,
+   "y": 11.5,
+   "w": 23,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "KLT: {{Weight}}",
+   "x": 25,
+   "y": 11.5,
+   "w": 23,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Bảo quản nơi khô ráo, thoáng mát.",
+   "x": 2,
+   "y": 15.5,
+   "w": 46,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 4,
+   "y": 19,
+   "w": 42,
+   "h": 10,
+   "symbology": "code128",
+   "barcode_height_mm": 9.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  }
+ ],
+ "gallery": {
+  "id": "food_expiry_50x30",
+  "category": "food",
+  "popular": false,
+  "name": {
+   "vi": "Tem NSX / HSD 50×30",
+   "en": "Production / expiry label 50×30"
+  },
+  "description": {
+   "vi": "Ngày sản xuất, hạn sử dụng, số lô và khối lượng tịnh — cho thực phẩm đóng gói.",
+   "en": "Production date, expiry, lot and net weight — for packaged food."
+  },
+  "sample": {
+   "Product": "Bánh quy bơ hộp thiếc",
+   "MFG": "01/11/2026",
+   "Expiry": "01/11/2027",
+   "Lot": "L2611",
+   "Weight": "454g",
+   "Barcode": "8935001234604"
+  }
+ }
+}

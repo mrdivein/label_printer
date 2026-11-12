@@ -1,0 +1,153 @@
+{
+ "width_mm": 60,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 59.0,
+   "h": 39.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "PHIẾU SỬA CHỮA",
+   "x": 2.5,
+   "y": 2,
+   "w": 36,
+   "h": 4.5,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "{{Ticket}}",
+   "x": 2.5,
+   "y": 7,
+   "w": 36,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 13,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.8
+  },
+  {
+   "type": "text",
+   "text": "Khách: {{Customer}} · {{Phone}}",
+   "x": 2.5,
+   "y": 14,
+   "w": 55,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Thiết bị: {{Device}}",
+   "x": 2.5,
+   "y": 18,
+   "w": 55,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Lỗi: {{Fault}}",
+   "x": 2.5,
+   "y": 22,
+   "w": 55,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Hẹn trả: {{Due}}",
+   "x": 2.5,
+   "y": 29,
+   "w": 36,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "qr",
+   "value": "{{Ticket}}",
+   "x": 41,
+   "y": 2.5,
+   "w": 16.5,
+   "h": 16.5,
+   "ecc": "M"
+  },
+  {
+   "type": "barcode",
+   "value": "{{Ticket}}",
+   "x": 2.5,
+   "y": 33.5,
+   "w": 55,
+   "h": 5,
+   "symbology": "code128",
+   "barcode_height_mm": 4.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  }
+ ],
+ "gallery": {
+  "id": "elec_repair_60x40",
+  "category": "electronics",
+  "popular": false,
+  "name": {
+   "vi": "Phiếu nhận máy sửa chữa 60×40",
+   "en": "Repair intake tag 60×40"
+  },
+  "description": {
+   "vi": "Dán máy khách gửi sửa: mã phiếu, khách, lỗi, ngày hẹn trả.",
+   "en": "Tag for devices left for repair: ticket, customer, fault, due date."
+  },
+  "sample": {
+   "Ticket": "SC-0421",
+   "Customer": "Lê Văn C",
+   "Phone": "0922 222 222",
+   "Device": "Laptop 14 inch",
+   "Fault": "Không lên nguồn, kiểm tra sạc",
+   "Due": "15/11/2026"
+  }
+ }
+}

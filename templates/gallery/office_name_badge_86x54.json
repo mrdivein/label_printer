@@ -1,0 +1,148 @@
+{
+ "width_mm": 86,
+ "height_mm": 54,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 1,
+   "y": 1,
+   "w": 84,
+   "h": 52,
+   "thickness": 0.4
+  },
+  {
+   "type": "line",
+   "x": 1,
+   "y": 10,
+   "x2": 85,
+   "y2": 10,
+   "thickness": 0.5
+  },
+  {
+   "type": "text",
+   "text": "{{Event}}",
+   "x": 4,
+   "y": 2,
+   "w": 78,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "{{Name}}",
+   "x": 4,
+   "y": 14,
+   "w": 56,
+   "h": 12,
+   "font": "Arial",
+   "font_size": 20,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 12.0
+  },
+  {
+   "type": "text",
+   "text": "{{Title}}",
+   "x": 4,
+   "y": 28,
+   "w": 56,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "{{Organization}}",
+   "x": 4,
+   "y": 34,
+   "w": 56,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "qr",
+   "value": "{{GuestID}}",
+   "x": 63,
+   "y": 15,
+   "w": 20,
+   "h": 20,
+   "ecc": "M"
+  },
+  {
+   "type": "text",
+   "text": "{{GuestID}}",
+   "x": 61,
+   "y": 36,
+   "w": 24,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Role}}",
+   "x": 4,
+   "y": 44,
+   "w": 78,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 14,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 8.4
+  }
+ ],
+ "gallery": {
+  "id": "office_name_badge_86x54",
+  "category": "office",
+  "popular": false,
+  "name": {
+   "vi": "Thẻ tên sự kiện 86×54",
+   "en": "Event name badge 86×54"
+  },
+  "description": {
+   "vi": "Thẻ tên khách mời / nhân viên: tên lớn, chức danh, đơn vị và QR check-in.",
+   "en": "Guest / staff badge: big name, title, organisation and check-in QR."
+  },
+  "sample": {
+   "Event": "HỘI THẢO MẪU 2026",
+   "Name": "Trần Thị B",
+   "Title": "Trưởng nhóm",
+   "Organization": "Đơn vị mẫu",
+   "GuestID": "G-0421",
+   "Role": "KHÁCH MỜI"
+  }
+ }
+}

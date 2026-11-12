@@ -1,0 +1,95 @@
+{
+ "width_mm": 40,
+ "height_mm": 20,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 39,
+   "h": 19,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "BẢO HÀNH ĐẾN {{WarrantyEnd}}",
+   "x": 1.5,
+   "y": 1.2,
+   "w": 37,
+   "h": 3.6,
+   "font": "Arial",
+   "font_size": 6.5,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.9
+  },
+  {
+   "type": "barcode",
+   "value": "{{Serial}}",
+   "x": 2,
+   "y": 5.3,
+   "w": 36,
+   "h": 9,
+   "symbology": "code128",
+   "barcode_height_mm": 8.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "S/N: {{Serial}}",
+   "x": 1.5,
+   "y": 14.6,
+   "w": 37,
+   "h": 2.8,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "text",
+   "text": "Rách tem không bảo hành",
+   "x": 1.5,
+   "y": 17.2,
+   "w": 37,
+   "h": 2.2,
+   "font": "Arial",
+   "font_size": 4.2,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "elec_warranty_40x20",
+  "category": "electronics",
+  "popular": true,
+  "name": {
+   "vi": "Tem bảo hành 40×20",
+   "en": "Warranty sticker 40×20"
+  },
+  "description": {
+   "vi": "Tem bảo hành dán máy: hạn bảo hành, số serial, mã vạch.",
+   "en": "Warranty sticker on the device: warranty end, serial, barcode."
+  },
+  "sample": {
+   "WarrantyEnd": "12/11/2027",
+   "Serial": "SN26A00421"
+  }
+ }
+}

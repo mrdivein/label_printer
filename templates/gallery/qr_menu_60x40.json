@@ -1,0 +1,108 @@
+{
+ "width_mm": 60,
+ "height_mm": 40,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.6,
+   "y": 0.6,
+   "w": 58.8,
+   "h": 38.8,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "{{Shop}}",
+   "x": 3,
+   "y": 3,
+   "w": 30,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "Quét mã để xem menu & gọi món",
+   "x": 3,
+   "y": 11,
+   "w": 30,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "Bàn {{Table}}",
+   "x": 3,
+   "y": 22,
+   "w": 30,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 16,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 9.6
+  },
+  {
+   "type": "qr",
+   "value": "{{MenuURL}}",
+   "x": 34,
+   "y": 5,
+   "w": 23,
+   "h": 23,
+   "ecc": "Q"
+  },
+  {
+   "type": "text",
+   "text": "Wi-Fi: {{Wifi}}",
+   "x": 3,
+   "y": 33,
+   "w": 54,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  }
+ ],
+ "gallery": {
+  "id": "qr_menu_60x40",
+  "category": "qr",
+  "popular": false,
+  "name": {
+   "vi": "Tem QR menu 60×40",
+   "en": "QR menu sticker 60×40"
+  },
+  "description": {
+   "vi": "Dán bàn quán: tên quán, lời mời quét QR xem menu / gọi món.",
+   "en": "Table sticker: shop name and a scan-for-menu QR."
+  },
+  "sample": {
+   "Shop": "CÀ PHÊ MẪU",
+   "Table": "05",
+   "MenuURL": "https://example.com/menu",
+   "Wifi": "Mau_Guest"
+  }
+ }
+}

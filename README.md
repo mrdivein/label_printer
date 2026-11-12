@@ -92,6 +92,17 @@ and uninstall. Templates are plain JSON.*
 </tr>
 </table>
 
+## Ngôn ngữ, kho mẫu, chia sẻ an toàn · Language, gallery, safe sharing
+
+- **Tiếng Việt / English** — nút `VI / EN` trên thanh công cụ đổi ngôn ngữ ngay, không cần khởi động lại.
+  *The `VI / EN` button switches the interface language live.* Bản dịch: `labelapp/i18n_en.py`.
+- **Kho mẫu tem · Template gallery** — 48 mẫu dựng sẵn theo 14 nhóm (sản phẩm, giá, mã vạch, QR, vận chuyển,
+  kính mắt, thời trang, mỹ phẩm, thực phẩm, trang sức, kho, điện tử, niêm phong, văn phòng). Xem với dữ liệu mẫu
+  hoặc **mẫu gốc**, rồi “Dùng mẫu” để chép vào thư viện. Tạo lại bằng `python tools/make_gallery.py`.
+- **Kiểm tra & chia sẻ · Check & share** — trong Thư viện mẫu: xem mẫu gốc (không ghép dữ liệu), tìm tên công ty,
+  điện thoại, email, website, MST, logo từ máy, phần tử ẩn, bù lệch máy in; chọn cách xử lý từng mục và xuất bản
+  đã làm sạch. *Shows the original template, flags company/personal details and exports a cleaned copy.*
+
 ## Biểu tượng · Symbols
 
 Mục **Chèn → Biểu tượng** có sẵn ký hiệu vận chuyển, niêm phong và bán hàng, in đen trắng sắc nét.<br>

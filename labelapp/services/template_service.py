@@ -124,4 +124,7 @@ class TemplateService:
         cfg = self.load(name)
         if row:
             cfg = bind_row_to_template(cfg, row)
+        else:
+            from .gallery_service import original_view     # {{fields}} visible: numeric barcodes drawn as Code 128
+            cfg = original_view(cfg)
         return cfg, render_preview_with_guides(cfg, scale=scale, show_guides=False, show_fold=False)

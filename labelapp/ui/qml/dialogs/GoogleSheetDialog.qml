@@ -7,7 +7,7 @@ import "../components"
 AppDialog {
     id: d
     title: "Google Sheets"
-    subtitle: "Trang tính phải được chia sẻ “Bất kỳ ai có đường liên kết – Người xem”. Liên kết sẽ được ghi nhớ."
+    subtitle: qsTr("Trang tính phải được chia sẻ “Bất kỳ ai có đường liên kết – Người xem”. Liên kết sẽ được ghi nhớ.")
     property int selected: -1
     onAboutToShow: { var g = Data.googleDefaults; url.text = g.url; tab.text = g.tab; nm.text = ""; selected = -1 }
     function pick(i) { selected = i; var it = Data.savedSheets[i]; nm.text = it.name || ""; url.text = it.url; tab.text = it.tab || "LABEL DATA" }
@@ -15,7 +15,7 @@ AppDialog {
     body: [
         ColumnLayout {
             Layout.preferredWidth: 540; spacing: Theme.s3
-            SectionHeader { text: "Trang tính đã lưu"; Layout.fillWidth: true; visible: Data.savedSheets.length > 0 }
+            SectionHeader { text: qsTr("Trang tính đã lưu"); Layout.fillWidth: true; visible: Data.savedSheets.length > 0 }
             ListView {
                 id: list
                 visible: Data.savedSheets.length > 0
@@ -30,16 +30,16 @@ AppDialog {
                     MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; onClicked: d.pick(index); onDoubleClicked: { d.pick(index); load.clicked() } }
                 }
             }
-            PropertyRow { label: "Tên (không bắt buộc)"; labelWidth: 110; AppTextField { id: nm; Layout.fillWidth: true } }
-            PropertyRow { label: "Đường dẫn hoặc ID trang tính"; labelWidth: 110; AppTextField { id: url; Layout.fillWidth: true; selectByMouse: true } }
-            PropertyRow { label: "Tên trang (tab)"; labelWidth: 110; AppTextField { id: tab; Layout.fillWidth: true; onAccepted: load.clicked() } }
+            PropertyRow { label: qsTr("Tên (không bắt buộc)"); labelWidth: 110; AppTextField { id: nm; Layout.fillWidth: true } }
+            PropertyRow { label: qsTr("Đường dẫn hoặc ID trang tính"); labelWidth: 110; AppTextField { id: url; Layout.fillWidth: true; selectByMouse: true } }
+            PropertyRow { label: qsTr("Tên trang (tab)"); labelWidth: 110; AppTextField { id: tab; Layout.fillWidth: true; onAccepted: load.clicked() } }
         }
     ]
     buttons: [
-        AppButton { text: "Bỏ khỏi danh sách"; kind: "ghost"; enabled: d.selected >= 0; onClicked: { Data.removeSavedGoogle(d.selected); d.selected = -1 } },
+        AppButton { text: qsTr("Bỏ khỏi danh sách"); kind: "ghost"; enabled: d.selected >= 0; onClicked: { Data.removeSavedGoogle(d.selected); d.selected = -1 } },
         Item { Layout.fillWidth: true },
-        AppButton { text: "Huỷ"; kind: "ghost"; onClicked: d.close() },
-        AppButton { id: load; text: "Tải"; kind: "primary"; enabled: url.text.trim().length > 0 && !Data.loading
+        AppButton { text: qsTr("Huỷ"); kind: "ghost"; onClicked: d.close() },
+        AppButton { id: load; text: qsTr("Tải"); kind: "primary"; enabled: url.text.trim().length > 0 && !Data.loading
             onClicked: { Data.loadGoogle(url.text, tab.text, nm.text); d.close() } }
     ]
 }

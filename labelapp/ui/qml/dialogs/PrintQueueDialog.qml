@@ -27,7 +27,7 @@ AppDialog {
                     Repeater { model: Printing.queueColumns
                         Text { required property string modelData; text: modelData; Layout.fillWidth: true; Layout.preferredWidth: 100; elide: Text.ElideRight
                             font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted } }
-                    Text { text: "SL"; Layout.preferredWidth: 70; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted }
+                    Text { text: qsTr("SL"); Layout.preferredWidth: 70; font.family: Theme.fontFamily; font.pixelSize: Theme.fsXs; font.weight: Font.DemiBold; color: Theme.textMuted }
                     Item { Layout.preferredWidth: 30 }
                 }
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.border }
@@ -53,14 +53,14 @@ AppDialog {
                                 font.family: Theme.fontFamily; font.pixelSize: Theme.fsBase; color: Theme.text } }
                         NumberField { Layout.preferredWidth: 70; implicitHeight: 26; value: qty; step: 1; decimals: 0; from: 1; to: 999
                             onEdited: (v) => Printing.setQty(index, v) }
-                        IconButton { text: "✕"; tip: "Remove from queue"; implicitWidth: 30; implicitHeight: 26; onClicked: Printing.removeFromQueue(index) }
+                        IconButton { text: "✕"; tip: qsTr("Xoá khỏi hàng đợi"); implicitWidth: 30; implicitHeight: 26; onClicked: Printing.removeFromQueue(index) }
                     }
                 }
             }
             Separator { Layout.fillWidth: true }
             RowLayout {
                 Layout.fillWidth: true; Layout.margins: Theme.s3; Layout.leftMargin: Theme.s5; spacing: Theme.s2
-                Text { text: "Đặt số lượng tất cả bằng"; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
+                Text { text: qsTr("Đặt số lượng tất cả bằng"); font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
                 NumberField { id: allQty; Layout.preferredWidth: 64; implicitHeight: 26; value: 1; step: 1; decimals: 0; from: 1; to: 999; onEdited: (v) => Printing.setAllQty(v) }
                 Item { Layout.fillWidth: true }
                 Text { id: err; visible: text.length > 0; color: Theme.danger; font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; elide: Text.ElideRight; Layout.maximumWidth: 360 }
@@ -68,10 +68,10 @@ AppDialog {
         }
     ]
     buttons: [
-        AppButton { text: "Xuất tất cả ra PDF…"; kind: "ghost"; onClicked: d.exportRequested() },
+        AppButton { text: qsTr("Xuất tất cả ra PDF…"); kind: "ghost"; onClicked: d.exportRequested() },
         Item { Layout.fillWidth: true },
-        AppButton { text: "Huỷ"; kind: "ghost"; onClicked: d.close() },
-        AppButton { text: "In " + Printing.queueSummary.split("·").pop().trim(); kind: "primary"; enabled: !Printing.busy
+        AppButton { text: qsTr("Huỷ"); kind: "ghost"; onClicked: d.close() },
+        AppButton { text: qsTr("In ") + Printing.queueSummary.split("·").pop().trim(); kind: "primary"; enabled: !Printing.busy
             onClicked: {
                 var r = Printing.prepareQueuePrint()
                 if (!r.ok) { err.text = r.errors.join("  "); return }

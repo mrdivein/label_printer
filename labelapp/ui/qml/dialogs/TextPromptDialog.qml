@@ -25,7 +25,7 @@ AppDialog {
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
     ]
     buttons: [
-        AppButton { text: "Huỷ"; kind: "ghost"; onClicked: d.close() },
+        AppButton { text: qsTr("Huỷ"); kind: "ghost"; onClicked: d.close() },
         AppButton { text: d.confirmText; kind: "primary"; onClicked: d.accept() }
     ]
 }

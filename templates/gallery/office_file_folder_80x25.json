@@ -1,0 +1,111 @@
+{
+ "width_mm": 80,
+ "height_mm": 25,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "fill_box",
+   "x": 0,
+   "y": 0,
+   "w": 14,
+   "h": 25
+  },
+  {
+   "type": "text",
+   "text": "{{Year}}",
+   "x": 15.5,
+   "y": 1.5,
+   "w": 20,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "{{Department}}",
+   "x": 36,
+   "y": 1.5,
+   "w": 42,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": false,
+   "align": "right",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "text",
+   "text": "{{FileName}}",
+   "x": 15.5,
+   "y": 7.5,
+   "w": 62,
+   "h": 9,
+   "font": "Arial",
+   "font_size": 12,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.2
+  },
+  {
+   "type": "barcode",
+   "value": "{{ArchiveCode}}",
+   "x": 15.5,
+   "y": 17,
+   "w": 40,
+   "h": 7,
+   "symbology": "code128",
+   "barcode_height_mm": 6.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{ArchiveCode}}",
+   "x": 57,
+   "y": 18,
+   "w": 21,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "right",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  }
+ ],
+ "gallery": {
+  "id": "office_file_folder_80x25",
+  "category": "office",
+  "popular": false,
+  "name": {
+   "vi": "Tem gáy hồ sơ 80×25",
+   "en": "File folder label 80×25"
+  },
+  "description": {
+   "vi": "Gáy bìa hồ sơ / còng: phòng ban, tên hồ sơ, năm và mã lưu trữ.",
+   "en": "Folder / binder spine: department, file name, year and archive code."
+  },
+  "sample": {
+   "Year": "2026",
+   "Department": "KẾ TOÁN",
+   "FileName": "Chứng từ chi Q4",
+   "ArchiveCode": "KT-26-Q4-01"
+  }
+ }
+}

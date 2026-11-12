@@ -1,0 +1,98 @@
+{
+ "width_mm": 70,
+ "height_mm": 36,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "KÍNH GỬI",
+   "x": 3,
+   "y": 3,
+   "w": 40,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "text",
+   "text": "{{ReceiverName}}",
+   "x": 3,
+   "y": 6.5,
+   "w": 64,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "{{ReceiverAddress}}",
+   "x": 3,
+   "y": 13.5,
+   "w": 64,
+   "h": 12,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "line",
+   "x": 3,
+   "y": 27,
+   "x2": 67,
+   "y2": 27,
+   "thickness": 0.15
+  },
+  {
+   "type": "text",
+   "text": "ĐT: {{ReceiverPhone}}",
+   "x": 3,
+   "y": 28.5,
+   "w": 64,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  }
+ ],
+ "gallery": {
+  "id": "office_address_70x36",
+  "category": "office",
+  "popular": true,
+  "name": {
+   "vi": "Tem địa chỉ 70×36",
+   "en": "Address label 70×36"
+  },
+  "description": {
+   "vi": "Khổ tem địa chỉ thông dụng (24 tem / tờ A4): kính gửi, tên, địa chỉ, điện thoại.",
+   "en": "Common address label (24 per A4 sheet): to, name, address, phone."
+  },
+  "sample": {
+   "ReceiverName": "Nguyễn Văn A",
+   "ReceiverAddress": "34 Đường Ví Dụ, Phường 2, Quận 3, TP. Hồ Chí Minh",
+   "ReceiverPhone": "0911 111 111"
+  }
+ }
+}

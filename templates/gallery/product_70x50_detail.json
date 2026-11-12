@@ -1,0 +1,181 @@
+{
+ "width_mm": 70,
+ "height_mm": 50,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 69.0,
+   "h": 49.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 3,
+   "y": 2.5,
+   "w": 64,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 10,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.0
+  },
+  {
+   "type": "line",
+   "x": 3,
+   "y": 8.5,
+   "x2": 67,
+   "y2": 8.5,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "Mã hàng: {{Model}}",
+   "x": 3,
+   "y": 10,
+   "w": 40,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Quy cách: {{Size}}",
+   "x": 3,
+   "y": 13.5,
+   "w": 40,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Màu: {{Color}}",
+   "x": 3,
+   "y": 17,
+   "w": 40,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Xuất xứ: {{Origin}}",
+   "x": 3,
+   "y": 20.5,
+   "w": 40,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "{{Description}}",
+   "x": 3,
+   "y": 24.5,
+   "w": 40,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "qr",
+   "value": "{{SKU}}",
+   "x": 47,
+   "y": 10,
+   "w": 19,
+   "h": 19,
+   "ecc": "M"
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 3,
+   "y": 33,
+   "w": 46,
+   "h": 13,
+   "symbology": "ean13",
+   "barcode_height_mm": 10,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": true,
+   "text_size": 6
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 50,
+   "y": 36,
+   "w": 17,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 10,
+   "bold": true,
+   "align": "right",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.0
+  }
+ ],
+ "gallery": {
+  "id": "product_70x50_detail",
+  "category": "product",
+  "popular": false,
+  "name": {
+   "vi": "Tem thông tin sản phẩm 70×50",
+   "en": "Product info label 70×50"
+  },
+  "description": {
+   "vi": "Đủ thông tin theo quy định nhãn hàng hoá: tên, thành phần, xuất xứ, nhà phân phối, mã vạch.",
+   "en": "Full product-labelling details: name, composition, origin, distributor and barcode."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h"
+  }
+ }
+}

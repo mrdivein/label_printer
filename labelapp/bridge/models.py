@@ -3,6 +3,8 @@ import os
 
 from PySide6.QtCore import QAbstractListModel, QAbstractTableModel, QModelIndex, Qt, Slot
 
+from ..i18n import tr, trf
+
 
 class ElementListModel(QAbstractListModel):
     IndexRole, TypeRole, SummaryRole, LockedRole, SelectedRole, PrintedRole = (Qt.ItemDataRole.UserRole + i for i in range(1, 7))
@@ -28,7 +30,7 @@ class ElementListModel(QAbstractListModel):
     @staticmethod
     def describe(e):
         path = str(e.get('path', ''))
-        shown = 'Biểu tượng ' + path.split(':', 1)[1] if path.lower().startswith('symbol:') else os.path.basename(path)
+        shown = trf('Biểu tượng {}', path.split(':', 1)[1]) if path.lower().startswith('symbol:') else os.path.basename(path)
         txt = str(e.get('text', e.get('value', shown))).replace('\n', ' ')[:40]
         try:
             ang = float(e.get('angle', 0) or 0)
@@ -52,12 +54,12 @@ class ElementListModel(QAbstractListModel):
                 x, y = num('x'), num('y')
                 dx, dy = num('x2', x + num('w')) - x, num('y2', y) - y
                 if abs(dy) < 1e-6:
-                    return f"— {abs(dx):g} mm  tại y {y:g}"
+                    return tr(f"— {abs(dx):g} mm  tại y {y:g}")
                 if abs(dx) < 1e-6:
-                    return f"| {abs(dy):g} mm  tại x {x:g}"
-                return f"{round((dx * dx + dy * dy) ** 0.5, 2):g} mm  từ {x:g}, {y:g}"
+                    return tr(f"| {abs(dy):g} mm  tại x {x:g}")
+                return tr(f"{round((dx * dx + dy * dy) ** 0.5, 2):g} mm  từ {x:g}, {y:g}")
             if 'w' in e or 'h' in e:
-                return f"{num('w'):g} × {num('h'):g} mm  tại {num('x'):g}, {num('y'):g}"
+                return tr(f"{num('w'):g} × {num('h'):g} mm  tại {num('x'):g}, {num('y'):g}")
         except Exception:
             pass
         return ''
@@ -77,6 +79,10 @@ class ElementListModel(QAbstractListModel):
         for i in changed:
             ix = self.index(i)
             self.dataChanged.emit(ix, ix)
+
+    def retranslate(self, elements, selected):
+        self._rows = []                      # forces a full reset: every row is described again
+        self.sync(elements, selected)
 
 
 class RowsTableModel(QAbstractTableModel):
@@ -205,7 +211,17 @@ class InspectorModel(QAbstractListModel):
         key = self.ROLES.get(role)
         if key is None:
             return None
-        return self._rows[index.row()].get(key.decode(), '' if key != b'mixed' else False)
+        k = key.decode()
+        v = self._rows[index.row()].get(k, '' if key != b'mixed' else False)
+        if k in ('label', 'group'):
+            return tr(v)
+        if k == 'choice_labels' and isinstance(v, (list, tuple)):
+            return [tr(x) for x in v]
+        return v
+
+    def retranslate(self):
+        self.beginResetModel()
+        self.endResetModel()
 
     def sync(self, fields):
         rows = [{k: f.get(k, '') for k in self.KEYS} for f in fields]

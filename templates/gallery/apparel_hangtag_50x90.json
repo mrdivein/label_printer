@@ -1,0 +1,193 @@
+{
+ "width_mm": 50,
+ "height_mm": 90,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "ellipse",
+   "x": 22.5,
+   "y": 3,
+   "w": 5,
+   "h": 5,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 2,
+   "y": 11,
+   "w": 46,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 16,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 9.6
+  },
+  {
+   "type": "line",
+   "x": 10,
+   "y": 21,
+   "x2": 40,
+   "y2": 21,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 3,
+   "y": 24,
+   "w": 44,
+   "h": 9,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "Size",
+   "x": 3,
+   "y": 36,
+   "w": 20,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "Màu",
+   "x": 27,
+   "y": 36,
+   "w": 20,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "box",
+   "x": 5,
+   "y": 39.5,
+   "w": 16,
+   "h": 10,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "{{Size}}",
+   "x": 5,
+   "y": 41.5,
+   "w": 16,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 13,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.8
+  },
+  {
+   "type": "text",
+   "text": "{{Color}}",
+   "x": 27,
+   "y": 41.5,
+   "w": 20,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 2,
+   "y": 54,
+   "w": 46,
+   "h": 8,
+   "font": "Arial",
+   "font_size": 15,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 9.0
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 4,
+   "y": 66,
+   "w": 42,
+   "h": 16,
+   "symbology": "ean13",
+   "barcode_height_mm": 13,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": true,
+   "text_size": 6.5
+  },
+  {
+   "type": "text",
+   "text": "{{Model}} · {{Origin}}",
+   "x": 2,
+   "y": 84,
+   "w": 46,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  }
+ ],
+ "gallery": {
+  "id": "apparel_hangtag_50x90",
+  "category": "apparel",
+  "popular": true,
+  "name": {
+   "vi": "Hang tag quần áo 50×90",
+   "en": "Clothing hang tag 50×90"
+  },
+  "description": {
+   "vi": "Hang tag treo: thương hiệu, tên sản phẩm, size, màu, giá, mã vạch và lỗ xỏ dây.",
+   "en": "Swing tag: brand, product, size, colour, price, barcode and a string hole."
+  },
+  "sample": {
+   "Brand": "MAU STUDIO",
+   "Product": "Áo sơ mi linen tay dài",
+   "Size": "M",
+   "Color": "Trắng kem",
+   "Price": "690.000 ₫",
+   "Barcode": "8935001234574",
+   "Model": "SM-LN-02",
+   "Origin": "Việt Nam"
+  }
+ }
+}

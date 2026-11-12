@@ -1,0 +1,142 @@
+{
+ "width_mm": 50,
+ "height_mm": 30,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 49.0,
+   "h": 29.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Customer}}",
+   "x": 2,
+   "y": 1.5,
+   "w": 46,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "line",
+   "x": 2,
+   "y": 6,
+   "x2": 48,
+   "y2": 6,
+   "thickness": 0.15
+  },
+  {
+   "type": "text",
+   "text": "MP  SPH {{R_SPH}}  CYL {{R_CYL}}  AX {{R_AX}}",
+   "x": 2,
+   "y": 7,
+   "w": 46,
+   "h": 3.5,
+   "font": "Consolas",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "MT  SPH {{L_SPH}}  CYL {{L_CYL}}  AX {{L_AX}}",
+   "x": 2,
+   "y": 11,
+   "w": 46,
+   "h": 3.5,
+   "font": "Consolas",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "text",
+   "text": "PD {{PD}} · Chiết suất {{Index}} · {{Coating}}",
+   "x": 2,
+   "y": 15.5,
+   "w": 46,
+   "h": 3.2,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "barcode",
+   "value": "{{Job}}",
+   "x": 2,
+   "y": 19.5,
+   "w": 30,
+   "h": 9,
+   "symbology": "code128",
+   "barcode_height_mm": 8.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{Job}}",
+   "x": 33,
+   "y": 21.5,
+   "w": 15,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  }
+ ],
+ "gallery": {
+  "id": "eyewear_lens_50x30",
+  "category": "eyewear",
+  "popular": false,
+  "name": {
+   "vi": "Tem tròng kính 50×30",
+   "en": "Lens envelope label 50×30"
+  },
+  "description": {
+   "vi": "Thông số tròng: độ cầu, độ loạn, trục, chiết suất, lớp phủ — cho bao tròng / phiếu cắt kính.",
+   "en": "Lens data: sphere, cylinder, axis, index and coating — for lens envelopes / job tickets."
+  },
+  "sample": {
+   "Customer": "Khách: Trần Thị B",
+   "R_SPH": "-2.25",
+   "R_CYL": "-0.50",
+   "R_AX": "180",
+   "L_SPH": "-2.00",
+   "L_CYL": "-0.75",
+   "L_AX": "175",
+   "PD": "62",
+   "Index": "1.60",
+   "Coating": "Chống ánh sáng xanh",
+   "Job": "JK-0421"
+  }
+ }
+}

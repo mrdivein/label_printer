@@ -1,0 +1,91 @@
+{
+ "width_mm": 40,
+ "height_mm": 20,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 39,
+   "h": 19,
+   "thickness": 0.4
+  },
+  {
+   "type": "image",
+   "path": "symbol:seal_lock",
+   "x": 1.5,
+   "y": 3,
+   "w": 12,
+   "h": 12,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "text",
+   "text": "NIÊM PHONG",
+   "x": 14,
+   "y": 2,
+   "w": 25,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "Không dùng nếu tem rách",
+   "x": 14,
+   "y": 7.5,
+   "w": 25,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "No. {{SealNo}}",
+   "x": 14,
+   "y": 12,
+   "w": 25,
+   "h": 5,
+   "font": "Consolas",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  }
+ ],
+ "gallery": {
+  "id": "seal_void_40x20",
+  "category": "seal",
+  "popular": true,
+  "name": {
+   "vi": "Tem niêm phong 40×20",
+   "en": "Tamper seal 40×20"
+  },
+  "description": {
+   "vi": "Tem niêm phong hộp có số seri — dán qua mép nắp.",
+   "en": "Box tamper seal with a serial — stick it across the lid edge."
+  },
+  "sample": {
+   "SealNo": "000421"
+  }
+ }
+}

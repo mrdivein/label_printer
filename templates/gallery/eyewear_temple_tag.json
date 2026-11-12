@@ -1,0 +1,170 @@
+{
+ "width_mm": 22,
+ "height_mm": 70,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 1,
+   "y": 2,
+   "w": 20,
+   "h": 4.5,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "{{Model}}",
+   "x": 1,
+   "y": 7.5,
+   "w": 20,
+   "h": 3.5,
+   "font": "Arial",
+   "font_size": 6.5,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.9
+  },
+  {
+   "type": "text",
+   "text": "{{Color}} · {{Size}}",
+   "x": 1,
+   "y": 11.5,
+   "w": 20,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 1,
+   "y": 16,
+   "w": 20,
+   "h": 5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 1,
+   "y": 50,
+   "w": 20,
+   "h": 11,
+   "symbology": "code128",
+   "barcode_height_mm": 10.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{Barcode}}",
+   "x": 1,
+   "y": 61.5,
+   "w": 20,
+   "h": 2.5,
+   "font": "Arial",
+   "font_size": 4.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  },
+  {
+   "type": "text",
+   "text": "Xuất xứ: {{Origin}}",
+   "x": 1,
+   "y": 64.5,
+   "w": 20,
+   "h": 2.5,
+   "font": "Arial",
+   "font_size": 4.2,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "fold_regions": [
+  {
+   "name": "BACK",
+   "x": 0,
+   "y": 46,
+   "w": 22,
+   "h": 24,
+   "angle": 180,
+   "enabled": true
+  }
+ ],
+ "preview_guides": [
+  {
+   "name": "Front",
+   "type": "box",
+   "x": 0,
+   "y": 0,
+   "w": 22,
+   "h": 24,
+   "color": "blue",
+   "show": true
+  },
+  {
+   "name": "Back",
+   "type": "box",
+   "x": 0,
+   "y": 46,
+   "w": 22,
+   "h": 24,
+   "color": "green",
+   "show": true
+  }
+ ],
+ "gallery": {
+  "id": "eyewear_temple_tag",
+  "category": "eyewear",
+  "popular": true,
+  "name": {
+   "vi": "Tem đuôi kính (gập) 22×70",
+   "en": "Eyewear temple tag 22×70"
+  },
+  "description": {
+   "vi": "Tem treo càng kính gập đôi: mặt trước thương hiệu + mẫu, mặt sau mã vạch + giá.",
+   "en": "Fold-over tag for the temple arm: brand + model on the front, barcode + price on the back."
+  },
+  "sample": {
+   "Brand": "LUMEN",
+   "Model": "LM-1203",
+   "Color": "C02 Đen",
+   "Size": "52□18-145",
+   "Price": "2.450.000 ₫",
+   "Barcode": "8935001234567",
+   "Origin": "Ý"
+  }
+ }
+}

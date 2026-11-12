@@ -1,0 +1,72 @@
+{
+ "width_mm": 50,
+ "height_mm": 15,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Model}}",
+   "x": 1,
+   "y": 0.8,
+   "w": 48,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "barcode",
+   "value": "{{IMEI}}",
+   "x": 1,
+   "y": 4,
+   "w": 48,
+   "h": 7.5,
+   "symbology": "code128",
+   "barcode_height_mm": 7.0,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "IMEI: {{IMEI}}",
+   "x": 1,
+   "y": 11.7,
+   "w": 48,
+   "h": 2.8,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "elec_serial_50x15",
+  "category": "electronics",
+  "popular": false,
+  "name": {
+   "vi": "Tem serial / IMEI 50×15",
+   "en": "Serial / IMEI label 50×15"
+  },
+  "description": {
+   "vi": "Tem dài hẹp cho số serial / IMEI kèm mẫu máy.",
+   "en": "Long narrow label for serial / IMEI with the model."
+  },
+  "sample": {
+   "Model": "Điện thoại MX-20 128GB",
+   "IMEI": "356938035643809"
+  }
+ }
+}

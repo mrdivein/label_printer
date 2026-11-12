@@ -168,7 +168,7 @@ Item {
                 g.lineWidth = 1; g.strokeStyle = Theme.danger; g.setLineDash([4, 3]); g.stroke(); g.setLineDash([])
                 if (!ue.selected) {
                     var up = P(ue.poly[0]); g.fillStyle = Theme.danger; g.font = "600 9px sans-serif"
-                    g.fillText("KHÔNG IN", up[0] + 1, up[1] - 3)
+                    g.fillText(qsTr("KHÔNG IN"), up[0] + 1, up[1] - 3)
                 }
             }
             // paper outline-less: bounds
@@ -191,7 +191,7 @@ Item {
                 g.strokeStyle = Theme.guideArea; g.lineWidth = 1.5; g.setLineDash([6, 4])
                 view.rectPath(g, v.x, v.y, v.w, v.h); g.stroke(); g.setLineDash([])
                 g.fillStyle = Theme.guideArea; g.font = "600 10px sans-serif"
-                var pa = P([v.x + v.w, v.y]); g.fillText("VÙNG IN", pa[0] - g.measureText("VÙNG IN").width - 4, pa[1] - 5)
+                var pa = P([v.x + v.w, v.y]); g.fillText(qsTr("VÙNG IN"), pa[0] - g.measureText(qsTr("VÙNG IN")).width - 4, pa[1] - 5)
                 for (var h = 0; h < v.handles.length; h++) {
                     var hp = P([v.handles[h].x, v.handles[h].y])
                     g.fillStyle = Theme.surface; g.strokeStyle = Theme.guideArea; g.lineWidth = 1.5
@@ -204,7 +204,7 @@ Item {
                 g.strokeStyle = Theme.guideFold; g.lineWidth = 2.5
                 g.beginPath(); g.moveTo(f1[0], f1[1]); g.lineTo(f2[0], f2[1]); g.stroke()
                 g.fillStyle = Theme.surface; g.fillRect(f1[0] - 6, f1[1] - 6, 12, 12); g.strokeRect(f1[0] - 6, f1[1] - 6, 12, 12)
-                g.fillStyle = Theme.guideFold; g.font = "600 10px sans-serif"; g.fillText("GẬP", f1[0] + 12, f1[1] - 6)
+                g.fillStyle = Theme.guideFold; g.font = "600 10px sans-serif"; g.fillText(qsTr("GẬP"), f1[0] + 12, f1[1] - 6)
             }
             // selection
             var nSel = 0
@@ -218,7 +218,7 @@ Item {
                 if (nSel <= 3) {
                     var lp = P(se.poly[0]); g.fillStyle = se.locked ? Theme.textMuted : acc
                     g.font = "600 10px sans-serif"
-                    g.fillText((j + 1) + " " + Doc.typeLabel(se.type) + (se.locked ? "  (đã khoá)" : "") + (se.printed === false ? "  (không in)" : ""), lp[0] + 1, lp[1] - 6)
+                    g.fillText((j + 1) + " " + Doc.typeLabel(se.type) + (se.locked ? qsTr("  (đã khoá)") : "") + (se.printed === false ? qsTr("  (không in)") : ""), lp[0] + 1, lp[1] - 6)
                 }
             }
             // handles
@@ -448,32 +448,32 @@ Item {
         Row {
             id: ctxRow
             anchors.centerIn: parent; spacing: 1
-            IconButton { visible: view.selText; text: "✎"; tip: "Sửa chữ (nhấp đúp)"; onClicked: view.editTextRequested(view.selFirst) }
-            IconButton { visible: view.selText; text: "A−"; tip: "Giảm cỡ chữ 1 pt"; onClicked: Doc.changeFontSize(-5) }
-            IconButton { visible: view.selText; text: "A+"; tip: "Tăng cỡ chữ 1 pt"; onClicked: Doc.changeFontSize(5) }
-            IconButton { visible: view.selText; text: "B"; font.bold: true; tip: "In đậm"
+            IconButton { visible: view.selText; text: "✎"; tip: qsTr("Sửa chữ (nhấp đúp)"); onClicked: view.editTextRequested(view.selFirst) }
+            IconButton { visible: view.selText; text: "A−"; tip: qsTr("Giảm cỡ chữ 1 pt"); onClicked: Doc.changeFontSize(-5) }
+            IconButton { visible: view.selText; text: "A+"; tip: qsTr("Tăng cỡ chữ 1 pt"); onClicked: Doc.changeFontSize(5) }
+            IconButton { visible: view.selText; text: "B"; font.bold: true; tip: qsTr("In đậm")
                 active: { var dep = view.ov; return view.selText && Doc.elementBold(view.selFirst) }   // overlay changes on every commit
                 onClicked: Doc.setProp("bold", !Doc.elementBold(view.selFirst)) }
             Separator { visible: view.selText; vertical: true; anchors.verticalCenter: parent.verticalCenter }
-            AppButton { visible: Doc.canGroup; text: "Nhóm"; compact: true; anchors.verticalCenter: parent.verticalCenter; onClicked: Doc.groupSelected()
-                C.ToolTip.visible: hovered; C.ToolTip.text: "Nhóm các phần tử đang chọn (Ctrl+G)"; C.ToolTip.delay: 500 }
-            AppButton { visible: Doc.canUngroup; text: "Bỏ nhóm"; compact: true; anchors.verticalCenter: parent.verticalCenter; onClicked: Doc.ungroupSelected()
-                C.ToolTip.visible: hovered; C.ToolTip.text: "Bỏ nhóm (Ctrl+Shift+G)"; C.ToolTip.delay: 500 }
-            IconButton { text: "⧉"; tip: "Nhân bản (Ctrl+D)"; onClicked: Doc.duplicateSelected() }
-            IconButton { text: "↺"; tip: Doc.selectionCount > 1 ? "Xoay cả khối −90°" : "Xoay −90°"; onClicked: Doc.rotateBy(-90) }
-            IconButton { text: "↻"; tip: Doc.selectionCount > 1 ? "Xoay cả khối 90°" : "Xoay 90°"; onClicked: Doc.rotateBy(90) }
-            IconButton { text: "⇔"; tip: "Căn giữa theo chiều ngang của tem"; onClicked: Doc.centerOnLabel("h") }
-            IconButton { text: "⇕"; tip: "Căn giữa theo chiều dọc của tem"; onClicked: Doc.centerOnLabel("v") }
-            IconButton { visible: Doc.selectionCount === 1; text: "▲"; tip: "Đưa lớp lên"; onClicked: Doc.reorder(-1) }
-            IconButton { visible: Doc.selectionCount === 1; text: "▼"; tip: "Đưa lớp xuống"; onClicked: Doc.reorder(1) }
+            AppButton { visible: Doc.canGroup; text: qsTr("Nhóm"); compact: true; anchors.verticalCenter: parent.verticalCenter; onClicked: Doc.groupSelected()
+                C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Nhóm các phần tử đang chọn (Ctrl+G)"); C.ToolTip.delay: 500 }
+            AppButton { visible: Doc.canUngroup; text: qsTr("Bỏ nhóm"); compact: true; anchors.verticalCenter: parent.verticalCenter; onClicked: Doc.ungroupSelected()
+                C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Bỏ nhóm (Ctrl+Shift+G)"); C.ToolTip.delay: 500 }
+            IconButton { text: "⧉"; tip: qsTr("Nhân bản (Ctrl+D)"); onClicked: Doc.duplicateSelected() }
+            IconButton { text: "↺"; tip: Doc.selectionCount > 1 ? qsTr("Xoay cả khối −90°") : "Xoay −90°"; onClicked: Doc.rotateBy(-90) }
+            IconButton { text: "↻"; tip: Doc.selectionCount > 1 ? qsTr("Xoay cả khối 90°") : "Xoay 90°"; onClicked: Doc.rotateBy(90) }
+            IconButton { text: "⇔"; tip: qsTr("Căn giữa theo chiều ngang của tem"); onClicked: Doc.centerOnLabel("h") }
+            IconButton { text: "⇕"; tip: qsTr("Căn giữa theo chiều dọc của tem"); onClicked: Doc.centerOnLabel("v") }
+            IconButton { visible: Doc.selectionCount === 1; text: "▲"; tip: qsTr("Đưa lớp lên"); onClicked: Doc.reorder(-1) }
+            IconButton { visible: Doc.selectionCount === 1; text: "▼"; tip: qsTr("Đưa lớp xuống"); onClicked: Doc.reorder(1) }
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
-            IconButton { text: Doc.selectionLocked ? "🔒" : "🔓"; active: Doc.selectionLocked; tip: Doc.selectionLocked ? "Mở khoá" : "Khoá vị trí"
+            IconButton { text: Doc.selectionLocked ? "🔒" : "🔓"; active: Doc.selectionLocked; tip: Doc.selectionLocked ? qsTr("Mở khoá") : qsTr("Khoá vị trí")
                 onClicked: Doc.setLocked(!Doc.selectionLocked) }
-            AppButton { text: Doc.selectionPrinted ? "In" : "Không in"; compact: true; anchors.verticalCenter: parent.verticalCenter
+            AppButton { text: Doc.selectionPrinted ? qsTr("In") : qsTr("Không in"); compact: true; anchors.verticalCenter: parent.verticalCenter
                 onClicked: Doc.setPrinted(!Doc.selectionPrinted)
                 C.ToolTip.visible: hovered; C.ToolTip.delay: 500
-                C.ToolTip.text: Doc.selectionPrinted ? "Đang in — bấm để không in phần đã chọn (vẫn giữ trên tem)" : "Không in — bấm để in lại phần đã chọn" }
-            IconButton { text: "✕"; tip: "Xoá (Del)"; enabled: !Doc.selectionLocked; onClicked: Doc.deleteSelected() }
+                C.ToolTip.text: Doc.selectionPrinted ? qsTr("Đang in — bấm để không in phần đã chọn (vẫn giữ trên tem)") : qsTr("Không in — bấm để in lại phần đã chọn") }
+            IconButton { text: "✕"; tip: qsTr("Xoá (Del)"); enabled: !Doc.selectionLocked; onClicked: Doc.deleteSelected() }
         }
     }
 
@@ -492,7 +492,7 @@ Item {
         anchors.left: parent.left; anchors.top: parent.top; anchors.margins: Theme.s4
         width: rotLabel.implicitWidth + Theme.s3 * 2; height: 24; radius: Theme.radiusMd
         color: Theme.surface; border.width: 1; border.color: Theme.border
-        Text { id: rotLabel; anchors.centerIn: parent; text: "Đang xem xoay " + view.viewRotation + "° — bản in không đổi"
+        Text { id: rotLabel; anchors.centerIn: parent; text: qsTr("Đang xem xoay ") + view.viewRotation + qsTr("° — bản in không đổi")
             font.family: Theme.fontFamily; font.pixelSize: Theme.fsSm; color: Theme.textMuted }
         MouseArea { anchors.fill: parent; onClicked: { view.viewRotation = 0; Qt.callLater(view.fit) } }
     }
@@ -506,7 +506,7 @@ Item {
         Row {
             id: zoomRow
             anchors.centerIn: parent; spacing: 2
-            IconButton { text: "−"; tip: "Thu nhỏ (Ctrl+−)"; width: 28; height: 28; onClicked: view.zoomBy(1 / 1.25) }
+            IconButton { text: "−"; tip: qsTr("Thu nhỏ (Ctrl+−)"); width: 28; height: 28; onClicked: view.zoomBy(1 / 1.25) }
             C.Button {
                 id: zoomLabel
                 width: 56; height: 28; flat: true; padding: 0
@@ -515,16 +515,16 @@ Item {
                 background: Rectangle { radius: Theme.radiusSm; color: zoomLabel.hovered ? Theme.hover : "transparent" }
                 hoverEnabled: true
                 onClicked: view.actualSize()
-                C.ToolTip.visible: hovered; C.ToolTip.text: "Kích thước thật (100% = đúng milimét)"; C.ToolTip.delay: 500
+                C.ToolTip.visible: hovered; C.ToolTip.text: qsTr("Kích thước thật (100% = đúng milimét)"); C.ToolTip.delay: 500
             }
-            IconButton { text: "+"; tip: "Phóng to (Ctrl+=)"; width: 28; height: 28; onClicked: view.zoomBy(1.25) }
+            IconButton { text: "+"; tip: qsTr("Phóng to (Ctrl+=)"); width: 28; height: 28; onClicked: view.zoomBy(1.25) }
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
-            AppButton { text: "Vừa khung"; kind: "ghost"; compact: true; onClicked: view.fit(); anchors.verticalCenter: parent.verticalCenter }
+            AppButton { text: qsTr("Vừa khung"); kind: "ghost"; compact: true; onClicked: view.fit(); anchors.verticalCenter: parent.verticalCenter }
             Separator { vertical: true; anchors.verticalCenter: parent.verticalCenter }
-            IconButton { text: "▭"; tip: "Hiện khung bao các phần tử"; active: view.showBounds; width: 28; height: 28; onClicked: view.showBounds = !view.showBounds }
-            IconButton { text: "⟳"; tip: view.rotated ? "Xoay góc nhìn 90° (đang " + view.viewRotation + "°; chỉ để xem, bản in không đổi)" : "Xoay góc nhìn 90° (chỉ để xem, bản in không đổi)"
+            IconButton { text: "▭"; tip: qsTr("Hiện khung bao các phần tử"); active: view.showBounds; width: 28; height: 28; onClicked: view.showBounds = !view.showBounds }
+            IconButton { text: "⟳"; tip: view.rotated ? qsTr("Xoay góc nhìn 90° (đang ") + view.viewRotation + qsTr("°; chỉ để xem, bản in không đổi)") : qsTr("Xoay góc nhìn 90° (chỉ để xem, bản in không đổi)")
                 active: view.rotated; width: 28; height: 28; onClicked: view.rotateView() }
-            IconButton { text: "⌗"; tip: "Thước đo"; active: view.showRulers; width: 28; height: 28; onClicked: view.showRulers = !view.showRulers }
+            IconButton { text: "⌗"; tip: qsTr("Thước đo"); active: view.showRulers; width: 28; height: 28; onClicked: view.showRulers = !view.showRulers }
         }
     }
 }

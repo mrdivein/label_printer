@@ -1,0 +1,129 @@
+{
+ "width_mm": 70,
+ "height_mm": 30,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.5,
+   "y": 0.5,
+   "w": 69.0,
+   "h": 29.0,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 2.5,
+   "y": 2,
+   "w": 40,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "left",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "ĐVT: {{Unit}}",
+   "x": 2.5,
+   "y": 9,
+   "w": 40,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 6,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.6
+  },
+  {
+   "type": "barcode",
+   "value": "{{Barcode}}",
+   "x": 2.5,
+   "y": 14,
+   "w": 36,
+   "h": 13,
+   "symbology": "ean13",
+   "barcode_height_mm": 10,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": true,
+   "text_size": 5.5
+  },
+  {
+   "type": "line",
+   "x": 42,
+   "y": 2,
+   "x2": 42,
+   "y2": 28,
+   "thickness": 0.2
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 43,
+   "y": 6,
+   "w": 25,
+   "h": 9,
+   "font": "Arial",
+   "font_size": 15,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 9.0
+  },
+  {
+   "type": "text",
+   "text": "Ngày in: {{Date}}",
+   "x": 43,
+   "y": 24,
+   "w": 25,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "price_shelf_70x30",
+  "category": "price",
+  "popular": false,
+  "name": {
+   "vi": "Tem giá kệ 70×30",
+   "en": "Shelf price tag 70×30"
+  },
+  "description": {
+   "vi": "Nẹp giá kệ siêu thị: tên, đơn vị tính, giá và mã vạch.",
+   "en": "Supermarket shelf edge label: name, unit, price and barcode."
+  },
+  "sample": {
+   "Brand": "AURORA",
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "Model": "AR-500",
+   "Size": "500ml",
+   "Color": "Xanh rêu",
+   "Barcode": "8935001234567",
+   "SKU": "SKU-001",
+   "Price": "289.000 ₫",
+   "Origin": "Việt Nam",
+   "Description": "Giữ nóng 12h, giữ lạnh 24h",
+   "Unit": "Chai",
+   "Date": "12/11/2026"
+  }
+ }
+}

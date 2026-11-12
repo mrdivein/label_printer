@@ -1,0 +1,194 @@
+{
+ "width_mm": 100,
+ "height_mm": 50,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 0.6,
+   "y": 0.6,
+   "w": 98.8,
+   "h": 48.8,
+   "thickness": 0.3
+  },
+  {
+   "type": "text",
+   "text": "{{Product}}",
+   "x": 3,
+   "y": 2.5,
+   "w": 66,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 11,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 6.6
+  },
+  {
+   "type": "text",
+   "text": "PO: {{PO}}",
+   "x": 3,
+   "y": 9.5,
+   "w": 40,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "Thùng {{CartonNo}} / {{CartonTotal}}",
+   "x": 3,
+   "y": 14.5,
+   "w": 40,
+   "h": 4.5,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": true,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  },
+  {
+   "type": "text",
+   "text": "SL: {{Qty}} cái · {{Weight}}",
+   "x": 3,
+   "y": 20,
+   "w": 66,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7.5,
+   "bold": false,
+   "align": "left",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.5
+  },
+  {
+   "type": "barcode",
+   "value": "{{CartonID}}",
+   "x": 3,
+   "y": 26,
+   "w": 66,
+   "h": 16,
+   "symbology": "code128",
+   "barcode_height_mm": 15.5,
+   "module_width": 0.25,
+   "quiet_zone": 1.0,
+   "show_text": false
+  },
+  {
+   "type": "text",
+   "text": "{{CartonID}}",
+   "x": 3,
+   "y": 43,
+   "w": 66,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 7,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.2
+  },
+  {
+   "type": "line",
+   "x": 71,
+   "y": 2,
+   "x2": 71,
+   "y2": 48,
+   "thickness": 0.2
+  },
+  {
+   "type": "image",
+   "path": "symbol:fragile",
+   "x": 74,
+   "y": 3,
+   "w": 11,
+   "h": 11,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "image",
+   "path": "symbol:this_way_up",
+   "x": 86,
+   "y": 3,
+   "w": 11,
+   "h": 11,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "image",
+   "path": "symbol:keep_dry",
+   "x": 74,
+   "y": 16,
+   "w": 11,
+   "h": 11,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "image",
+   "path": "symbol:do_not_stack",
+   "x": 86,
+   "y": 16,
+   "w": 11,
+   "h": 11,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "text",
+   "text": "{{Destination}}",
+   "x": 72.5,
+   "y": 30,
+   "w": 26,
+   "h": 16,
+   "font": "Arial",
+   "font_size": 10,
+   "bold": true,
+   "align": "center",
+   "wrap": true,
+   "auto_fit": true,
+   "min_font_size": 6.0
+  }
+ ],
+ "gallery": {
+  "id": "ship_carton_100x50",
+  "category": "shipping",
+  "popular": false,
+  "name": {
+   "vi": "Tem thùng carton 100×50",
+   "en": "Carton label 100×50"
+  },
+  "description": {
+   "vi": "Mã thùng, số lượng, PO và ký hiệu vận chuyển cho kho.",
+   "en": "Carton number, quantity, PO and handling symbols for the warehouse."
+  },
+  "sample": {
+   "Product": "Bình giữ nhiệt inox 500ml",
+   "PO": "PO-26-1108",
+   "CartonNo": "3",
+   "CartonTotal": "12",
+   "Qty": "24",
+   "Weight": "9.6 kg",
+   "CartonID": "CTN-26-1108-003",
+   "Destination": "KHO HÀ NỘI"
+  }
+ }
+}

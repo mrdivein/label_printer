@@ -1,0 +1,116 @@
+{
+ "width_mm": 40,
+ "height_mm": 25,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "text",
+   "text": "{{Brand}}",
+   "x": 1.5,
+   "y": 1.2,
+   "w": 37,
+   "h": 4,
+   "font": "Arial",
+   "font_size": 8,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 4.8
+  },
+  {
+   "type": "text",
+   "text": "{{Model}} · {{Color}}",
+   "x": 1.5,
+   "y": 5.5,
+   "w": 37,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "line",
+   "x": 6,
+   "y": 9.5,
+   "x2": 34,
+   "y2": 9.5,
+   "thickness": 0.15
+  },
+  {
+   "type": "text",
+   "text": "{{Price}}",
+   "x": 1.5,
+   "y": 10.5,
+   "w": 37,
+   "h": 7,
+   "font": "Arial",
+   "font_size": 13,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.8
+  },
+  {
+   "type": "text",
+   "text": "{{Material}}",
+   "x": 1.5,
+   "y": 18.5,
+   "w": 37,
+   "h": 3,
+   "font": "Arial",
+   "font_size": 5.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.3
+  },
+  {
+   "type": "text",
+   "text": "{{Barcode}}",
+   "x": 1.5,
+   "y": 21.6,
+   "w": 37,
+   "h": 2.6,
+   "font": "Arial",
+   "font_size": 4.5,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 3.0
+  }
+ ],
+ "gallery": {
+  "id": "eyewear_display_40x25",
+  "category": "eyewear",
+  "popular": false,
+  "name": {
+   "vi": "Tem giá trưng bày kính 40×25",
+   "en": "Eyewear display price 40×25"
+  },
+  "description": {
+   "vi": "Tem nhỏ đặt trên kệ trưng bày gọng kính: mẫu, giá, chất liệu.",
+   "en": "Small display card for frames: model, price, material."
+  },
+  "sample": {
+   "Brand": "LUMEN",
+   "Model": "LM-1203",
+   "Color": "C02",
+   "Price": "2.450.000 ₫",
+   "Material": "Gọng Titan",
+   "Barcode": "8935001234567"
+  }
+ }
+}

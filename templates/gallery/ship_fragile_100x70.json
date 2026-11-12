@@ -1,0 +1,109 @@
+{
+ "width_mm": 100,
+ "height_mm": 70,
+ "dpi": 300,
+ "orientation": "portrait",
+ "copies": 1,
+ "offset_x_mm": 0,
+ "offset_y_mm": 0,
+ "threshold": 160,
+ "elements": [
+  {
+   "type": "box",
+   "x": 1,
+   "y": 1,
+   "w": 98,
+   "h": 68,
+   "thickness": 0.8
+  },
+  {
+   "type": "text",
+   "text": "HÀNG DỄ VỠ",
+   "x": 4,
+   "y": 4,
+   "w": 92,
+   "h": 14,
+   "font": "Arial",
+   "font_size": 30,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 18.0
+  },
+  {
+   "type": "text",
+   "text": "FRAGILE · HANDLE WITH CARE",
+   "x": 4,
+   "y": 19,
+   "w": 92,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 12,
+   "bold": true,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 7.2
+  },
+  {
+   "type": "image",
+   "path": "symbol:fragile",
+   "x": 8,
+   "y": 30,
+   "w": 24,
+   "h": 24,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "image",
+   "path": "symbol:this_way_up",
+   "x": 38,
+   "y": 30,
+   "w": 24,
+   "h": 24,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "image",
+   "path": "symbol:keep_dry",
+   "x": 68,
+   "y": 30,
+   "w": 24,
+   "h": 24,
+   "fit": "contain",
+   "dither": false
+  },
+  {
+   "type": "text",
+   "text": "Nhẹ tay · Không quăng ném · Đặt đúng chiều",
+   "x": 4,
+   "y": 58,
+   "w": 92,
+   "h": 6,
+   "font": "Arial",
+   "font_size": 9,
+   "bold": false,
+   "align": "center",
+   "wrap": false,
+   "auto_fit": true,
+   "min_font_size": 5.4
+  }
+ ],
+ "gallery": {
+  "id": "ship_fragile_100x70",
+  "category": "shipping",
+  "popular": false,
+  "name": {
+   "vi": "Tem hàng dễ vỡ 100×70",
+   "en": "Fragile handling label 100×70"
+  },
+  "description": {
+   "vi": "Cảnh báo HÀNG DỄ VỠ cỡ lớn với biểu tượng xử lý hàng.",
+   "en": "Large FRAGILE warning with handling symbols."
+  },
+  "sample": {}
+ }
+}
